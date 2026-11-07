@@ -1,7 +1,7 @@
 """``argus-cli``: run the stack, hot-swap modules, bench-test hardware, drive mocks (spec §5.4-§5.8).
 
-Planned commands owned by other tasks (do NOT implement here): ``record``, ``sweep``, ``eval``
-(threshold tuning), ``trigger`` (synthetic event with a real clip), ``pair`` (backend pairing).
+Commands: ``run``, ``reload``, ``test``, ``scenario``, ``pair``, ``upload``, plus the tuning set
+(``record``, ``sweep``, ``eval``) and ``trigger``, all defined in this module.
 """
 
 from __future__ import annotations
@@ -114,9 +114,7 @@ def run(
 
     stops.append(start_uploader(config))
     sup.start()
-    srv = control.ControlServer(sup) if control_socket else None
-    if srv:
-        srv.start()
+    srv = None
     if not cfg.backend.base_url or not cfg.backend.device_token:
         typer.echo("backend not paired: detecting and queueing events locally (run `argus-cli pair` to upload)")
     typer.echo(f"argus running (scenario={scenario}); Ctrl-C to stop")
@@ -126,6 +124,9 @@ def run(
     stopping = threading.Event()
     prev_term = signal.signal(signal.SIGTERM, lambda signum, frame: stopping.set())
     try:
+        if control_socket:
+            srv = control.ControlServer(sup)
+            srv.start()
         while (t_end is None or time.monotonic() < t_end) and not stopping.is_set():
             if stopping.wait(1.0):
                 break
@@ -134,6 +135,8 @@ def run(
             typer.echo(f"buffered {counts} impls {impls}")
     except KeyboardInterrupt:
         pass
+    except control.ControlSocketBusy as e:
+        raise _fail(str(e)) from None  # the finally block below still flushes events and stops everything
     finally:
         signal.signal(signal.SIGTERM, prev_term)
         if stopping.is_set():
@@ -285,6 +288,10 @@ def scenario(
         sc = load_scenario(name)
     except FileNotFoundError as e:
         raise _fail(str(e)) from None
+    try:
+        order = list(load_config(None).modules["range"].options.get("order") or ["R2", "R3"])
+    except ConfigError:
+        order = ["R2", "R3"]
     clock = VirtualClock()
     ctx = ModuleContext(clock, {}, name)
     mods = {m: load_impl(m, "mock", ctx) for m in ("imu", "range", "hat_on", "env")}
@@ -295,7 +302,7 @@ def scenario(
     steps = int((seconds or sc.duration_s) / 0.01)
     typer.echo(f"scenario {name}: {sc.spec.description.strip()}")
     typer.echo(f"expected: {[(e.type, e.sensors, e.t_window_s) for e in sc.expected] or 'no events'}")
-    typer.echo("   t[s]   |a|[g]   gyro[dps]   ToF[mm]   " + "  ".join(f"{s:>6}" for s in ("R1", "R2", "R3", "R4", "TOP")))
+    typer.echo("   t[s]   |a|[g]   gyro[dps]   ToF[mm]   " + "  ".join(f"{s:>6}" for s in (*order, "TOP")))
     next_print = 0.0
     imu_row = (0.0, 0.0)
     tof_row: Any = None
@@ -315,7 +322,7 @@ def scenario(
         if t >= next_print:
             next_print += every
             cells = "  ".join(f"{'--' if last_range.get(k) is None else f'{last_range[k]:.0f}':>6}"
-                              for k in ("R1", "R2", "R3", "R4", "TOP"))
+                              for k in (*order, "TOP"))
             typer.echo(f"{t:7.2f}  {imu_row[0]:6.2f}  {imu_row[1]:9.1f}  {tof_row!s:>8}   {cells}")
     if record:
         write_recording(record, all_samples, {"source": f"mock:{name}"})
@@ -343,6 +350,8 @@ def pair(
         except pairing.PairingError as e:
             raise _fail(str(e)) from None
         typer.echo(f"OK {pairing.describe(me)}")
+        if warn := pairing.clock_warning(me):
+            typer.secho(warn, fg=typer.colors.RED, err=True)
         return
     url = url or typer.prompt("Backend base URL")
     token = token or typer.prompt("Device token", hide_input=True)
@@ -359,6 +368,8 @@ def pair(
     typer.echo(f"paired; wrote {path}")
     if me:
         typer.echo(pairing.describe(me))
+        if warn := pairing.clock_warning(me):
+            typer.secho(warn, fg=typer.colors.RED, err=True)
     typer.echo("a running `argus-cli run` notices the new token within ~10 s")
 
 

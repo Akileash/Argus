@@ -29,6 +29,11 @@ You need:
 - The hat wired up as in the spec (`.plans/argus-mvp-spec.md`, section 2).
 - Access to the Argus dashboard, with a **manager** login. Only managers can register devices.
 - The repo cloned onto your laptop (you will clone it again onto the Pi in step (b)).
+- **Pre-flight clock check.** The Pi has no battery clock, and venue Wi-Fi may block time sync. Event times come from
+  the Pi's clock, so a wrong clock puts events at the wrong time on the dashboard. On the Pi run `timedatectl`:
+  "System clock synchronized: yes" is good. If not: `sudo timedatectl set-ntp true`, or set it by hand with
+  `sudo timedatectl set-time 'YYYY-MM-DD HH:MM:SS'` (UTC). `argus-cli pair` and `pair --check` also warn when the clock
+  differs from the backend by more than 60 s.
 
 ---
 
@@ -356,8 +361,8 @@ Nothing else is needed, and it works on any network the Pi can get online from.
 ### e1. Register the device in the dashboard
 
 1. Sign in to the dashboard with a **manager** account.
-2. Click **Devices** in the side menu.
-3. On the right, under **Register device** → **Pair a hat**, type the hat's serial in the
+2. Click **Devices** in the top bar.
+3. On the right, under **Pairing** → **Pair a hat**, type the hat's serial in the
    **Serial** box, for example `ARG-0001`.
 4. Leave **Issue a new token if already paired** unticked for a new device. Tick it only if you
    are pairing a hat that was paired before (see "401 after re-pair" in the troubleshooting table).
@@ -391,7 +396,7 @@ cd ~/argus/device
 - Replace `<token>` with the token you copied.
 - Tip: leave out `--token <token>` and the command asks for the token with hidden typing. This keeps
   the token out of your shell history.
-- `--config /etc/argus/config.yaml` is needed. Without it the command writes to `device/config.yaml`
+- `--config /etc/argus/config.yaml` is needed. Without it the command writes to `device/config.local.yaml`
   in the repo, and the service does not read that file.
 
 **You should see:**
@@ -417,6 +422,9 @@ Assign one before your first real event, or the report names "Unassigned worker"
 ```
 
 **You should see:** `OK device ARG-0001 (org ...), assigned worker: ...`
+
+If it also prints `WARNING: device clock is N s ahead of/behind the backend`, fix the clock first (see "Pre-flight
+clock check" under "Before you start"). Nothing is changed silently: event times stay as the Pi reports them.
 
 **If you don't:** `not paired` means the first command did not write the file. Run it again with the
 same `--config` value.
@@ -551,7 +559,8 @@ before you tune anything. These are the three commands you will use most, run fr
 
 - `eval` expects a folder with `.jsonl` recordings and a `.labels.json` file next to each one.
   Recordings with no label file are skipped, with a warning.
-- `sweep --apply` writes the best values into the config. Review with `git diff` first.
+- `sweep --apply` writes the best values into the config. On the Pi the service reads `/etc/argus/config.yaml`, so add
+  `--config /etc/argus/config.yaml` (or copy the printed `thresholds:` block there), then `sudo systemctl restart argus`.
 - The default recordings folder is `device/recordings`. It does not exist on a new install. Create it,
   or pass `--recordings`.
 

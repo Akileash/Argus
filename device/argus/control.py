@@ -46,6 +46,10 @@ def handle(sup: Supervisor, req: dict[str, Any]) -> dict[str, Any]:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
+class ControlSocketBusy(RuntimeError):
+    """A live instance already owns the control socket."""
+
+
 class ControlServer:
     def __init__(self, sup: Supervisor, path: str | None = None) -> None:
         self.path = path or socket_path()
@@ -60,7 +64,16 @@ class ControlServer:
                     resp = {"ok": False, "error": f"bad request: {e}"}
                 self.wfile.write((json.dumps(resp, default=str) + "\n").encode())
 
-        Path(outer.path).unlink(missing_ok=True)
+        if Path(outer.path).exists():
+            try:
+                live = send({"cmd": "status"}, outer.path, timeout=2.0)
+            except (ConnectionError, OSError, ValueError):
+                live = None  # stale socket file from a dead process
+            if live is not None:
+                raise ControlSocketBusy(
+                    f"another 'argus-cli run' is already listening on {outer.path}; stop it first "
+                    "(e.g. `sudo systemctl stop argus`) or run with --no-control")
+            Path(outer.path).unlink(missing_ok=True)
         self._srv = socketserver.ThreadingUnixStreamServer(self.path, H)
         self._thread = threading.Thread(target=self._srv.serve_forever, name="argus-control", daemon=True)
 

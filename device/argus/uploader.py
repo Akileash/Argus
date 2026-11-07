@@ -139,6 +139,7 @@ class Uploader:
         self._thread: threading.Thread | None = None
         self._auth_failed_token: str | None = None
         self._warned_unpaired = False
+        self._clock_checked_token: str | None = None
         self.last_error: str | None = None
         self._serial_sent_is_current = True
 
@@ -357,12 +358,29 @@ class Uploader:
                         self._warned_unpaired = True
                 else:
                     self._warned_unpaired = False
+                    self._check_clock()
                     self.drain_once()
                 wait = self.next_wakeup_s()
             except Exception:
                 log.exception("uploader loop error")
                 wait = POLL_S
             self._stop.wait(wait)
+
+    def _check_clock(self) -> None:
+        """Once per token: compare the device clock with the backend's ``server_time`` and warn loudly."""
+        from argus import pairing
+
+        s = self._settings()
+        if self._clock_checked_token == s.token:
+            return
+        try:
+            me = pairing.fetch_me(s.base_url, s.token, timeout_s=s.timeout_s, transport=self._transport)
+        except pairing.PairingError as e:
+            log.info("clock check skipped (will retry): %s", e)
+            return
+        self._clock_checked_token = s.token
+        if warn := pairing.clock_warning(me, self._now()):
+            log.warning("%s", warn)
 
     # ------------------------------------------------------------------ thread control
     def start(self) -> None:

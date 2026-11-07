@@ -229,7 +229,7 @@ I2C speed, scale factors), we flag it. **Your bench-proven values win.**
 | `no_echo` values show up as real distances | your "no echo" value is not listed | add it: `no_echo: [0, -1, 999]` |
 | contract test: `no samples received` | the command prints nothing, or only partly | run `python vendor/your_script.py` by hand; check `command:` paths (they start in the module folder) |
 | contract test: rate too low | the script is slow or buffers its output | print with `flush=True` (or `python -u`); check the rate you told us |
-| `exited with code 1 right after start` (in `argus-cli status` or the fallback event) | the script crashed on start; the last stderr line is in the message | run it by hand on the Pi; check wiring and permissions (`i2c`, `gpio` groups) |
+| `exited with code 1 right after start` (in `journalctl -u argus -f` or the `module_fallback` event on the dashboard) | the script crashed on start; the last stderr line is in the message | run it by hand on the Pi; check wiring and permissions (`i2c`, `gpio` groups) |
 | `module_fallback` event, reason `stale` | no readings for longer than the limit in section 2 | the script hangs or prints too rarely; the unit may also be wrong, so no line parses |
 | `mapping problem: ...` or `unknown key 'no_eco' (did you mean 'no_echo'?)` | typo in `mapping.yaml` | fix the key; `team check` names it |
 | `reload failed: ...` | the new impl did not start | read the full message: it says whether the old impl is still running |

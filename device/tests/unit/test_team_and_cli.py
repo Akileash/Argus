@@ -167,3 +167,47 @@ def test_control_channel_reload_status_fault():
     finally:
         srv.stop()
         sup.stop()
+
+
+def test_control_server_refuses_live_socket_and_replaces_stale():
+    import socket
+
+    path = os.path.join(tempfile.gettempdir(), f"argus-busy-{os.getpid()}.sock")
+    sup = Supervisor(make_cfg(), SampleBus(), VirtualClock(), scenario="idle")
+    sup.start(run_threads=False)
+    first = control.ControlServer(sup, path)
+    first.start()
+    try:
+        with pytest.raises(control.ControlSocketBusy):
+            control.ControlServer(sup, path)
+        assert control.send({"cmd": "status"}, path)["ok"]  # the live one still owns the socket
+    finally:
+        first.stop()
+    s = socket.socket(socket.AF_UNIX)
+    s.bind(path)  # stale: file exists, nobody listening
+    s.close()
+    second = control.ControlServer(sup, path)  # replaces the dead socket
+    second._srv.server_close()  # never started serving, so stop() would block in shutdown()
+    sup.stop()
+
+
+def test_run_refuses_when_another_instance_owns_the_socket(monkeypatch):
+    path = os.path.join(tempfile.gettempdir(), f"argus-run-busy-{os.getpid()}.sock")
+    monkeypatch.setenv("ARGUS_CONTROL_SOCK", path)
+    sup = Supervisor(make_cfg(), SampleBus(), VirtualClock(), scenario="idle")
+    sup.start(run_threads=False)
+    first = control.ControlServer(sup, path)
+    first.start()
+    try:
+        r = CliRunner().invoke(app, ["run", "--duration", "2"])
+        assert r.exit_code == 1 and "already listening" in r.output
+        assert control.send({"cmd": "status"}, path)["ok"]
+    finally:
+        first.stop()
+        sup.stop()
+
+
+def test_scenario_prints_configured_sensors():
+    r = CliRunner().invoke(app, ["scenario", "idle", "--seconds", "0.1"])
+    header = next(line for line in r.output.splitlines() if "ToF[mm]" in line)
+    assert "R2" in header and "R3" in header and "R1" not in header and "R4" not in header

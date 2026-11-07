@@ -6,6 +6,11 @@ values that score best. Everything lives in `device/config.yaml`.
 
 All commands run from `device/` (`uv run argus-cli ...`).
 
+**On the Pi, the service reads `/etc/argus/config.yaml`, not `device/config.yaml`** (`install.sh` creates it once and
+never overwrites it). Tuning commands default to the repo file, so on the Pi either apply with
+`argus-cli sweep ... --apply --config /etc/argus/config.yaml`, or copy the printed `thresholds:` block into
+`/etc/argus/config.yaml` by hand. Then restart the service: `sudo systemctl restart argus`.
+
 ## 1. Why we need this
 
 - The mock sensors are physically consistent, but they cannot reproduce real sensor noise: ultrasonic
@@ -58,8 +63,9 @@ Each recording `name.jsonl` has a sidecar `name.labels.json` next to it:
 }
 ```
 
-- Record with `argus-cli record --label board_swing_rear` and add the `expected` entries when asked
-  (or edit the sidecar by hand). Format details: `device/hardware/replay/FORMAT.md`.
+- Record with `argus-cli record --label board_swing_rear --expect struck_by_near_miss:4.1:R2` (repeatable;
+  format `<type>[:t_s[:sensor]]`). `record` never prompts: without `--expect` the sidecar has no expected events,
+  so add them with `--expect` or edit the `.labels.json` sidecar by hand. Format details: `device/hardware/replay/FORMAT.md`.
 - `type` is one of `struck_by_near_miss`, `struck_by_contact`, `head_impact`, `fall`, `hat_knocked_off`,
   `hat_removed`.
 - `t_s` is the time in seconds from the start of the recording (use `argus-cli replay` or read the
