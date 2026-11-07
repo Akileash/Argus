@@ -11,6 +11,7 @@ should be called every few ms. Time comes from the caller, so it runs on a virtu
 
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Callable
 from typing import Any
 
@@ -48,10 +49,8 @@ class HapticPlayer:
             if want[m] != self.level[m]:
                 self.level[m] = want[m]
                 self.last_set_t_ns = now_ns
-                try:
+                with contextlib.suppress(Exception):  # the proxy already handles driver faults
                     self.haptics.set(m, want[m])
-                except Exception:  # noqa: BLE001 - the proxy already handles driver faults
-                    pass
 
     def off_all(self, now_ns: int) -> None:
         self._apply(dict.fromkeys(MOTORS, 0.0), now_ns)
@@ -62,12 +61,11 @@ class HapticPlayer:
 
     # ------------------------------------------------------------ events
     def on_detection(self, det: Detection, now_ns: int) -> None:
-        if det.type in ACK_TYPES and self.hat_on_fn():
-            if now_ns >= self._ack_until:  # one buzz per event, not one per repeated detection
-                self._ack_until = now_ns + int(ACK_S * 1e9)
-                self._ack_seg = {"t_ns": now_ns, "motor": "both", "pattern": "ack_1500ms", "duration_s": ACK_S}
-                if self.rec:
-                    self.rec.record_haptic(self._ack_seg)
+        if det.type in ACK_TYPES and self.hat_on_fn() and now_ns >= self._ack_until:  # one buzz per event
+            self._ack_until = now_ns + int(ACK_S * 1e9)
+            self._ack_seg = {"t_ns": now_ns, "motor": "both", "pattern": "ack_1500ms", "duration_s": ACK_S}
+            if self.rec:
+                self.rec.record_haptic(self._ack_seg)
         self.tick(now_ns)
 
     def tick(self, now_ns: int) -> None:

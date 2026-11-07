@@ -106,6 +106,8 @@ def run(
     srv = control.ControlServer(sup) if control_socket else None
     if srv:
         srv.start()
+    if not cfg.backend.base_url or not cfg.backend.device_token:
+        typer.echo("backend not paired: detecting and queueing events locally (run `argus-cli pair` to upload)")
     typer.echo(f"argus running (scenario={scenario}); Ctrl-C to stop")
     t_end = time.monotonic() + duration if duration else None
     try:
@@ -227,13 +229,15 @@ def replay(
         setattr(cfg.modules, m, ModuleCfg(impl="replay", options={"file": str(file), "speed": speed}))
     bus = SampleBus(max(cfg.bus.history_s, span + 1))
     sup = Supervisor(cfg, bus, MonotonicClock(), on_event=lambda r: typer.echo(f"EVENT {r}"), config_path=None)
-    _wire_pipeline(sup, bus, cfg)  # <- HOOK
+    stops = _wire_pipeline(sup, bus, cfg)  # <- HOOK
     sup.start()
     try:
         time.sleep(span / speed + 0.5)
     except KeyboardInterrupt:
         pass
     finally:
+        for stop in stops:  # flush open events (clips/traces) before the modules go away
+            stop()
         sup.stop()
     typer.echo(f"replayed {file.name}: " + ", ".join(
         f"{s}={len(bus.window(s, 0, 1 << 62))}" for s in ("imu", "range", "tof", "env")))
@@ -457,6 +461,93 @@ def export_scenarios(
 
     paths = export_all(out)
     typer.echo(f"wrote {len(paths)} recordings (+ labels) to {out}")
+
+
+@app.command()
+def record(
+    label: Annotated[str, typer.Option(help="short name, used in the file name")],
+    seconds: Annotated[float, typer.Option(help="stop after N seconds (0 = until Ctrl-C)")] = 0.0,
+    notes: Annotated[str, typer.Option(help="free text for the labels sidecar")] = "",
+    expect: Annotated[list[str] | None, typer.Option(help="expected event type[:t_s[:sensor]] (repeatable)")] = None,
+    config: ConfigOpt = None,
+    scenario: Annotated[str, typer.Option(help="scenario for mock impls")] = "idle",
+    out_dir: Annotated[Path | None, typer.Option(help="default: device/recordings")] = None,
+) -> None:
+    """Record raw sensor streams to recordings/<timestamp>_<label>.jsonl + .labels.json (for eval/sweep)."""
+    from argus.recorder import Recorder, parse_expect, write_labels
+
+    try:
+        expected = [parse_expect(e) for e in expect or []]
+    except ValueError as e:
+        raise _fail(str(e)) from None
+    cfg = _config(config)
+    bus = SampleBus(cfg.bus.history_s)
+    sup = Supervisor(cfg, bus, MonotonicClock(), on_event=lambda r: typer.echo(f"EVENT {r}"), scenario=scenario,
+                     config_path=config)
+    rec = Recorder(bus, out_dir, label, meta={"modules": {n: c.impl for n, c in cfg.modules.__dict__.items()
+                                                          if hasattr(c, "impl")}})
+    sup.start()
+    typer.echo(f"recording -> {rec.path} ({'until Ctrl-C' if not seconds else f'{seconds:g} s'})")
+    t_end = time.monotonic() + seconds if seconds else None
+    try:
+        while t_end is None or time.monotonic() < t_end:
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        sup.stop()
+        path = rec.close()
+    write_labels(rec.labels_path, label, expected, notes)
+    typer.echo(f"saved {rec.count} samples to {path}\nlabels: {rec.labels_path}")
+
+
+@app.command()
+def trigger(
+    event_type: Annotated[str, typer.Argument(metavar="TYPE", help="struck_by_near_miss | struck_by_contact | "
+                                              "head_impact | fall | hat_knocked_off | hat_removed")],
+    config: ConfigOpt = None,
+    scenario: Annotated[str, typer.Option(help="standalone mode: scenario for mock impls")] = "idle",
+    warmup: Annotated[float, typer.Option(help="standalone mode: seconds to buffer before triggering")] = 3.0,
+) -> None:
+    """Synthesize an event now (real clip from the camera ring) for stage backup (spec §7).
+
+    Uses the running `argus-cli run` if there is one; otherwise starts the stack, triggers, waits for the
+    post-roll, queues the event and exits."""
+    from argus.events.synthetic import TRIGGER_TYPES, synthesize
+
+    if event_type not in TRIGGER_TYPES:
+        raise _fail(f"unknown event type {event_type!r}; choose from {', '.join(TRIGGER_TYPES)}")
+    try:
+        resp = control.send({"cmd": "trigger", "type": event_type})
+    except ConnectionError:
+        resp = None
+    if resp is not None:
+        if not resp["ok"]:
+            raise _fail(f"trigger failed: {resp['error']}")
+        typer.echo(f"triggered {event_type} in the running hat: event {resp['event_id']} queues after the "
+                   f"{resp['post_roll_s']:g} s post-roll")
+        return
+    from argus.pipeline import Pipeline
+
+    cfg = _config(config)
+    bus = SampleBus(cfg.bus.history_s)
+    sup = Supervisor(cfg, bus, MonotonicClock(), scenario=scenario, config_path=config)
+    pipe = Pipeline(sup, bus, cfg)
+    sup.start()
+    pipe.start()
+    try:
+        typer.echo(f"no running hat found; standalone: buffering {warmup:g} s ...")
+        time.sleep(warmup)
+        eid = pipe.inject(synthesize(event_type, sup.clock.now_ns()))
+        if eid is None:
+            raise _fail("trigger ignored (cooldown)")
+        if event_type != "hat_removed":
+            typer.echo(f"event {eid}: recording {cfg.events.post_roll_s:g} s post-roll ...")
+            time.sleep(cfg.events.post_roll_s + 0.5)
+    finally:
+        pipe.stop()
+        sup.stop()
+    typer.echo(f"queued in {pipe.queue.root}: {', '.join(p.name for p in pipe.queue.ready())}")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
 from dataclasses import dataclass, field
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -51,7 +51,7 @@ class Run:
 
     def t_s(self, iso: str) -> float:
         """Event timestamp -> scenario seconds."""
-        return (datetime.fromisoformat(iso.replace("Z", "+00:00")) - EPOCH).total_seconds()
+        return (datetime.fromisoformat(iso) - EPOCH).total_seconds()
 
     def events(self) -> list[dict[str, Any]]:
         return [json.loads((d / "event.json").read_text()) for d in self.pipe.queue.ready()]

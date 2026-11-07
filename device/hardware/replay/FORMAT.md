@@ -29,3 +29,23 @@ one file share a time origin so streams stay in sync.
 
 Recordings go in `device/recordings/` (gitignored except `recordings/curated/`, the permanent
 regression set).
+
+## Labels sidecar
+
+`argus-cli record --label <name>` also writes `<recording>.labels.json` next to the recording (same stem,
+`20261107T120000Z_walk.jsonl` -> `20261107T120000Z_walk.labels.json`; the tuning tools also accept
+`<recording>.jsonl.labels.json`). It tells `eval` / `sweep` what the detectors should find:
+
+```json
+{"label": "walk_backward_wall",
+ "expected": [{"type": "struck_by_near_miss", "t_s": 12.4, "sensor": "R2"},
+              {"type": "hat_removed", "t_window_s": [5.0, 8.6]}],
+ "notes": "free text"}
+```
+
+- `expected` is a list (empty = the recording must produce NO events, e.g. a false-positive check).
+- `type`: `struck_by_near_miss | struck_by_contact | head_impact | fall | hat_knocked_off | hat_removed`.
+- `t_s` (optional): seconds from the first sample of the recording (`t_ns - min(t_ns)`, the same axis replay
+  uses). `sensor` (optional, one of `R1..R4|TOP`) or `sensors` (list of acceptable ones); `t_window_s`
+  (optional `[lo, hi]`) replaces the `t_s +- tolerance` match window.
+- `argus-cli record --expect type[:t_s[:sensor]]` (repeatable) fills `expected`; `--notes` fills `notes`.
