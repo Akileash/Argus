@@ -13,6 +13,5 @@ world:
   planes: [ { axis: x, at: -2.2 } ]
 tof: { keyframes: [[0, null]] }
 expected:
-  - { type: fall, t_window_s: [3.4, 4.6], notes: "free fall 450 ms, drop height ~1.0 m" }
-  - { type: head_impact, t_window_s: [3.4, 3.65], notes: "peak ~14 g (may saturate at 16 g)" }
+  - { type: fall, t_window_s: [3.4, 4.6], notes: "free fall 450 ms, drop height ~1.0 m; landing peak ~14 g reported on the fall (one physical drop = one event, PM decision)" }
 allowed_extra: []
