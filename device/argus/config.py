@@ -58,48 +58,85 @@ class _Thresholds(BaseModel):
 
 
 class StruckByThresholds(_Thresholds):
-    """Spec §4.1."""
+    """Spec §4.1. Key names are exactly what argus/detectors/struck_by.py (+ ego_motion, orientation) read.
+    tests/unit/test_config_keys.py fails if a key here is not read by a detector."""
 
-    range_max_m: float = 2.0  # trigger only if range < this
+    # track
+    range_min_m: float = 0.03  # valid range bounds
+    range_max_m: float = 2.5
+    track_len: int = 4
+    min_track_samples: int = 4  # sweep target: 3 buys one sweep of warning time
+    jump_m: float = 0.35
+    first_step_max_rate_mps: float = 4.0
+    handoff_tol_m: float = 0.2
+    handoff_max_gap_s: float = 0.25
+    track_timeout_s: float = 0.5
+    # trigger
+    rotation_gate_dps: float = 60.0
+    trigger_range_m: float = 2.0
     v_obj_min_mps: float = 1.5
     ttc_max_s: float = 1.3
     confirm_sweeps: int = 2
-    rotation_gate_dps: float = 60.0
-    suppress_ratio: float = 0.6  # v_ego > ratio * v_meas ...
-    suppress_v_obj_mps: float = 2.0  # ... then require v_obj > this
-    track_len: int = 4
-    track_jump_m: float = 0.35
-    handoff_m: float = 0.2
-    range_min_valid_m: float = 0.03
-    range_max_valid_m: float = 2.5
-    leaky_tau_s: float = 1.0
-    zupt_ms: float = 200.0
-    zupt_accel_var_g2: float = 4e-4  # not in spec: "accel variance below a threshold"; tune offline
+    suppress_ego_ratio: float = 0.6
+    suppress_v_obj_min_mps: float = 2.0
+    ego_compensation: bool = True
+    ego_discount_only: bool = True
+    # events
+    approach_gap_s: float = 1.0
+    impact_g: float = 6.0
+    contact_window_s: float = 1.5
+    saturation_g: float = 15.9
+    # haptics
+    haptic_hold_s: float = 0.3
+    haptic_ttc_slow_s: float = 1.3
+    haptic_slow_hz: float = 4.0
+    haptic_ttc_continuous_s: float = 0.5
+    haptic_fast_hz: float = 10.0
+    # ego-motion (leaky integrator + ZUPT)
+    ego_tau_s: float = 1.0  # sweep target: 2.0 fixes brisk backward walking, doubles drift bound
+    zupt_window_s: float = 0.2
+    zupt_var_thresh: float = 0.05
+    zupt_mean_thresh: float = 0.4
+    zupt_max_speed_mps: float = 0.5
+    max_dt_s: float = 0.05
+    # orientation + boot calibration
+    madgwick_beta: float = 0.01
+    accel_gate_g: float = 0.25
+    calib_window_s: float = 2.0
+    calib_gyro_motion_dps: float = 3.0
+    calib_accel_motion_g: float = 0.05
 
 
 class FallImpactThresholds(_Thresholds):
-    """Spec §4.2."""
+    """Spec §4.2. Keys read by argus/detectors/fall_impact.py."""
 
     impact_g: float = 6.0
-    saturation_g: float = 16.0
+    saturation_g: float = 15.9
     free_fall_g: float = 0.35
     free_fall_min_ms: float = 200.0
-    post_fall_impact_g: float = 3.0
-    post_fall_window_s: float = 1.0
-    struck_by_upgrade_window_s: float = 1.5
+    landing_g: float = 3.0
+    landing_window_ms: float = 1000.0
+    pulse_end_g: float = 3.0
+    pulse_hold_ms: float = 30.0
+    max_pulse_ms: float = 500.0
+    debounce_ms: float = 300.0
+    ff_gap_tol_ms: float = 15.0
 
 
 class HatStateThresholds(_Thresholds):
-    """Spec §4.3."""
+    """Spec §4.3. Keys read by argus/detectors/hat_state.py."""
 
+    min_range_mm: float = 50.0
+    max_range_mm: float = 1200.0
+    calibration_s: float = 3.0
+    stable_spread_mm: float = 10.0
     off_delta_mm: float = 30.0
-    off_hold_s: float = 3.0
     on_band_mm: float = 15.0
-    on_hold_s: float = 2.0
-    knocked_lookback_s: float = 2.0
-    knocked_impulse_g: float = 3.0
-    baseline_s: float = 3.0
-    calibration_s: float = 2.0
+    off_confirm_s: float = 3.0
+    on_confirm_s: float = 2.0
+    knock_lookback_s: float = 2.0
+    knock_slack_ms: float = 100.0
+    below_min_policy: str = "clamp"
 
 
 class ThresholdsCfg(_Strict):

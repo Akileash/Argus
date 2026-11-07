@@ -21,16 +21,16 @@ def test_default_config_loads_with_every_module():
 def test_spec_numbers():
     t = load_config().thresholds
     s = t.struck_by
-    assert (s.range_max_m, s.v_obj_min_mps, s.ttc_max_s, s.confirm_sweeps) == (2.0, 1.5, 1.3, 2)
-    assert (s.rotation_gate_dps, s.suppress_ratio, s.suppress_v_obj_mps) == (60, 0.6, 2.0)
-    assert (s.track_jump_m, s.handoff_m, s.range_min_valid_m, s.range_max_valid_m) == (0.35, 0.2, 0.03, 2.5)
-    assert (s.leaky_tau_s, s.zupt_ms, s.track_len) == (1.0, 200, 4)
+    assert (s.trigger_range_m, s.v_obj_min_mps, s.ttc_max_s, s.confirm_sweeps) == (2.0, 1.5, 1.3, 2)
+    assert (s.rotation_gate_dps, s.suppress_ego_ratio, s.suppress_v_obj_min_mps) == (60, 0.6, 2.0)
+    assert (s.jump_m, s.handoff_tol_m, s.range_min_m, s.range_max_m) == (0.35, 0.2, 0.03, 2.5)
+    assert (s.ego_tau_s, s.zupt_window_s, s.track_len) == (1.0, 0.2, 4)
     f = t.fall_impact
-    assert (f.impact_g, f.free_fall_g, f.free_fall_min_ms, f.post_fall_impact_g, f.post_fall_window_s) == (
-        6.0, 0.35, 200, 3.0, 1.0)
+    assert (f.impact_g, f.free_fall_g, f.free_fall_min_ms, f.landing_g, f.landing_window_ms) == (
+        6.0, 0.35, 200, 3.0, 1000)
     h = t.hat_state
-    assert (h.off_delta_mm, h.off_hold_s, h.on_band_mm, h.on_hold_s, h.knocked_lookback_s, h.knocked_impulse_g) == (
-        30, 3.0, 15, 2.0, 2.0, 3.0)
+    assert (h.off_delta_mm, h.off_confirm_s, h.on_band_mm, h.on_confirm_s, h.knock_lookback_s) == (
+        30, 3.0, 15, 2.0, 2.0)
     e = load_config().events
     assert (e.pre_roll_s, e.post_roll_s, e.merge_extend_max_s, e.cooldown_s) == (20, 10, 10, 5)
     assert load_config().bus.history_s == 35
