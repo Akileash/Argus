@@ -37,3 +37,18 @@ test("a wrong password keeps the typed email", async ({ page }) => {
   await expect(page.getByText("Invalid email or password.")).toBeVisible();
   await expect(page.getByLabel(/email/i)).toHaveValue("demo@argus.local");
 });
+
+test("redirects stay on the address the visitor opened", async ({ page, baseURL }) => {
+  // On a laptop's IP address, a redirect to localhost loses the session cookie and strands the visitor.
+  const origin = new URL(baseURL!).origin;
+  await page.goto("/devices");
+  await expect(page).toHaveURL(`${origin}/login`);
+  await page.getByLabel(/email/i).fill("demo@argus.local");
+  await page.getByLabel(/password/i).fill("argus-demo-2026");
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await expect(page.getByTestId("kpi-row")).toBeVisible();
+  await page.goto("/devices");
+  await expect(page).toHaveURL(`${origin}/devices`);
+  await page.getByRole("button", { name: /sign out/i }).click();
+  await expect(page).toHaveURL(`${origin}/login`);
+});

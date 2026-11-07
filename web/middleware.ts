@@ -2,6 +2,19 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
+ * Redirect on the address the visitor actually used. nextUrl carries the server's own host (localhost),
+ * which breaks anyone on the laptop's IP address: their session cookie belongs to that address.
+ */
+function redirectTo(request: NextRequest, pathname: string) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  url.search = "";
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (host) url.host = host;
+  return NextResponse.redirect(url);
+}
+
+/**
  * Protects every app route. Unauthenticated visitors go to /login.
  * /api/** is not redirected: device routes use bearer tokens, dashboard-API routes check the session themselves.
  */
@@ -23,16 +36,10 @@ export async function middleware(request: NextRequest) {
 
   if (path.startsWith("/api/")) return response;
   if (!data.user && path !== "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = "";
-    return NextResponse.redirect(url);
+    return redirectTo(request, "/login");
   }
   if (data.user && path === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    url.search = "";
-    return NextResponse.redirect(url);
+    return redirectTo(request, "/");
   }
   return response;
 }
