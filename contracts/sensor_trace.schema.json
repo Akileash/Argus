@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://argus.local/contracts/sensor_trace.schema.json",
+  "title": "ArgusSensorTrace",
+  "description": "Columnar sensor data for one event window, uploaded as <event_id>.trace.json. Consumed by the dashboard's synced chart and by the LLM stage. All times are seconds relative to t0 (negative = before trigger). IMU is downsampled to 100Hz for the trace; impact peaks are kept via the imu_peaks channel. Owned by the PM.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "t_start_s", "t_end_s", "imu", "ranges", "tof", "hat_on", "haptics", "detections"],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "t_start_s": { "type": "number" },
+    "t_end_s": { "type": "number" },
+    "imu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["t", "a_mag_g", "ax", "ay", "az", "gx", "gy", "gz"],
+      "description": "Parallel arrays, equal length. accel g, gyro deg/s, hat frame x fwd / y left / z up.",
+      "properties": {
+        "t": { "$ref": "#/$defs/nums" },
+        "a_mag_g": { "$ref": "#/$defs/nums" },
+        "ax": { "$ref": "#/$defs/nums" }, "ay": { "$ref": "#/$defs/nums" }, "az": { "$ref": "#/$defs/nums" },
+        "gx": { "$ref": "#/$defs/nums" }, "gy": { "$ref": "#/$defs/nums" }, "gz": { "$ref": "#/$defs/nums" }
+      }
+    },
+    "imu_peaks": {
+      "type": "array",
+      "description": "Full-rate (>=400Hz) peaks above 3g, so the 100Hz downsample doesn't hide impacts.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["t", "a_mag_g", "saturated"],
+        "properties": { "t": { "type": "number" }, "a_mag_g": { "type": "number" }, "saturated": { "type": "boolean" } }
+      }
+    },
+    "ranges": {
+      "type": "object",
+      "description": "Keyed by sensor_id (R1..R4, TOP). range_m null = no echo. closing_mps = ego-compensated v_obj, null when no valid track.",
+      "propertyNames": { "enum": ["R1", "R2", "R3", "R4", "TOP"] },
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["t", "range_m", "closing_mps"],
+        "properties": {
+          "t": { "$ref": "#/$defs/nums" },
+          "range_m": { "$ref": "#/$defs/nullable_nums" },
+          "closing_mps": { "$ref": "#/$defs/nullable_nums" }
+        }
+      }
+    },
+    "tof": {
+      "type": "object", "additionalProperties": false, "required": ["t", "range_mm"],
+      "properties": { "t": { "$ref": "#/$defs/nums" }, "range_mm": { "$ref": "#/$defs/nullable_nums" } }
+    },
+    "hat_on": {
+      "type": "array", "description": "State changes (first entry = state at t_start_s).",
+      "items": { "type": "object", "additionalProperties": false, "required": ["t", "on"], "properties": { "t": { "type": "number" }, "on": { "type": "boolean" } } }
+    },
+    "haptics": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["t", "motor", "pattern", "duration_s"],
+        "properties": {
+          "t": { "type": "number" },
+          "motor": { "enum": ["top", "back", "both"] },
+          "pattern": { "type": "string", "description": "e.g. pulse_4hz, continuous, ack_1500ms" },
+          "duration_s": { "type": "number" }
+        }
+      }
+    },
+    "detections": {
+      "type": "array", "description": "Every trigger and confirmed detection with its intermediate values (for tuning and the chart markers).",
+      "items": {
+        "type": "object", "additionalProperties": true, "required": ["t", "type"],
+        "properties": { "t": { "type": "number" }, "type": { "type": "string" } }
+      }
+    },
+    "env": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "properties": { "co2_ppm": { "type": ["number", "null"] }, "temp_c": { "type": ["number", "null"] }, "rh_pct": { "type": ["number", "null"] } }
+    }
+  },
+  "$defs": {
+    "nums": { "type": "array", "items": { "type": "number" } },
+    "nullable_nums": { "type": "array", "items": { "type": ["number", "null"] } }
+  }
+}

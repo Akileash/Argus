@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://argus.local/contracts/report.schema.json",
+  "title": "ArgusIncidentReport",
+  "description": "Canada-generic incident / near-miss investigation report (spec §6.3). Produced by the report worker (fixture | gemini | hybrid) into reports.llm_draft_json (immutable) and copied to reports.report_json (manager-editable). Fields the LLM must NOT fill: header.location_on_site (always the constant), sign_off. The worker may derive an LLM-safe subset (e.g. strip unsupported keywords for structured outputs) but must validate the final object against THIS schema. Owned by the PM.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "header", "summary", "sequence_of_events", "evidence", "hazard", "risk", "causes", "corrective_actions", "regulatory_note", "confidence_and_gaps", "classification_review", "sign_off", "footer"],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "header": {
+      "type": "object", "additionalProperties": false,
+      "required": ["report_no", "classification", "occurred_at", "site", "location_on_site", "worker", "crew", "supervisor", "device"],
+      "properties": {
+        "report_no": { "type": "string", "description": "Assigned by the backend, e.g. ARG-2026-0042." },
+        "classification": { "enum": ["near_miss", "incident", "ppe_log"], "description": "Device class from the event (spec §3.4). Copied, never chosen by the LLM." },
+        "occurred_at": { "type": "string", "format": "date-time" },
+        "site": { "type": "string" },
+        "location_on_site": { "const": "Location to be determined", "description": "No GPS. Always this constant; manager may overwrite in report_json at sign-off." },
+        "worker": { "type": "string" },
+        "crew": { "type": "string" },
+        "supervisor": { "type": "string" },
+        "device": { "type": "string" }
+      }
+    },
+    "summary": { "type": "string", "description": "2–3 plain-language sentences." },
+    "sequence_of_events": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["offset_s", "description", "source"],
+        "properties": {
+          "offset_s": { "type": "number", "description": "Seconds relative to t0." },
+          "description": { "type": "string" },
+          "source": { "enum": ["sensor", "video", "inferred"] }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false, "required": ["clip_refs", "key_sensor_values", "environment"],
+      "properties": {
+        "clip_refs": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": false, "required": ["offset_s", "observation"], "properties": { "offset_s": { "type": "number" }, "observation": { "type": "string" } } }
+        },
+        "key_sensor_values": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": false, "required": ["name", "value"], "properties": { "name": { "type": "string" }, "value": { "type": "string" } } }
+        },
+        "environment": { "type": "string", "description": "SCD41 context; note readings are biased by the wearer (spec §2.6)." }
+      }
+    },
+    "hazard": {
+      "type": "object", "additionalProperties": false, "required": ["category", "energy_source"],
+      "properties": {
+        "category": { "enum": ["struck_by", "caught_between", "fall_from_height", "slip_trip_fall", "falling_object", "ppe", "other"] },
+        "energy_source": { "type": "string" }
+      }
+    },
+    "risk": {
+      "type": "object", "additionalProperties": false, "required": ["severity", "likelihood", "score", "severity_justification", "likelihood_justification"],
+      "properties": {
+        "severity": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "likelihood": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "score": { "type": "integer", "minimum": 1, "maximum": 25, "description": "severity × likelihood; the worker recomputes and overwrites." },
+        "severity_justification": { "type": "string" },
+        "likelihood_justification": { "type": "string" }
+      }
+    },
+    "causes": {
+      "type": "object", "additionalProperties": false, "required": ["immediate", "root_five_whys"],
+      "properties": {
+        "immediate": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": false, "required": ["kind", "description"], "properties": { "kind": { "enum": ["substandard_act", "substandard_condition"] }, "description": { "type": "string" } } }
+        },
+        "root_five_whys": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "corrective_actions": {
+      "type": "array",
+      "description": "Text list only; not tracked (no due dates/status).",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["description", "control_level", "suggested_owner_role"],
+        "properties": {
+          "description": { "type": "string" },
+          "control_level": { "enum": ["elimination", "substitution", "engineering", "administrative", "ppe"] },
+          "suggested_owner_role": { "type": "string" }
+        }
+      }
+    },
+    "regulatory_note": { "type": "string", "description": "May-meet-threshold flag + 'verify with your provincial OHS regulator'. Never asserts compliance." },
+    "confidence_and_gaps": { "type": "string" },
+    "classification_review": {
+      "type": "object", "additionalProperties": false, "required": ["suggested_class", "reason"],
+      "description": "Advisory only (spec §3.4). suggested_class null = agrees with device class.",
+      "properties": {
+        "suggested_class": { "enum": ["near_miss", "incident", null] },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "sign_off": {
+      "type": "object", "additionalProperties": false, "required": ["signed_by", "signed_at", "final_class", "reclass_decision"],
+      "description": "Filled by the dashboard only. The LLM/worker always emits all-null.",
+      "properties": {
+        "signed_by": { "type": ["string", "null"] },
+        "signed_at": { "type": ["string", "null"], "format": "date-time" },
+        "final_class": { "enum": ["near_miss", "incident", "ppe_log", null] },
+        "reclass_decision": { "enum": ["accepted", "rejected", "not_applicable", null] }
+      }
+    },
+    "footer": { "const": "AI-generated draft for review by a competent person. Does not replace provincial OHS reporting or your employer's incident-reporting procedure." }
+  }
+}

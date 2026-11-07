@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://argus.local/contracts/event.schema.json",
+  "title": "ArgusEvent",
+  "description": "Payload the hat POSTs to /api/events after an event is cut. Device -> backend. Owned by the PM; change only via the PM. Spec refs: argus-mvp-spec.md §3.4, §4, §6.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "device_serial", "type", "device_class", "t0", "detected_at", "window", "metrics", "media", "firmware"],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "event_id": { "type": "string", "format": "uuid", "description": "Generated on the device. Idempotency key: re-POSTing the same id must not create a duplicate." },
+    "device_serial": { "type": "string", "minLength": 1 },
+    "type": { "$ref": "#/$defs/event_type" },
+    "device_class": { "$ref": "#/$defs/event_class", "description": "Deterministic class set on the device (spec §3.4). The LLM never changes it." },
+    "t0": { "type": "string", "format": "date-time", "description": "UTC trigger time (device monotonic clock mapped to UTC by the uploader)." },
+    "detected_at": { "type": "string", "format": "date-time" },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pre_s", "post_s"],
+      "properties": {
+        "pre_s": { "type": "number", "minimum": 0, "description": "Seconds of clip before t0 (spec: 20)." },
+        "post_s": { "type": "number", "minimum": 0, "description": "Seconds after t0 (spec: 10, extended by merges up to +10)." }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hat_on"],
+      "properties": {
+        "peak_g": { "type": ["number", "null"], "minimum": 0 },
+        "peak_g_saturated": { "type": "boolean", "default": false, "description": "True when |a| clipped at the ±16g range." },
+        "closing_rate_mps": { "type": ["number", "null"], "description": "Ego-compensated object closing rate v_obj (spec §4.1)." },
+        "ttc_s": { "type": ["number", "null"], "minimum": 0 },
+        "range_m": { "type": ["number", "null"], "minimum": 0 },
+        "sensor_id": { "type": ["string", "null"], "enum": ["R1", "R2", "R3", "R4", "TOP", null] },
+        "free_fall_ms": { "type": ["number", "null"], "minimum": 0 },
+        "drop_height_m": { "type": ["number", "null"], "minimum": 0, "description": "h = ½ g t² from free_fall_ms." },
+        "hat_on": { "type": "boolean" }
+      }
+    },
+    "env": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "co2_ppm": { "type": ["number", "null"] },
+        "temp_c": { "type": ["number", "null"] },
+        "rh_pct": { "type": ["number", "null"] }
+      }
+    },
+    "merged_triggers": {
+      "type": "array",
+      "description": "Additional triggers merged into this event during its post-roll (spec §4.4).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "offset_s"],
+        "properties": {
+          "type": { "$ref": "#/$defs/event_type" },
+          "offset_s": { "type": "number", "description": "Seconds relative to t0." }
+        }
+      }
+    },
+    "media": {
+      "type": "array",
+      "description": "Files the device will upload via signed URLs. Empty for hat_removed (log only).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "filename", "content_type", "bytes", "sha256"],
+        "properties": {
+          "kind": { "enum": ["clip", "sensor_trace"] },
+          "camera": { "enum": ["front", null] },
+          "filename": { "type": "string" },
+          "content_type": { "enum": ["video/mp4", "application/json"] },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "duration_s": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "firmware": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "impls"],
+      "properties": {
+        "version": { "type": "string" },
+        "impls": {
+          "type": "object",
+          "description": "Active impl per module at t0, e.g. {\"imu\":\"argus\",\"range\":\"team\"}.",
+          "additionalProperties": { "enum": ["argus", "team", "mock", "replay"] }
+        },
+        "fallbacks_active": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "event_type": {
+      "enum": ["struck_by_near_miss", "struck_by_contact", "head_impact", "fall", "hat_knocked_off", "hat_removed", "module_fallback"]
+    },
+    "event_class": {
+      "enum": ["near_miss", "incident", "ppe_log", "system"],
+      "description": "struck_by_near_miss -> near_miss; struck_by_contact|head_impact|fall|hat_knocked_off -> incident; hat_removed -> ppe_log; module_fallback -> system."
+    }
+  }
+}
