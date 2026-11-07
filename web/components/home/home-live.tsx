@@ -45,7 +45,7 @@ function FilterChip({ active, onClick, children, count }: { active: boolean; onC
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm font-medium transition-colors",
+        "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm font-medium transition-[background-color,color,border-color] duration-150 ease-out motion-safe:active:scale-[0.96]",
         active ? "border-ink bg-ink text-surface" : "border-line-strong bg-surface text-ink hover:bg-surface-2",
       )}
     >

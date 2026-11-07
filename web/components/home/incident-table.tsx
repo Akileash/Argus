@@ -35,12 +35,12 @@ export function IncidentTable({ rows, freshIds }: { rows: IncidentRow[]; freshId
   const router = useRouter();
   const open = (id: string) => router.push(`/incidents/${id}`);
   return (
-    <div className="overflow-x-auto rounded-md border border-line-strong bg-surface">
+    <div className="overflow-x-auto rounded-md border border-line-strong bg-surface shadow-card">
       <table className="w-full min-w-[56rem] border-collapse text-sm" data-testid="incident-table">
         <thead>
           <tr className="bg-surface-2 text-left">
             {["No.", "Time", "Type", "Class", "Risk", "Worker", "Crew", "Device", "Status"].map((h) => (
-              <th key={h} scope="col" className="field-label whitespace-nowrap border-b border-line-strong px-3 py-2 font-semibold">
+              <th key={h} scope="col" className="field-label whitespace-nowrap border-b border-line-strong px-3 py-2.5 font-semibold">
                 {h}
               </th>
             ))}
@@ -56,7 +56,7 @@ export function IncidentTable({ rows, freshIds }: { rows: IncidentRow[]; freshId
               initial={freshIds.has(r.id) ? { opacity: 0, y: -10, backgroundColor: "#ffe9d9" } : false}
               animate={freshIds.has(r.id) ? { opacity: 1, y: 0, backgroundColor: "#ffe9d900" } : undefined}
               transition={{ duration: 0.25, ease: "easeOut", backgroundColor: { duration: 2.4, ease: "easeOut" } }}
-                            ref={(el: HTMLTableRowElement | null) => {
+              ref={(el: HTMLTableRowElement | null) => {
                 if (el && freshIds.has(r.id)) setTimeout(() => el.style.removeProperty("background-color"), 2800);
               }}
               tabIndex={0}
@@ -70,7 +70,7 @@ export function IncidentTable({ rows, freshIds }: { rows: IncidentRow[]; freshId
                 }
               }}
               className={cn(
-                "h-9 cursor-pointer border-b border-line align-middle hover:bg-surface-2 focus-visible:bg-surface-2",
+                "h-9 cursor-pointer border-b border-line align-middle transition-colors duration-100 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-offset-[-2px]",
                 r.quiet && "text-muted",
               )}
             >

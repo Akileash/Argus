@@ -67,6 +67,13 @@
   --risk-5-fg: #ffffff;
 
   --radius: 0.375rem;
+
+  /* elevation: layered, low-alpha ink shadows (borders stay for structure) */
+  --shadow-card: 0 1px 2px rgb(27 27 24 / 0.06), 0 2px 8px rgb(27 27 24 / 0.04);
+  --shadow-pop: 0 2px 4px rgb(27 27 24 / 0.08), 0 8px 24px rgb(27 27 24 / 0.14);
+
+  /* motion: one strong ease-out, short durations (see DESIGN.md Motion) */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
@@ -122,6 +129,10 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+  --ease-out-strong: var(--ease-out-strong);
+
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
@@ -139,6 +150,22 @@
     color: var(--ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* projector: scale the whole rem-based UI up on big screens */
+  @media (min-width: 1800px) {
+    html {
+      font-size: 17px;
+    }
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline-offset: 0;
+    border-color: var(--ring);
   }
   :focus-visible {
     outline: 2px solid var(--ring);
@@ -163,7 +190,36 @@
   }
 }
 
+/*
+ * Motion (DESIGN.md): enter/reveal only where it explains a change. 150-300ms, ease-out, transitions
+ * where retargetable. Under reduced motion movement is dropped and only an opacity fade remains.
+ */
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes banner-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@layer utilities {
+  .anim-reveal { animation: fade-in 200ms var(--ease-out-strong) both; }
+  .anim-banner { animation: fade-in 200ms var(--ease-out-strong) both; }
+  @media (prefers-reduced-motion: no-preference) {
+    .anim-reveal { animation: reveal-in 280ms var(--ease-out-strong) both; }
+    .anim-banner { animation: banner-in 220ms var(--ease-out-strong) both; }
+  }
+}
+
 @media print {
+  * {
+    box-shadow: none !important;
+    animation: none !important;
+  }
   html {
     font-size: 12px;
   }

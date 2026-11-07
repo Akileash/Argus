@@ -137,7 +137,7 @@ export function IncidentView({ data, role, fullName }: { data: IncidentData; rol
   return (
     <div className="space-y-4" data-testid="incident-detail">
       {/* header bar */}
-      <header className="rounded-md border border-line bg-surface px-4 py-3" data-testid="incident-header">
+      <header className="rounded-md border border-line bg-surface shadow-card px-4 py-3" data-testid="incident-header">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <h1 className="text-xl font-bold tracking-tight">
             <span className="num" data-testid="report-no">{row?.report_no ?? "No report yet"}</span>
@@ -202,9 +202,9 @@ export function IncidentView({ data, role, fullName }: { data: IncidentData; rol
           {processing || failed ? (
             <ProcessingStepper status={live.status} videoAnalyzed={videoAnalyzed} error={live.error} />
           ) : showReport && report && draft ? (
-            <>
+            <div className="anim-reveal" data-testid="report-reveal">
               {signed && (
-                <div className="mb-3 rounded-md border border-status-signed-fg/30 bg-status-signed-bg px-3 py-2 text-sm text-status-signed-fg" data-testid="signed-banner">
+                <div className="anim-banner mb-3 rounded-md border border-status-signed-fg/30 bg-status-signed-bg px-3 py-2 text-sm text-status-signed-fg" data-testid="signed-banner">
                   Signed by <strong>{row!.signed_off_by}</strong> on <Time iso={row!.signed_off_at} />. This report is locked.
                 </div>
               )}
@@ -218,7 +218,7 @@ export function IncidentView({ data, role, fullName }: { data: IncidentData; rol
                 }}
                 displayClass={displayClass}
               />
-            </>
+            </div>
           ) : (
             <div className="rounded-md border border-dashed border-line-strong bg-surface p-6 text-sm text-muted" data-testid="no-report">
               {event.device_class === "ppe_log"
@@ -283,7 +283,7 @@ function ReclassBanner({
 }) {
   const label = suggested.replace("_", " ");
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-md border border-accent bg-accent-soft px-4 py-2.5 text-sm" role="status" data-testid="reclass-banner">
+    <div className="anim-banner flex flex-wrap items-center gap-3 rounded-md border border-accent bg-accent-soft px-4 py-2.5 text-sm" role="status" data-testid="reclass-banner">
       <Sparkles className="h-4 w-4 shrink-0 text-accent-text" aria-hidden />
       <div className="min-w-0 flex-1">
         <span className="font-bold">AI suggests: <span className="capitalize">{label}</span></span>

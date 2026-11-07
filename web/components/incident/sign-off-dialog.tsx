@@ -69,7 +69,7 @@ export function SignOffDialog({
       onClose={onClose}
       onCancel={onClose}
       aria-labelledby="signoff-title"
-      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-md border border-line-strong bg-surface p-0 text-ink shadow-lg backdrop:bg-ink/40"
+      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-md border border-line-strong bg-surface p-0 text-ink shadow-pop backdrop:bg-ink/40 [overscroll-behavior:contain]"
       data-testid="signoff-dialog"
     >
       <div className="space-y-4 p-5">

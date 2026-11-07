@@ -28,7 +28,7 @@ const HINTS = ["Hat is uploading the clip and sensor trace", "Gemini is watching
 export function ProcessingStepper({ status, videoAnalyzed, error }: { status: string; videoAnalyzed: boolean; error: string | null }) {
   const states = stepStates(status, videoAnalyzed);
   return (
-    <section className="rounded-md border border-line bg-surface p-4" aria-live="polite" data-testid="processing-stepper" data-status={status}>
+    <section className="rounded-md border border-line bg-surface shadow-card p-4" aria-live="polite" data-testid="processing-stepper" data-status={status}>
       <h2 className="text-sm font-bold">{status === "failed" ? "Processing failed" : "Generating the report"}</h2>
       <p className="mb-4 text-xs text-muted">
         {status === "failed" ? "The event was received but the report could not be produced." : "This page updates on its own. The report appears here when it is ready."}
@@ -38,18 +38,18 @@ export function ProcessingStepper({ status, videoAnalyzed, error }: { status: st
           <li key={i} className="flex items-start gap-3" data-step-state={s}>
             <span
               className={cn(
-                "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold",
+                "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition-[background-color,color,border-color] duration-200 ease-out",
                 s === "done" && "border-transparent bg-status-signed-bg text-status-signed-fg",
                 s === "active" && "border-transparent bg-status-progress-bg text-status-progress-fg",
                 s === "failed" && "border-transparent bg-status-failed-bg text-status-failed-fg",
                 s === "pending" && "border-line-strong text-muted",
               )}
             >
-              {s === "done" ? <Check className="h-4 w-4" /> : s === "active" ? <Loader2 className="h-4 w-4 animate-spin" /> : s === "failed" ? <TriangleAlert className="h-4 w-4" /> : i + 1}
+              {s === "done" ? <Check className="anim-banner h-4 w-4" /> : s === "active" ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : s === "failed" ? <TriangleAlert className="h-4 w-4" /> : i + 1}
             </span>
             <div>
               <div className={cn("text-sm font-semibold", s === "pending" && "text-muted")}>{LABELS[i]}</div>
-              {s === "active" && <div className="text-xs text-muted">{HINTS[i]}</div>}
+              {s === "active" && <div className="anim-banner text-xs text-muted">{HINTS[i]}</div>}
             </div>
           </li>
         ))}
