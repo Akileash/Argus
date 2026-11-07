@@ -1,0 +1,16 @@
+name: walk_backward_wall
+description: >
+  Wearer walks backward at 1.2 m/s (+-0.3 m/s stride bounce, so raw closing peaks near 1.6 m/s on R1/R4) toward a wall 2.9 m behind, stopping 0.56 m from it. The rear
+  ranges shrink exactly as the IMU says the wearer moves, so an ego-motion-compensating detector
+  must NOT trigger struck_by (spec §4.1).
+duration_s: 8
+seed: 3
+wearer:
+  hat_height_m: 1.7
+  vx: [[0, 0], [1.0, 0], [1.6, -1.2], [3.0, -1.2], [3.5, 0]]
+  gait: { start_s: 1.0, end_s: 3.5, freq_hz: 1.9, vx_amp_mps: 0.3, vz_amp_mps: 0.06, pitch_amp_deg: 1.2, gyro_sway_dps: 4 }
+world:
+  planes: [ { axis: x, at: -2.9 }, { axis: z, at: 3.2 } ]
+tof: { keyframes: [[0, 62.0]] }
+expected: []
+allowed_extra: [hat_on]
