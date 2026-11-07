@@ -92,12 +92,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               <motion.div
                 key={t.key}
                 layout="position"
-                initial={{ opacity: 0, x: 24 }}
+                initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 24 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
+                exit={{ opacity: 0, x: 16, transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } }}
+                transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                 className={cn(
-                  "pointer-events-auto flex items-start gap-2.5 rounded-md border bg-surface p-3 shadow-[0_4px_16px_rgba(0,0,0,0.12)]",
+                  "pointer-events-auto flex items-start gap-2.5 rounded-md border bg-surface p-3 shadow-pop",
                   t.tone === "progress" && "border-line-strong border-l-4 border-l-accent",
                   t.tone === "ready" && "border-line-strong border-l-4 border-l-status-signed-fg",
                   t.tone === "failed" && "border-line-strong border-l-4 border-l-status-failed-fg",
@@ -120,7 +120,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   onClick={() => dismiss(t.key)}
-                  className="shrink-0 rounded-sm p-0.5 text-muted hover:bg-surface-2 hover:text-ink"
+                  className="-m-1 shrink-0 rounded-sm p-1.5 text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
                   aria-label="Dismiss notification"
                 >
                   <X className="h-4 w-4" />

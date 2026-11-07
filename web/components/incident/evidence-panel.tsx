@@ -80,7 +80,7 @@ export function EvidencePanel({
 
   return (
     <div className="space-y-4">
-      <section aria-label="Video" className="rounded-md border border-line bg-surface">
+      <section aria-label="Video" className="rounded-md border border-line bg-surface shadow-card">
         <div className="relative aspect-video w-full overflow-hidden rounded-t-md bg-ink">
           {hasVideo ? (
             <video
@@ -122,7 +122,7 @@ export function EvidencePanel({
         )}
       </section>
 
-      <section aria-label="Sensor trace" className="rounded-md border border-line bg-surface p-3">
+      <section aria-label="Sensor trace" className="rounded-md border border-line bg-surface shadow-card p-3">
         <div className="mb-2 flex items-baseline justify-between">
           <h2 className="field-label">Sensor trace</h2>
           <span className="text-xs text-muted">Click or drag the chart to seek the video</span>
@@ -343,7 +343,7 @@ function EnvStrip({ event, trace }: { event: IncidentEvent; trace: SensorTrace |
   const temp = event.temp_c ?? trace?.env?.temp_c ?? null;
   const rh = event.rh_pct ?? trace?.env?.rh_pct ?? null;
   return (
-    <section aria-label="Environment" className="rounded-md border border-line bg-surface px-3 py-2" data-testid="env-strip">
+    <section aria-label="Environment" className="rounded-md border border-line bg-surface shadow-card px-3 py-2" data-testid="env-strip">
       <div className="flex flex-wrap items-end gap-x-8 gap-y-1">
         <h2 className="field-label self-center">Environment</h2>
         <Kv label="CO₂" value={co2 == null ? "—" : `${Math.round(co2)} ppm`} />

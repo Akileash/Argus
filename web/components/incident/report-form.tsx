@@ -103,7 +103,7 @@ function Marked({ path, label, children, compact }: { path: string; label?: stri
 
 function Section({ n, title, children, edited }: { n: number; title: string; children: React.ReactNode; edited?: boolean }) {
   return (
-    <section className="rounded-md border border-line bg-surface" aria-labelledby={`sec-${n}`}>
+    <section className="rounded-md border border-line bg-surface shadow-card" aria-labelledby={`sec-${n}`}>
       <h2 id={`sec-${n}`} className="flex items-center gap-2 border-b border-line bg-surface-2 px-3 py-1.5 text-sm font-bold">
         <span className="num text-muted">{n}</span>
         {title}
@@ -388,7 +388,7 @@ export function SignOffBlock({ report }: { report: ReportJson }) {
   const s = report.sign_off;
   const signed = !!s.signed_at;
   return (
-    <section className="rounded-md border border-line bg-surface" aria-labelledby="sec-11">
+    <section className="rounded-md border border-line bg-surface shadow-card" aria-labelledby="sec-11">
       <h2 id="sec-11" className="flex items-center gap-2 border-b border-line bg-surface-2 px-3 py-1.5 text-sm font-bold">
         <span className="num text-muted">11</span> Sign-off
       </h2>
