@@ -1,6 +1,6 @@
 # Argus — MVP Spec
 
-> Status: draft from interview, 2026-11-06. Updated with the modular hardware-integration plan (§5). **Spec only, no code yet.**
+> Status: updated 2026-11-07. **MVP sensor decision: 2 rear ultrasonic sensors, no top sensor (§3.2a).** Where older sections disagree with §3.2a, §3.2a wins.
 > Goal: startup MVP plus a live pitch demo. Polished frontend and backend, a working hardware prototype.
 
 ## 1. Product
@@ -9,7 +9,7 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 
 - Keeps a **rolling video buffer** on the hat.
 - Detects **line-of-fire / struck-by**, **falls / head impacts**, and **hat knocked off / removed**.
-- Gives the wearer an **immediate haptic warning** (directional: top or back of head).
+- Gives the wearer an **immediate haptic warning**: back motor for a struck-by threat from behind, both motors for a fall or impact.
 - On every incident or near miss, saves a **clip (20s before / 10s after)** and pushes the **sensor trace** to the backend.
 - An LLM pipeline turns each event into a **Canadian-style incident / near-miss investigation report**, which a **site safety manager** reviews in a dashboard.
 
@@ -17,8 +17,8 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 
 | Hazard | Response | Sensors |
 |---|---|---|
-| Line of fire / struck-by (incl. overhead falling objects) | Real-time directional haptic + logged event + clip + report | 5× HC-SR04 (4 rear covering ±30°, 1 top) + IMU ego-motion compensation |
-| Fall / head impact | Haptic (both motors, long) + logged event + clip + report + dashboard alert | MPU-6050 IMU |
+| Line of fire / struck-by from behind | Real-time haptic (back motor) + logged event + clip + report | 2× HC-SR04 (rear, solid coverage ±15°) + IMU ego-motion compensation |
+| Fall / head impact, incl. overhead hits | Haptic (both motors, long) + logged event + clip + report + dashboard alert. No advance warning for falling objects (§3.2a) | MPU-6050 IMU |
 | Hat knocked off | Logged event (higher severity) + clip | ToF (hat-off) preceded by an IMU spike |
 | Hat removed | Logged PPE-compliance event | ToF (hat-off) with no IMU spike |
 | Environment (context only) | Attached to every event report, no alerts | SCD41 (CO₂ / temp / RH) |
@@ -28,6 +28,7 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 - Store-and-forward and offline sync. The demo uses venue Wi-Fi.
 - Full-shift battery life. A 2–3h demo runtime is accepted.
 - Live alert feed, trend charts and crew-status screens. **Only the Incident Detail + Report screen is required**, plus a minimal incident list to navigate to it.
+- **Advance warning for falling objects and threats from outside about ±15° behind the head.** See §3.2a. The pitch states this limit and shows wider coverage as a roadmap step.
 - Regulatory compliance filing. Reports are an **OHS-style structure, not a compliance document**.
 - **GPS / positioning.** There is no GPS module. The site comes from the device's assignment (worker → crew → site). The exact spot on site is never inferred, from video or anything else: reports always show "Location to be determined", and the manager can fill it in at sign-off.
 
@@ -42,12 +43,12 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 | Raspberry Pi 4 (1GB) | Main controller | All sensing, buffering and upload |
 | Pi Cam V2.1 (CSI) | **Primary camera**, front-facing | IMX219, hardware H.264. **62.2° H × 48.8° V FOV** (narrow for a dash cam; see §2.6) |
 | USB webcam ×1 (of 2 available) | **Rear camera (stretch, phase 2)** | MJPEG, low res |
-| HC-SR04 ×5 (of 7) | Struck-by ranging | 4 rear (−22.5°, −7.5°, +7.5°, +22.5°) + top. 15° beam each, see §3.2 |
+| HC-SR04 ×2 (of 7) | Struck-by ranging | 2 rear: R2 (7.5° left of straight back) and R3 (7.5° right). 15° beam each, see §3.2a |
 | MPU-6050 (GY-521-style breakout) | Fall/impact, ego-motion, hat-off spike | 6-axis, ±16g / ±2000°/s, I2C 0x68. See §2.6 |
 | Adafruit VL53L0X ToF (#3316) | Hat-on detection | Inside crown, facing down. Adafruit guide: **~50–1200mm** usable range |
 | SCD41 | CO₂ / temp / RH context | Periodic mode, 5s. **175mA peak** current draw. Readings are biased by the wearer's breath and head heat (§2.6) |
 | L293DNE | Motor driver | Dual H-bridge, 600mA/ch, internal clamp diodes |
-| 2× Adafruit 1201 vibration discs | Haptics | Top-of-head + back-of-head |
+| 2× Adafruit 1201 vibration discs | Haptics | Back of head: struck-by warnings. Both motors: fall/impact buzz. |
 | Anker Nano 5,000mAh (A1653) | Power | 5V⎓3A max at 5V (the 22.5W rating is only at 9–10V PD, which the Pi doesn't use). About 18.5Wh. Demo only |
 | Arduino UNO R3 | **Fallback only** (see §2.4) | |
 | ~~Adafruit 9-DOF~~ | Replaced by the MPU-6050. Not used. | |
@@ -71,13 +72,13 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 | I2C bus (IMU, VL53L0X, SCD41) | GPIO2 (SDA), GPIO3 (SCL) |
 | Motor top (EN1, PWM) | GPIO12 (hardware PWM0) |
 | Motor back (EN2, PWM) | GPIO13 (hardware PWM1) |
-| HC-SR04 R1 (−22.5°) TRIG / ECHO | GPIO5 / GPIO6 |
-| HC-SR04 R2 (−7.5°) TRIG / ECHO | GPIO19 / GPIO26 |
-| HC-SR04 R3 (+7.5°) TRIG / ECHO | GPIO23 / GPIO24 |
-| HC-SR04 R4 (+22.5°) TRIG / ECHO | GPIO16 / GPIO25 |
-| HC-SR04 Top TRIG / ECHO | GPIO20 / GPIO21 |
-| Spare for 6th/7th HC-SR04 (layout E) | GPIO22 / GPIO27, GPIO7 / GPIO8 (SPI must stay disabled) |
+| HC-SR04 R2 (7.5° left) TRIG / ECHO | GPIO19 / GPIO26 |
+| HC-SR04 R3 (7.5° right) TRIG / ECHO | GPIO23 / GPIO24 |
+| Reserved for more sensors later (keeps existing IDs) | R1 GPIO5 / GPIO6, R4 GPIO16 / GPIO25, TOP GPIO20 / GPIO21 |
+| Other spares | GPIO22 / GPIO27, GPIO7 / GPIO8 (SPI must stay disabled) |
 | Status LED (optional) | GPIO17 |
+
+**Pin count:** 10 of 26 usable GPIO pins in use (6 fixed + 2 per sensor).
 
 I2C address check: VL53L0X 0x29, SCD41 0x62, MPU-6050 0x68 (tie AD0 to GND so it can't float to 0x69). No conflicts. Run `i2cdetect -y 1` on day one.
 
@@ -91,8 +92,7 @@ MPU-6050 INT → **GPIO4** (optional hardware motion/impact flag).
 ### 2.5 Physical layout
 - **Pi Cam:** front brim, slight downward tilt (about 10°) so it sees hands and work.
 - **Rear USB webcam (phase 2):** back of the shell, facing rearward.
-- **HC-SR04 R1–R4:** a fan across the back of the shell, aimed at −22.5°, −7.5°, +7.5° and +22.5° from straight back (in the horizontal plane, tilted about 5° up so the beams clear the shoulders). With 15° beams this gives contiguous ±30° rear coverage. Use a 3D-printed bracket to hold the angles: a ±5° aiming error opens gaps.
-- **HC-SR04 top:** crown, facing straight up (overhead falling objects and swinging loads).
+- **HC-SR04 R2 and R3:** side by side in one printed shallow V-shaped bracket on the back of the shell, boards flat, aimed 7.5° left and right of straight back (15° between them), tilted about 5° up so the beams clear the shoulders. Nothing goes on the crown. Do not drill the shell; use clips or a strap and check the hat maker's manual, including on adhesives.
 - **VL53L0X:** inside the crown, facing down toward the head. **Mount it so the on-head distance is at least 50–80mm.** Adafruit's guide gives about 50mm as the near limit, although the product title says "~30mm". Design to the conservative figure. Crown clearance in a hard hat is only about 25–35mm, so **recess the sensor into a printed pocket in the shell** or aim it at an angle across the crown to lengthen the path. It must not be obstructed by the suspension straps.
 - **Motors:** the top motor against the crown pad, the back motor against the nape strap. Both need skin or pad contact.
 - **Pi + battery:** rear brim or a back-mounted enclosure, used as counterweight to the front camera.
@@ -101,7 +101,7 @@ MPU-6050 INT → **GPIO4** (optional hardware motion/impact flag).
 
 | Part | Spec that matters | Source value | Impact on design |
 |---|---|---|---|
-| **HC-SR04** | Beam angle, range, current | <15° total, 2cm–4m, 15mA, ≥60ms between pings | Drove the 5-sensor layout (§3.2). 5 × 15mA = 75mA on 5V |
+| **HC-SR04** | Beam angle, range, current | <15° total, 2cm–4m, 15mA, ≥60ms between pings | 2 × 15mA = 30mA on 5V. Layout decision is in §3.2a |
 | **Adafruit 1201 motor** | V / I | 2–5V; 40mA @ 2V, 60mA @ 3V, 80mA @ 4V, 100mA @ 5V; 11,000 RPM @ 5V | L293D drive is correct. Arduino fallback **without** a driver needs a 100–1000Ω series resistor per Adafruit, which gives weak vibration |
 | **L293D(NE)** | Logic threshold, output drop, diodes | VIH min 2.3V; VOH = VCC2 − 1.4V typ; internal clamp diodes; VCC2 ≥ VCC1 (4.5V min) | Pi 3.3V logic is fine. Motors get about 3.2–3.6V |
 | **VL53L0X** | Range | ~50–1200mm (Adafruit guide); ~30mm (product title) | **On-head distance must be ≥ 50mm**, which needs a recessed or angled mount (§2.5) |
@@ -153,10 +153,10 @@ This is acceptable because the SCD41 is context only.
 | Pi 4 (load, encoding) | ~1.0–1.3A |
 | USB webcam (phase 2) | ~0.25A |
 | 2 motors | ~0.16A |
-| 5 HC-SR04 | ~0.08A |
+| 2 HC-SR04 | ~0.03A |
 | L293D logic | ~0.06A |
 | SCD41 peak | ~0.18A |
-| **Total** | **~1.7–2.0A** |
+| **Total** | **~1.65–1.95A** |
 
 That is within the 3A supply. Runtime is about 18.5Wh × ~85% ÷ ~5–6W ≈ **2.5–3h**, which is enough for the demo.
 
@@ -173,7 +173,7 @@ Concerns raised: webcam latency, decode load, and whether the Pi 4 (1GB) can han
 Key facts:
 - The Pi 4 has **one hardware H.264 encoder** (up to about 1080p30). The Pi Cam via `picamera2` encodes in hardware, with almost no CPU and a small RAM ring buffer (720p30 at about 3 Mbps ≈ 11MB per 30s).
 - USB webcams usually deliver **MJPEG**. **We never need to decode it on the Pi**: store raw JPEG frames in a ring buffer and package them as `.avi` (`ffmpeg -c copy`) on event. Transcode to MP4 on the backend. 640×480 @ 15fps MJPEG is about 15–20MB per 30s of RAM.
-- The struck-by sensors face **rear and top**, so a front-only camera **will not see the threat** in a struck-by-from-behind clip. That gap is the main reason to add a rear camera.
+- The struck-by sensors face **rear**, so a front-only camera **will not see the threat** in a struck-by-from-behind clip. That gap is the main reason to add a rear camera.
 - LLM cost of a second clip is about +$0.03 per event (see §3.3), which is negligible.
 
 | Criterion (weight) | A: Pi Cam front only | B: 1 USB webcam only | C: Pi Cam front + USB rear (low-res) | D: Pi Cam + 2 USB (3 cams) |
@@ -194,6 +194,8 @@ Key facts:
 
 ### 3.2 Ultrasonic layout
 
+> **Superseded for the MVP by §3.2a (2 rear sensors).** The datasheet facts and footprint below still apply. The matrix below is the earlier full-coverage analysis, kept as the product roadmap.
+>
 > **Revised.** v1 of this section assumed about 30° beams and recommended 2 rear-quarter sensors at ±35°. The datasheet gives **15° total** ("effectual angle <15°"), so that layout left a **55° blind wedge directly behind the head**. v1 also miscounted the timing limit: it is about 8 sensors, not 4. Corrected below.
 
 **Datasheet facts (HC-SR04):**
@@ -260,21 +262,57 @@ Coverage weight went up from 30 to 40, because coverage is the core function and
 4. Also record the **max reliable range** per target. If the pipe or hoodie fails beyond about 1.5m, cut the trigger range to 1.5m and lower the TTC threshold to about 1.0s (see §4.1).
 5. Run a crosstalk check: fire all 5 sensors in the interleaved order with no targets in front, and confirm there are no phantom readings under 2.5m.
 
-### 3.2a Sensor count review (2026-11-07): PROPOSED, awaiting team sign-off
+### 3.2a MVP decision: 2 rear sensors, no top sensor ✅ decided 2026-11-07
 
-**Recommendation: layout B, 4 rear sensors and no top sensor, with `min_track_samples: 3`.** The current config stays at 5 sensors until the team agrees. Full matrix and evidence: the "Argus Sensor Layout" page. Reproduce the numbers with `scripts/sensor_layout_study.py`.
+**Goal: the most reliable pitch demo, not the most complete product.** A full product would use 4 rear sensors. The team chose 2 for the MVP because they are simpler to build and warn sooner inside their zone.
 
-- **Top sensor:** in simulated drops from 1–10 m, the 5-sensor layout gave no warning. A 4-sensor layout with the top sensor gave at most 0.18 s. The IMU still logs overhead hits, so clips and reports are kept.
-- **The 47% back / 23% top statistic is unverified.** No source found. B still wins with those figures used as weights.
-- **Totals out of 500:** B 370, D 360 (fails the gate at a 15° beam), F and G 340 (fail the gate), E 325, A 290, C 240.
-- **Delay:** the limit is the sweep (30 ms × sensors) and readings per sensor, not processing. 5 sensors with 4 readings takes 750 ms; 4 sensors with 3 readings takes 480 ms.
-- **Beam test sets the final count:** about 15° wide gives 4 rear, at least 20° gives 3 (D), at least 30° gives 2 (G). Run it with boards vertical, as mounted.
-- **GPIO:** 5 sensors use 16 of 26 pins, not the 18 stated in §3.2. 4 sensors use 14.
-- **Dividers:** one per echo line, all on one soldered hub board at the Pi. Do not share echo or trigger lines. Solder wires at the sensor, use polarized JST-XH at the hub, and no jumpers on the Pi header.
-- **Power:** sensor count changes the total by about 1%. The risk to test is motor noise on the 5 V rail.
-- **CAD:** one printed curved pod with boards vertical (15° spacing is about 30 mm at a 115 mm shell radius; measure the hat). Nothing on the crown. Do not drill the shell.
+**Setup:**
+- R2 aimed 7.5° left of straight back, R3 aimed 7.5° right, 15° between them.
+- Solid coverage of ±15° behind the head for a thin object. A 30cm load can be caught further out, but not at every angle.
+- 60ms sweep (30ms slot × 2), starting with `min_track_samples: 3`. Detection takes about 240ms.
+- Do not spread them to 30° apart at the datasheet beam width. That leaves a blind spot directly behind the head.
 
-If adopted: remove `TOP` from the range `order` and `pins` options, set `min_track_samples: 3`, and keep the top motor for the fall/impact buzz only. The detector already works without TOP, as the study ran it that way.
+**Simulated comparison (real detector code, 3 readings per sensor, datasheet 15° beam; not tested on hardware):**
+
+| | 4 rear (product path) | **2 rear (MVP)** |
+|---|---|---|
+| Time to detect | 480ms | **240ms** |
+| Median warning, thin pipe at 2.5 m/s | 0.52s | **0.67s** |
+| Median warning, 30cm load at 3 m/s | 0.41s | **0.50s** |
+| Median warning, 30cm load at 4 m/s | 0.17s | **0.35s** |
+| Solid coverage, thin object | ±30° | **±15°** |
+| GPIO pins (whole system) | 14 | **10** |
+| Dividers / wires to sensors | 4 / 16 | **2 / 8** |
+
+**Why no top sensor:** in simulated drops from 1–10m, the 5-sensor layout gave no warning, and 3 rear plus top gave at most 0.18s. The IMU still detects overhead hits, so the clip and report still happen. Do not claim the hard hat handles everything from above; heavy objects can still injure. The reason is that the sensor cannot warn in time.
+
+**The 47% back / 23% top statistic is unverified.** No source was found, so do not use it in the pitch until someone finds one. The decision does not depend on it.
+
+**Delay:** the limit is the sweep and the readings needed per sensor, not processing.
+
+**Wiring:**
+- Each echo line gets its own 1kΩ / 2kΩ divider. Both go on one soldered hub board at the Pi, not on the hat. Do not share echo or trigger lines.
+- Solder wires at the sensor with strain relief, use a polarized connector at the hub, and put no loose jumpers on the Pi header. A 5V jumper touching a GPIO pin can kill the Pi.
+- Add a 100µF capacitor on the sensor 5V line at the hub.
+
+**Power:** not a constraint. Worst case is about 1.65–1.95A on the 3A supply. The risk to test is motor noise on the 5V line causing false readings.
+
+**Pitch line:** "This prototype covers the danger zone straight behind you. The production version adds sensors to widen it. The detection approach is the same."
+
+**Limits to accept for the MVP:**
+- Thin objects outside about ±15° can be missed, so the demo swing must come from straight behind.
+- Falling objects get no advance warning.
+- The simulation assumes objects always echo. Thin or soft objects may do worse.
+- Walking backward faster than about 1.5 m/s can still false-alarm. Sensor count does not change this.
+
+**Bench checks before printing the bracket:**
+1. **Beam width:** step the demo object and a 5cm pipe sideways at 0.5, 1, 1.5 and 2m, with the boards flat as mounted. Aim each sensor at ± half the measured beam width. A wider beam widens coverage with no extra sensors, for example ±15° aim if the beam is 30° wide.
+2. **Demo object:** confirm it echoes reliably at 2m. Soft foam may not, so switch to something harder if needed.
+3. **"No echo" pulse:** check with a scope or logic analyzer. The datasheet says about 38ms, but some clones reportedly hold 150–200ms. That would stop a sensor re-firing on a 60ms sweep, so widen `slot_ms` if needed.
+4. **Motor noise:** read both sensors while buzzing the motors.
+5. **Head-down:** looking down tips the beams up by the same angle. Check that a person behind is still seen at a 30° nod.
+
+**To add sensors later:** the reserved pins in §2.3 keep the existing IDs, so it takes config and wiring only. The full comparison is in `argus-sensor-layout.html` (it recommends 4 rear because it optimizes for the product, not the MVP), and `scripts/sensor_layout_study.py` reproduces the numbers.
 
 ### 3.3 LLM pipeline
 
@@ -335,7 +373,7 @@ All sensor samples go into per-sensor ring buffers (about 40s) timestamped with 
 | Stream | Rate |
 |---|---|
 | IMU accel + gyro | 100 Hz |
-| HC-SR04 ×5 | about 6.7 Hz each (150ms interleaved sweep) |
+| HC-SR04 ×2 | about 16.7 Hz each (60ms sweep) |
 | VL53L0X | 10 Hz |
 | SCD41 | 0.2 Hz |
 
@@ -345,7 +383,7 @@ Problem to solve: when the wearer walks backward toward a wall, the range shrink
 
 For each sensor *i* with a fixed unit direction vector **uᵢ** in the hat frame:
 
-1. **Range track.** Keep the last **4** valid ranges (a 450ms span at the 150ms sweep). Reject a sample if:
+1. **Range track.** Keep the last **4** valid ranges (a 180ms span at the 60ms sweep); the trigger can start from 3 (`min_track_samples: 3`). Reject a sample if:
    - the range is out of bounds (under 3cm or over 2.5m), or
    - it jumps more than 0.35m from the previous sample. That means a new target, so **reset the track**.
    - **Beam hand-off:** 15° beams are narrow, so a target moving sideways leaves one beam and enters the adjacent one. If adjacent sensor *j* reports a range within 0.2m of sensor *i*'s predicted range within 1 sweep, **continue the same track** on *j* instead of starting a new one.
@@ -358,19 +396,17 @@ For each sensor *i* with a fixed unit direction vector **uᵢ** in the hat frame
 4. **Ego component along the beam** `v_ego = v_hat · uᵢ`.
 5. **Object closing rate** `v_obj = v_meas − v_ego`.
 6. **Rotation gate.** If |ω| > 60°/s, the beam is sweeping across the scene. Mark the track invalid and reset it.
-7. **Trigger** when **all** of the following hold for **2 consecutive sweeps**. Worst-case detection latency is about 4 samples + 1 confirmation ≈ 0.75s after the target enters the beam. That leaves about 0.5s of warning at 1.5 m/s from 2m, or more for slower approaches. If the beam test shows a shorter effective range, see §3.2 step 4.
+7. **Trigger** when **all** of the following hold for **2 consecutive sweeps**. Detection latency is about 3 samples + 1 confirmation ≈ 0.24s after the target enters the beam (§3.2a). If the beam test shows a shorter effective range, see §3.2 step 4.
    - `range < 2.0 m`
    - `v_obj > 1.5 m/s`
    - time to contact `TTC = range / v_obj < 1.3 s`
    - hat is on
 8. **Extra suppression heuristic:** if `v_ego > 0.6 · v_meas` (most of the closing comes from the wearer's own motion), require `v_obj > 2.0 m/s`.
-9. **Top sensor:** apply the same logic. Vertical ego-motion (standing up under a ceiling) is the main false-positive source, and the vertical axis is the best-observed one in the IMU, which helps.
 
 All thresholds live in `config.yaml` and are tunable. Log every candidate trigger with all intermediate values, so false positives can be tuned offline from recorded data.
 
-**Haptic (directional):**
-- rear sensors R1–R4 → **back motor**;
-- top sensor → **top motor**;
+**Haptic:**
+- rear sensors → **back motor**;
 - pulse rate scales with TTC (TTC 1.3s → 4Hz, TTC under 0.5s → continuous).
 - Target latency from trigger to motor is under 50ms.
 
@@ -446,7 +482,7 @@ Every L0 implementation must satisfy one of these interfaces (Python `Protocol`s
 | Module | Interface (methods) | Sample it emits | Units / rules |
 |---|---|---|---|
 | `Imu` | `start()`, `stop()`, `read() -> list[ImuSample]` (drains everything since the last call), `health() -> Health` | `ImuSample(t_ns, ax, ay, az, gx, gy, gz)` | accel **g**, gyro **deg/s**, hat frame (x fwd, y left, z up). ≥ 400Hz for impact, see §4.2 |
-| `RangeArray` | `start()`, `stop()`, `read() -> list[RangeSample]`, `health()` | `RangeSample(t_ns, sensor_id, range_mm \| None)` | **mm**. `None` = no echo / timeout. `sensor_id ∈ {R1,R2,R3,R4,TOP}` |
+| `RangeArray` | `start()`, `stop()`, `read() -> list[RangeSample]`, `health()` | `RangeSample(t_ns, sensor_id, range_mm \| None)` | **mm**. `None` = no echo / timeout. `sensor_id ∈ {R1,R2,R3,R4,TOP}` (MVP uses R2 and R3 only) |
 | `HatOnSensor` | `start()`, `stop()`, `read() -> list[TofSample]`, `health()` | `TofSample(t_ns, range_mm \| None, status)` | **mm**. `status`: `ok \| out_of_range \| error` |
 | `EnvSensor` | `start()`, `stop()`, `read() -> list[EnvSample]`, `health()` | `EnvSample(t_ns, co2_ppm, temp_c, rh_pct)` | ~0.2Hz |
 | `HapticDriver` | `set(motor, intensity)`, `off_all()`, `health()` | — | `motor ∈ {top, back}`, `intensity` 0.0–1.0. **Patterns are not in the driver.** L3's pattern player calls `set()`, so a team driver only has to turn a motor on at some strength |
@@ -517,7 +553,7 @@ If a team script is a blocking `while True: print(...)` loop, the adapter runs i
 |---|---|---|
 | **Contract tests** (`pytest tests/contract/ --module imu --impl team`) | Units in range (e.g. a stationary IMU reads \|a\| ≈ 1g), timestamps monotonic, rate within ±20% of spec, `read()` returns in under 5ms, `health()` honest, no exception escapes | Pi with hardware attached |
 | **Bench self-test CLI** (`argus-cli test <module>`) | Prints live readings plus a pass/fail checklist per module. Examples: "tilt the hat 90°, expect a gravity axis change"; "hand at 50cm in front of R2, expect only R2 to read ≈500mm"; "buzz top, then back" | Pi, done by a human |
-| **Scenario mocks** | Synthetic streams for: board swing from behind-left (R1/R2), walking backward into a wall (must **not** trigger), standing up under a beam (TOP, must not trigger), hat drop 1m, hat removed onto a table, hat knocked off | Laptop/CI |
+| **Scenario mocks** | Synthetic streams for: board swing from straight behind (R2/R3), walking backward into a wall (must **not** trigger), hat drop 1m, hat removed onto a table, hat knocked off | Laptop/CI |
 | **Detector tests** | Each scenario produces exactly the expected events (type, sensor, ±100ms timing) | Laptop/CI |
 | **Replay regression** | Recorded real sessions (`argus-cli record`) replayed through detectors. Every confirmed false positive or miss becomes a permanent test case | Laptop/CI |
 | **Threshold sweep** (`argus-cli sweep`) | All thresholds (closing speed, TTC, impact g, free-fall time, ToF offsets) live in `config.yaml`. Record 20–30 labelled bench trials (walking backward, nodding, standing up, real board swings, drops), then replay them across a threshold grid and pick the setting with the best detection rate at an acceptable false-alarm rate. No hand-tuning by feel. | Laptop |
@@ -652,7 +688,7 @@ Target: trigger an event at the start of the pitch and present the finished repo
    - `i2cdetect` shows all devices.
    - Camera preview OK; haptics test (`argus-cli buzz both`).
    - Dashboard open on the incident list.
-2. **Live struck-by:** a teammate swings a foam board toward the wearer from behind. The back motor buzzes and the event appears on the dashboard as "uploading".
+2. **Live struck-by:** a teammate swings the tested demo object (§3.2a) toward the wearer from straight behind, staying inside the ±15° zone. Mark the spot on the floor and rehearse it. The back motor buzzes and the event appears on the dashboard as "uploading".
 3. **Drop / impact:** drop the hat about 1m onto a mat → `fall`/`head_impact` event.
 4. **Hat-off:** take the hat off and set it down → `hat_removed` PPE event within about 3s.
 5. While talking, show the progress stepper. At the end, open the struck-by incident: video synced with the sensor chart, plus the full report and corrective actions.
@@ -673,7 +709,7 @@ Two tracks run **in parallel** and meet at step 5.
   - I2C devices on one bus (`i2cdetect -y 1`);
   - VL53L0X bench test at 30/50/80mm → design the recessed mount;
   - L293D + motors buzz from Pi PWM. **Decide the Arduino fallback here**;
-  - **beam/range test (§3.2)**, then 5× HC-SR04 interleaved sweep with dividers.
+  - **bench checks in §3.2a**, then 2× HC-SR04 sweep with dividers on the hub board.
 - H2. Paste each working script using the hand-off template (§5.5). Claude wraps it as a `team` impl.
 - H3. Record real sessions (`argus-cli record`) for replay tests: walking backward, standing up, board swings, drops.
 
@@ -698,4 +734,5 @@ Two tracks run **in parallel** and meet at step 5.
 - Whether the Anker pack triggers Pi under-voltage throttling under full load (`vcgencmd get_throttled`).
 - Exact Gemini model name and current video token rate. Re-verify at signup.
 - Whether the front camera should face forward or down at the hands (test both on day 2).
-- Haptic pattern legibility: user-test with 3 people whether they can tell top from back pulses through padding.
+- Haptic legibility: user-test with 3 people whether the back motor is clearly felt through the padding.
+- Bench results from §3.2a: beam width, demo object echo, "no echo" pulse, motor noise, head-down.
