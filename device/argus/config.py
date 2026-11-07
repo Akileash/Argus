@@ -152,6 +152,14 @@ class EventsCfg(_Strict):
     post_roll_s: float = 10.0
     merge_extend_max_s: float = 10.0
     cooldown_s: float = 5.0
+    # contracts/device_queue.md. Relative paths resolve against device/. Blank firmware_version -> package default.
+    queue_dir: str = "var/queue"
+    queue_max_mb: int = 2048
+    firmware_version: str = "0.1.0"
+
+
+class DeviceCfg(_Strict):
+    serial: str = ""  # blank -> events use "unprovisioned" until `argus-cli pair` / provisioning sets it
 
 
 class BusCfg(_Strict):
@@ -170,6 +178,7 @@ class ArgusConfig(_Strict):
     events: EventsCfg = EventsCfg()
     bus: BusCfg = BusCfg()
     backend: BackendCfg = BackendCfg()
+    device: DeviceCfg = DeviceCfg()
 
     def detector_cfg(self, name: str) -> dict[str, Any]:
         """``thresholds.<detector>`` as a plain dict, the ``cfg`` a Detector is constructed with."""
