@@ -158,9 +158,11 @@ Legend: **[H]** Haiku · **[S]** Sonnet · **[O]** Opus · **[PM]** done by the 
 - [ ] Struck-by tuning on real recordings (M2.1 report): `ego_tau_s` (1.0 vs 2.0; brisk backward walk >1.5 m/s false-triggers at τ=1) and `min_track_samples` (now 3, done: one more sweep of warning; at 2.5 m/s the first warning is at TTC≈0.36 s). `ego_tau_s` stays open as a sweep target for `argus-cli sweep`.
 - [ ] Unify `impact_g` between struck_by and fall_impact config sections.
 
-## 8. Status (2026-11-07)
-Merged: M0–M5.5, M6.1, M6.2. `scripts/demo-e2e.sh --reset` passes 37/37 on the 2-sensor MVP (spec §3.2a), fixture report mode, mock hardware.
-Remaining:
-- [ ] M6.3 final integration review (Opus).
-- [ ] With real keys: Gemini and hybrid report modes.
-- [ ] On real hardware: bench checks in spec §3.2a; drivers have only run against fakes.
+## 8. Status (2026-11-07, verification complete on mock hardware)
+Five verification passes. Passes 4 and 5 found nothing that would hurt the pitch or the first hat connection (pass 4's review raised doc and hardening items, fixed in 26f44bf and re-verified in pass 5).
+Last pass: `scripts/check.sh` all PASS; `scripts/demo-e2e.sh --reset` 37/37; `scripts/web-e2e.sh` 12 passed, 2 skipped by design; 21-step browser walkthrough (live hat run, synced video, edit, sign-off, print, devices, tablet, sign-out) all PASS with no browser errors.
+Still unproven, needs the team:
+- [ ] Real hat: all `argus` drivers, bench checks in spec §3.2a, detection tuning (`ego_tau_s`), §7 timing on hardware.
+- [ ] Real keys: Gemini and hybrid report modes, prices, 1.5–3 min latency.
+- [ ] Git remote: CI (`.github/workflows/check.yml`) has never run.
+- [ ] Teammates' real script output through `argus-cli team check`.
