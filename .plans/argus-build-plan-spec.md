@@ -156,3 +156,11 @@ Legend: **[H]** Haiku · **[S]** Sonnet · **[O]** Opus · **[PM]** done by the 
 - [ ] Verify with real keys: Gemini file upload + `responseJsonSchema`, Claude structured output acceptance, prices.
 - [ ] Struck-by tuning on real recordings (M2.1 report): `ego_tau_s` (1.0 vs 2.0; brisk backward walk >1.5 m/s false-triggers at τ=1) and `min_track_samples` (4 → 3 gives one more sweep of warning; at 2.5 m/s the first warning is at TTC≈0.36 s). Both are sweep targets for `argus-cli sweep`.
 - [ ] Unify `impact_g` between struck_by and fall_impact config sections.
+
+## 8. Status at pause (2026-11-07, usage limit)
+Merged: M0, M1, M2.1–M2.5, M3.1–M3.2, M4.1–M4.3, M5.1–M5.4. Device 365 passed; TS 119 passed; SQL tests pass; web build OK.
+Remaining:
+- [ ] Fix mock camera `save_clip` failing for windows starting at t=0 (`hardware/mock/camera/__init__.py`, "ffmpeg produced N-1 of N segments") — matters for the demo.
+- [ ] M5.5 polish pass (stopped mid-run; worktree branch `worktree-agent-a8d1383b0205ebb0f` may hold partial work — review before reuse).
+- [ ] M6.2 docs (stopped mid-run; branch `worktree-agent-a130e95defb02f15c`).
+- [ ] M6.1 `scripts/demo-e2e.sh` (one-command mock E2E) and M6.3 final integration review (Opus).
