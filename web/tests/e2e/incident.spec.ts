@@ -6,7 +6,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 /**
  * Incident detail e2e against local Supabase (pnpm exec supabase start; web/.env.local).
- * Needs seeded event ...0001 with media attached: `pnpm exec tsx scripts/dev-attach-media.ts`.
+ * Needs seeded event ...0001 with media attached: `pnpm demo:seed-media`.
  * The sign-off test works on a throwaway CLONE of that event so the seed stays unsigned; the clone is
  * removed at the end through psql (signed reports cannot be deleted by the API).
  */

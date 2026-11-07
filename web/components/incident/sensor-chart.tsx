@@ -20,14 +20,63 @@ export const SENSOR_COLORS: Record<string, string> = {
   TOP: "#4a483f",
 };
 
+// Keys are the detection types the device writes (device/argus/events/trace.py).
 const DETECTION_LABEL: Record<string, string> = {
   struck_by_warning: "WARN",
+  struck_by_near_miss: "NEAR MISS",
+  struck_by_contact: "CONTACT",
   head_impact: "IMPACT",
-  free_fall: "FALL",
-  hat_off: "HAT OFF",
+  fall: "FALL",
+  hat_knocked_off: "KNOCKED OFF",
+  hat_removed: "HAT OFF",
   hat_on: "HAT ON",
-  trigger: "TRIGGER",
 };
+const labelFor = (type: string) => DETECTION_LABEL[type] ?? type.replaceAll("_", " ").toUpperCase();
+/** Approximate rendered width of a 9px bold label, used to stop neighbouring labels overlapping. */
+const labelWidth = (text: string) => text.length * 6 + 6;
+
+export interface DetectionCluster {
+  t: number;
+  /** Distinct labels in time order, with repeat counts ("WARN x10"). */
+  label: string;
+  /** Marker times to draw: the first and last of each repeated type, every other detection once. */
+  times: number[];
+}
+
+/**
+ * Collapse detections whose labels would overlap on the axis (e.g. ten struck_by_warning rows and the
+ * confirmed near miss all within 0.5 s of t0 on a 30 s axis) into one label, so nothing piles up at t0.
+ * `pxPerSecond` maps seconds to chart pixels.
+ */
+export function clusterDetections(dets: Array<{ t: number; type: string }>, pxPerSecond: number): DetectionCluster[] {
+  const sorted = [...dets].sort((a, b) => a.t - b.t);
+  const groups: Array<Array<{ t: number; type: string }>> = [];
+  for (const d of sorted) {
+    const g = groups[groups.length - 1];
+    const text = g ? Array.from(new Set(g.map((x) => labelFor(x.type)))).join(" \u00b7 ") : "";
+    if (g && (d.t - g[0]!.t) * pxPerSecond < labelWidth(text)) g.push(d);
+    else groups.push([d]);
+  }
+  return groups.map((g) => {
+    const order: string[] = [];
+    const byType = new Map<string, number[]>();
+    for (const d of g) {
+      if (!byType.has(d.type)) order.push(d.type);
+      byType.set(d.type, [...(byType.get(d.type) ?? []), d.t]);
+    }
+    const label = order
+      .map((ty) => {
+        const n = byType.get(ty)!.length;
+        return n > 1 ? `${labelFor(ty)} \u00d7${n}` : labelFor(ty);
+      })
+      .join(" \u00b7 ");
+    const times = order.flatMap((ty) => {
+      const ts = byType.get(ty)!;
+      return ts.length > 2 ? [ts[0]!, ts[ts.length - 1]!] : ts;
+    });
+    return { t: g[0]!.t, label, times };
+  });
+}
 
 export interface ChartPanel {
   key: "accel" | "range" | "closing" | "hat";
@@ -102,6 +151,7 @@ export function SensorChart({
 
   // Visible samples only for scaling.
   const inWin = (t: number) => t >= domain.min && t <= domain.max;
+  const pxPerSecond = (x1 - x0) / Math.max(1e-6, domain.max - domain.min);
   const aVals = trace.imu.a_mag_g.filter((_, i) => inWin(trace.imu.t[i]));
   const peaks = (trace.imu_peaks ?? []).filter((p) => inWin(p.t));
   const [aLo, aHi] = niceExtent([...aVals, ...peaks.map((p) => p.a_mag_g)], 0, 3);
@@ -239,17 +289,17 @@ export function SensorChart({
         </g>
       ))}
 
-      {/* detection markers */}
-      {trace.detections
-        .filter((d) => inWin(d.t))
-        .map((d, i) => (
-          <g key={i}>
-            <line x1={X(d.t)} x2={X(d.t)} y1={plotTop - 4} y2={plotBottom} style={{ stroke: "var(--incident-fg)", strokeDasharray: "3 3", strokeWidth: 1, opacity: 0.75 }} />
-            <text x={X(d.t) + 2} y={i % 2 === 0 ? 9 : 19} style={{ fill: "var(--incident-fg)", fontWeight: 700, fontSize: 9 }}>
-              {DETECTION_LABEL[d.type] ?? d.type}
-            </text>
-          </g>
-        ))}
+      {/* detection markers: overlapping labels are collapsed into one */}
+      {clusterDetections(trace.detections.filter((d) => inWin(d.t)), pxPerSecond).map((c, i) => (
+        <g key={i}>
+          {c.times.map((tt, j) => (
+            <line key={j} x1={X(tt)} x2={X(tt)} y1={plotTop - 4} y2={plotBottom} style={{ stroke: "var(--incident-fg)", strokeDasharray: "3 3", strokeWidth: 1, opacity: 0.75 }} />
+          ))}
+          <text x={X(c.t) + 2} y={i % 2 === 0 ? 9 : 19} style={{ fill: "var(--incident-fg)", fontWeight: 700, fontSize: 9 }}>
+            {c.label}
+          </text>
+        </g>
+      ))}
 
       {/* t0 */}
       {inWin(0) && (

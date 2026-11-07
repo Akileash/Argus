@@ -28,6 +28,8 @@ export interface IncidentEvent {
   co2_ppm: number | null;
   temp_c: number | null;
   rh_pct: number | null;
+  /** firmware.fallbacks_active: modules running on their backup implementation (the cause of a module_fallback event). */
+  fallbacks_active: string[];
 }
 
 export interface IncidentReportRow {
@@ -56,6 +58,12 @@ export interface IncidentData {
   clipDurationS: number | null;
   trace: SensorTrace | null;
   traceState: TraceState;
+}
+
+/** Module names from events.firmware.fallbacks_active, tolerant of missing or malformed JSON. */
+export function fallbackModules(firmware: unknown): string[] {
+  const v = (firmware as { fallbacks_active?: unknown } | null)?.fallbacks_active;
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 }
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
@@ -107,6 +115,7 @@ export async function getIncident(id: string, opts: { withMedia?: boolean } = {}
     co2_ppm: num(ev.co2_ppm),
     temp_c: num(ev.temp_c),
     rh_pct: num(ev.rh_pct),
+    fallbacks_active: fallbackModules(ev.firmware),
   };
 
   let clipUrl: string | null = null;

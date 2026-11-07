@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventClass } from "@/components/chips";
+import { DISPLAY_TZ } from "@/lib/report/format";
 
 export type EventStatus = "received" | "uploading" | "uploaded" | "analyzing" | "ready" | "failed";
 
@@ -132,6 +133,7 @@ export function formatRelative(iso: string | null, now: number): string {
 }
 
 const dtf = new Intl.DateTimeFormat("en-CA", {
+  timeZone: DISPLAY_TZ,
   month: "short",
   day: "numeric",
   hour: "2-digit",

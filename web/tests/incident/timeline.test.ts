@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { SensorTraceSchema } from "@argus/shared";
 import { clamp, fmtOffset, timeToX, traceToVideo, videoToTrace, windowDomain, xToTime } from "@/lib/report/timeline";
 import { stepStates } from "@/components/incident/processing-stepper";
+import { clusterDetections } from "@/components/incident/sensor-chart";
 import { buildTrace } from "../../scripts/dev-attach-media";
 
 describe("playhead <-> chart time mapping", () => {
@@ -48,10 +49,41 @@ describe("processing stepper", () => {
 
 describe("dev trace generator", () => {
   it("produces a schema-valid full-window trace with an impact peak", () => {
-    const t = buildTrace("6f1d2c1a-3b4e-4f5a-8b6c-7d8e9f0a1b2c", { pre: 20, post: 10, sensor: "R2", peakG: 16, saturated: true });
+    const t = buildTrace({
+      id: "6f1d2c1a-3b4e-4f5a-8b6c-7d8e9f0a1b2c",
+      type: "head_impact",
+      window_pre_s: 20,
+      window_post_s: 10,
+      peak_g: 16,
+      peak_g_saturated: true,
+      closing_rate_mps: null,
+      ttc_s: null,
+      range_m: null,
+      sensor_id: null,
+      free_fall_ms: null,
+      drop_height_m: null,
+      co2_ppm: null,
+      temp_c: null,
+      rh_pct: null,
+    });
     expect(SensorTraceSchema.safeParse(t).success).toBe(true);
     expect(t.imu.t[0]).toBe(-20);
     expect(t.imu.t.at(-1)).toBe(10);
-    expect(t.imu_peaks?.[0].saturated).toBe(true);
+    expect(t.imu_peaks?.some((p) => p.saturated)).toBe(true);
+  });
+});
+
+describe("chart detection labels", () => {
+  it("collapses the warning burst and the confirmed near miss at t0 into one label", () => {
+    const warns = Array.from({ length: 10 }, (_, i) => ({ t: i * 0.06, type: "struck_by_warning" }));
+    const out = clusterDetections([...warns, { t: 0, type: "struck_by_near_miss" }], 600 / 30);
+    expect(out).toHaveLength(1);
+    expect(out[0]!.label).toBe("WARN \u00d710 \u00b7 NEAR MISS");
+    expect(out[0]!.times).toHaveLength(3); // first + last warning, and the near miss
+  });
+
+  it("keeps well-separated detections as separate labels", () => {
+    const out = clusterDetections([{ t: 0, type: "fall" }, { t: 6, type: "hat_removed" }], 20);
+    expect(out.map((c) => c.label)).toEqual(["FALL", "HAT OFF"]);
   });
 });

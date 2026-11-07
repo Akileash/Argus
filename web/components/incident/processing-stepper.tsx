@@ -23,7 +23,7 @@ export function stepStates(status: string, videoAnalyzed: boolean): [StepState, 
 }
 
 const LABELS = ["Clip received", "Video analyzed", "Report drafted"];
-const HINTS = ["Hat is uploading the clip and sensor trace", "Gemini is watching the clip", "Claude is writing the report"];
+const HINTS = ["Hat is uploading the clip and sensor trace", "Reviewing the clip and sensor data", "Writing the report draft"];
 
 export function ProcessingStepper({ status, videoAnalyzed, error }: { status: string; videoAnalyzed: boolean; error: string | null }) {
   const states = stepStates(status, videoAnalyzed);

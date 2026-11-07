@@ -1,0 +1,801 @@
+{
+ "event": {
+  "type": "struck_by_near_miss",
+  "device_class": "near_miss",
+  "metrics": {
+   "peak_g": null,
+   "peak_g_saturated": false,
+   "closing_rate_mps": 2.486166666763142,
+   "ttc_s": 0.7347455922487559,
+   "range_m": 1.8267,
+   "free_fall_ms": null,
+   "drop_height_m": null,
+   "sensor_id": "R2",
+   "hat_on": true
+  },
+  "env": {
+   "co2_ppm": 666.0,
+   "temp_c": 22.4,
+   "rh_pct": 41.13
+  },
+  "window": {
+   "pre_s": 20.0,
+   "post_s": 10.0
+  },
+  "merged_triggers": [],
+  "firmware": {
+   "version": "0.1.0",
+   "impls": {
+    "imu": "mock",
+    "range": "mock",
+    "hat_on": "mock",
+    "env": "mock",
+    "haptics": "mock",
+    "camera": "mock"
+   },
+   "fallbacks_active": []
+  }
+ },
+ "trace": {
+  "schema_version": "1",
+  "event_id": "59649d57-2c0a-4f24-abce-de355314d61c",
+  "t_start_s": -20.0,
+  "t_end_s": 10.0,
+  "imu": {
+   "t": [
+    -19.9975,
+    -19.99,
+    -19.9725,
+    -19.9675,
+    -19.955
+   ],
+   "a_mag_g": [
+    1.0055,
+    1.0139,
+    1.0234,
+    1.0181,
+    1.0055
+   ],
+   "ax": [
+    -0.0022,
+    0.0013,
+    -0.0122,
+    0.0055,
+    0.0108
+   ],
+   "ay": [
+    -0.0109,
+    -0.007,
+    -0.0012,
+    -0.0072,
+    0.0032
+   ],
+   "az": [
+    1.0054,
+    1.0139,
+    1.0233,
+    1.0181,
+    1.0055
+   ],
+   "gx": [
+    0.24,
+    0.64,
+    0.44,
+    0.22,
+    0.44
+   ],
+   "gy": [
+    -0.04,
+    -0.16,
+    -0.53,
+    -0.3,
+    -0.59
+   ],
+   "gz": [
+    0.14,
+    0.1,
+    -0.03,
+    0.3,
+    0.18
+   ]
+  },
+  "imu_peaks": [],
+  "ranges": {
+   "R2": {
+    "t": [
+     -19.98,
+     -19.92,
+     -19.86,
+     -19.8,
+     -19.74
+    ],
+    "range_m": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "closing_mps": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "R3": {
+    "t": [
+     -19.95,
+     -19.89,
+     -19.83,
+     -19.77,
+     -19.71
+    ],
+    "range_m": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "closing_mps": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   }
+  },
+  "tof": {
+   "t": [
+    -19.98,
+    -19.88,
+    -19.78,
+    -19.68,
+    -19.58
+   ],
+   "range_mm": [
+    61.8,
+    62.4,
+    64.2,
+    61.1,
+    61.0
+   ]
+  },
+  "hat_on": [
+   {
+    "t": -20.0,
+    "on": true
+   }
+  ],
+  "haptics": [
+   {
+    "t": 0.0241,
+    "motor": "back",
+    "pattern": "pulse_8hz",
+    "duration_s": 0.118
+   },
+   {
+    "t": 0.1417,
+    "motor": "back",
+    "pattern": "pulse_9hz",
+    "duration_s": 0.059
+   },
+   {
+    "t": 0.2007,
+    "motor": "back",
+    "pattern": "pulse_10hz",
+    "duration_s": 0.063
+   },
+   {
+    "t": 0.2634,
+    "motor": "back",
+    "pattern": "continuous",
+    "duration_s": 0.64
+   }
+  ],
+  "detections": [
+   {
+    "t": 0.0,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.4862,
+    "ttc_s": 0.7347,
+    "range_m": 1.8267,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44010.8512,
+      44010.9112,
+      44010.9712,
+      44011.0312
+     ],
+     "ranges_m": [
+      2.2781,
+      2.1118,
+      1.9743,
+      1.8267
+     ],
+     "comp_ranges_m": [
+      2.2781,
+      2.1118,
+      1.9743,
+      1.8267
+     ],
+     "v_meas_mps": 2.4862,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.4862,
+     "ttc_s": 0.7347,
+     "range_m": 1.8267,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.5575,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 2,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.0,
+    "type": "struck_by_near_miss",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.4862,
+    "ttc_s": 0.7347,
+    "range_m": 1.8267,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44010.8512,
+      44010.9112,
+      44010.9712,
+      44011.0312
+     ],
+     "ranges_m": [
+      2.2781,
+      2.1118,
+      1.9743,
+      1.8267
+     ],
+     "comp_ranges_m": [
+      2.2781,
+      2.1118,
+      1.9743,
+      1.8267
+     ],
+     "v_meas_mps": 2.4862,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.4862,
+     "ttc_s": 0.7347,
+     "range_m": 1.8267,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.5575,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 2,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.12,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.5026,
+    "ttc_s": 0.6048,
+    "range_m": 1.5137,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44010.9112,
+      44010.9712,
+      44011.0312,
+      44011.1512
+     ],
+     "ranges_m": [
+      2.1118,
+      1.9743,
+      1.8267,
+      1.5137
+     ],
+     "comp_ranges_m": [
+      2.1118,
+      1.9743,
+      1.8267,
+      1.5137
+     ],
+     "v_meas_mps": 2.5026,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.5026,
+     "ttc_s": 0.6048,
+     "range_m": 1.5137,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.291,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 3,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.18,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.5467,
+    "ttc_s": 0.5367,
+    "range_m": 1.3668,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44010.9712,
+      44011.0312,
+      44011.1512,
+      44011.2112
+     ],
+     "ranges_m": [
+      1.9743,
+      1.8267,
+      1.5137,
+      1.3668
+     ],
+     "comp_ranges_m": [
+      1.9743,
+      1.8267,
+      1.5137,
+      1.3668
+     ],
+     "v_meas_mps": 2.5467,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.5467,
+     "ttc_s": 0.5367,
+     "range_m": 1.3668,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.756,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 4,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.24,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.5466,
+    "ttc_s": 0.4771,
+    "range_m": 1.2151,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44011.0312,
+      44011.1512,
+      44011.2112,
+      44011.2712
+     ],
+     "ranges_m": [
+      1.8267,
+      1.5137,
+      1.3668,
+      1.2151
+     ],
+     "comp_ranges_m": [
+      1.8267,
+      1.5137,
+      1.3668,
+      1.2151
+     ],
+     "v_meas_mps": 2.5466,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.5466,
+     "ttc_s": 0.4771,
+     "range_m": 1.2151,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.6448,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 5,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.3,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.5043,
+    "ttc_s": 0.4246,
+    "range_m": 1.0634,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44011.1512,
+      44011.2112,
+      44011.2712,
+      44011.3312
+     ],
+     "ranges_m": [
+      1.5137,
+      1.3668,
+      1.2151,
+      1.0634
+     ],
+     "comp_ranges_m": [
+      1.5137,
+      1.3668,
+      1.2151,
+      1.0634
+     ],
+     "v_meas_mps": 2.5043,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.5043,
+     "ttc_s": 0.4246,
+     "range_m": 1.0634,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.4485,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 6,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.36,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.5413,
+    "ttc_s": 0.3577,
+    "range_m": 0.9091,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44011.2112,
+      44011.2712,
+      44011.3312,
+      44011.3912
+     ],
+     "ranges_m": [
+      1.3668,
+      1.2151,
+      1.0634,
+      0.9091
+     ],
+     "comp_ranges_m": [
+      1.3668,
+      1.2151,
+      1.0634,
+      0.9091
+     ],
+     "v_meas_mps": 2.5413,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.5413,
+     "ttc_s": 0.3577,
+     "range_m": 0.9091,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.3721,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 7,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.42,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.4992,
+    "ttc_s": 0.3068,
+    "range_m": 0.7667,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44011.2712,
+      44011.3312,
+      44011.3912,
+      44011.4512
+     ],
+     "ranges_m": [
+      1.2151,
+      1.0634,
+      0.9091,
+      0.7667
+     ],
+     "comp_ranges_m": [
+      1.2151,
+      1.0634,
+      0.9091,
+      0.7667
+     ],
+     "v_meas_mps": 2.4992,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.4992,
+     "ttc_s": 0.3068,
+     "range_m": 0.7667,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.3773,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 8,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.48,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.4968,
+    "ttc_s": 0.2449,
+    "range_m": 0.6115,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44011.3312,
+      44011.3912,
+      44011.4512,
+      44011.5112
+     ],
+     "ranges_m": [
+      1.0634,
+      0.9091,
+      0.7667,
+      0.6115
+     ],
+     "comp_ranges_m": [
+      1.0634,
+      0.9091,
+      0.7667,
+      0.6115
+     ],
+     "v_meas_mps": 2.4968,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.4968,
+     "ttc_s": 0.2449,
+     "range_m": 0.6115,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.4701,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 9,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.54,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.4762,
+    "ttc_s": 0.188,
+    "range_m": 0.4656,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44011.3912,
+      44011.4512,
+      44011.5112,
+      44011.5712
+     ],
+     "ranges_m": [
+      0.9091,
+      0.7667,
+      0.6115,
+      0.4656
+     ],
+     "comp_ranges_m": [
+      0.9091,
+      0.7667,
+      0.6115,
+      0.4656
+     ],
+     "v_meas_mps": 2.4762,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.4762,
+     "ttc_s": 0.188,
+     "range_m": 0.4656,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.4225,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 10,
+     "hat_on": true
+    }
+   },
+   {
+    "t": 0.6,
+    "type": "struck_by_warning",
+    "sensor_id": "R2",
+    "closing_rate_mps": 2.4897,
+    "ttc_s": 0.1275,
+    "range_m": 0.3174,
+    "debug": {
+     "track_id": 1,
+     "sensor_id": "R2",
+     "track_sensors": [
+      "R2"
+     ],
+     "handoffs": 0,
+     "n": 4,
+     "t_s": [
+      44011.4512,
+      44011.5112,
+      44011.5712,
+      44011.6312
+     ],
+     "ranges_m": [
+      0.7667,
+      0.6115,
+      0.4656,
+      0.3174
+     ],
+     "comp_ranges_m": [
+      0.7667,
+      0.6115,
+      0.4656,
+      0.3174
+     ],
+     "v_meas_mps": 2.4897,
+     "v_ego_mps": 0.0,
+     "v_ego_raw_mps": 0.0,
+     "v_ego_inst_mps": 0.0,
+     "v_obj_mps": 2.4897,
+     "ttc_s": 0.1275,
+     "range_m": 0.3174,
+     "v_hat_mps": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "omega_dps": 0.5729,
+     "zupt_active": true,
+     "suppressed": false,
+     "v_obj_required_mps": 1.5,
+     "condition": true,
+     "consecutive": 11,
+     "hat_on": true
+    }
+   }
+  ],
+  "env": {
+   "co2_ppm": 666.0,
+   "temp_c": 22.4,
+   "rh_pct": 41.13
+  }
+ }
+}

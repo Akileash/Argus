@@ -365,6 +365,17 @@ Nothing else is needed, and it works on any network the Pi can get online from.
 6. The page shows **Device `<serial>` paired** and the **device token**.
    **Click Copy now.** The token is shown only once. If you lose it, register the device again with
    the box ticked.
+7. The page also shows the exact command to run on the Pi, with your token and this dashboard's
+   address already filled in, and a second **Copy** button. Use it in e2.
+   The address in that command is the one in your browser's address bar. If you opened the dashboard
+   as `localhost` or `127.0.0.1`, the page warns you: the Pi cannot reach those. Open the dashboard at
+   the address from e0 first, then register again.
+8. Give the hat to a worker. In the **Devices** table, find the serial's row, choose a name under
+   **Assigned worker**, and click **Save**. Only managers see this control. A worker who already
+   wears another hat is not listed: unassign them on the other hat first. To move a hat to someone
+   else, choose the new name and click **Save**; the old assignment is closed and kept as history.
+   Events are attributed to whoever wears the hat **when the event happens**. A hat with no worker
+   produces reports that say "Unassigned worker".
 
 ### e2. Pair the Pi
 
@@ -391,7 +402,8 @@ device ARG-0001 (org ...), assigned worker: (no worker assigned)
 a running `argus-cli run` notices the new token within ~10 s
 ```
 
-`(no worker assigned)` is normal until a worker is assigned to the hat in the dashboard.
+`(no worker assigned)` is normal until you assign a worker to the hat on the **Devices** page (step 8 of e1).
+Assign one before your first real event, or the report names "Unassigned worker".
 
 **If you don't:**
 - `cannot reach ...` → the Pi cannot reach the dashboard. Check the URL and the Pi's Wi-Fi.

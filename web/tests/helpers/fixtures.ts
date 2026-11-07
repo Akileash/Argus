@@ -1,4 +1,10 @@
+import { createHash } from "node:crypto";
 import type { ArgusEvent } from "@/lib/contracts/event";
+
+/** Real bytes for the fixture media, so /complete can verify the declared sha256. */
+export const CLIP_BYTES = new Uint8Array(1000).fill(7);
+export const TRACE_BYTES = new Uint8Array(200).fill(9);
+const sha = (b: Uint8Array) => createHash("sha256").update(b).digest("hex");
 
 export const EVENT_ID = "11111111-1111-4111-8111-111111111111";
 
@@ -16,8 +22,8 @@ export function nearMissEvent(over: Partial<ArgusEvent> = {}): ArgusEvent {
     env: { co2_ppm: 600, temp_c: 21.5, rh_pct: 40 },
     merged_triggers: [],
     media: [
-      { kind: "clip", camera: "front", filename: "front.mp4", content_type: "video/mp4", bytes: 1000, sha256: "a".repeat(64), duration_s: 30 },
-      { kind: "sensor_trace", filename: "sensor_trace.json", content_type: "application/json", bytes: 200, sha256: "b".repeat(64) },
+      { kind: "clip", camera: "front", filename: "front.mp4", content_type: "video/mp4", bytes: 1000, sha256: sha(CLIP_BYTES), duration_s: 30 },
+      { kind: "sensor_trace", filename: "sensor_trace.json", content_type: "application/json", bytes: 200, sha256: sha(TRACE_BYTES) },
     ],
     firmware: { version: "0.1.0", impls: { imu: "mock", range: "mock" }, fallbacks_active: [] },
     ...over,

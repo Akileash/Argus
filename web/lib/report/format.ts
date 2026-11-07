@@ -14,3 +14,10 @@ export function fmtDateTime(iso: string | null | undefined): string {
     timeZoneName: "short",
   }).format(new Date(iso));
 }
+
+/** Peak acceleration for display. A saturated reading is a lower bound, never an exact number (spec 2.6). */
+export const SATURATION_G = 16;
+export function fmtPeakG(peakG: number | null | undefined, saturated: boolean | null | undefined): string {
+  if (saturated) return `\u2265 ${SATURATION_G} g (saturated)`;
+  return peakG == null ? "\u2014" : `${peakG.toFixed(1)} g`;
+}

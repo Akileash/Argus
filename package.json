@@ -8,7 +8,8 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
-    "db:reset": "supabase db reset"
+    "db:reset": "supabase db reset",
+    "demo:seed-media": "pnpm --filter @argus/web demo:seed-media"
   },
   "devDependencies": {
     "supabase": "^2.0.0"

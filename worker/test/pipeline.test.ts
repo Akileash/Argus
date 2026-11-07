@@ -48,7 +48,23 @@ describe("fixture mode end to end", () => {
     const store = seed("head_impact");
     await run(store);
     const text = JSON.stringify(store.reports.get(id)!.report_json);
-    expect(text).toContain("at least 16 g");
+    expect(text).toContain("\u2265 16 g (saturated)");
+    expect(text).not.toMatch(/(?<!≥ )\b16(\.\d)? g/);
+  });
+
+  it("every saturated-capable event type quotes a lower bound, not an exact g", async () => {
+    for (const type of ["struck_by_contact", "head_impact", "fall", "hat_knocked_off"] as const) {
+      const store = seed(type);
+      const ctx = store.events.get(id)!.ctx;
+      ctx.event.metrics = { ...ctx.event.metrics, peak_g: 15.9, peak_g_saturated: true };
+      const tr = JSON.parse(new TextDecoder().decode(store.files.get(ctx.trace!.path)!));
+      for (const d of tr.detections) if (typeof d.peak_g === "number") Object.assign(d, { peak_g: 15.9, peak_g_saturated: true });
+      store.files.set(ctx.trace!.path, new TextEncoder().encode(JSON.stringify(tr)));
+      await run(store);
+      const text = JSON.stringify(store.reports.get(id)!.report_json);
+      expect(text, type).toContain("\u2265 16 g (saturated)");
+      expect(text, type).not.toContain("15.9");
+    }
   });
 
   it("is deterministic", async () => {
