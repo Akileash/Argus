@@ -7,9 +7,9 @@ export function TopBar({ ctx }: { ctx: SessionContext }) {
   return (
     <header className="no-print sticky top-0 z-20 border-b border-line-strong bg-surface">
       <div className="mx-auto flex h-12 max-w-[1600px] items-center gap-6 px-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 text-ink">
           <span className="inline-block h-4 w-4 rounded-sm bg-accent" aria-hidden />
-          <span className="text-base font-extrabold tracking-[0.18em]">ARGUS</span>
+          <span className="text-base font-extrabold tracking-[0.18em] text-ink">ARGUS</span>
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium">
           <Link href="/" className="hover:text-accent-text">Incidents</Link>
