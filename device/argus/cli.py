@@ -24,7 +24,15 @@ from argus.bench import Bench
 from argus.bus import SampleBus
 from argus.config import ArgusConfig, ConfigError, ModuleCfg, load_config
 from argus.contracts import MODULE_NAMES, ModuleContext, MonotonicClock
-from argus.supervisor import EXCLUSIVE_MODULES, STREAM_FOR, ModuleLoadError, Supervisor, load_impl, shadow
+from argus.supervisor import (
+    DEFAULT_CONFIG,
+    EXCLUSIVE_MODULES,
+    STREAM_FOR,
+    ModuleLoadError,
+    Supervisor,
+    load_impl,
+    shadow,
+)
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="Argus smart hard hat: device CLI")
 
@@ -99,7 +107,8 @@ def run(
         events.append(rec)
         typer.secho(f"EVENT {json.dumps(rec)}", fg=typer.colors.YELLOW)
 
-    sup = Supervisor(cfg, bus, MonotonicClock(), on_event=on_event, scenario=scenario, config_path=config)
+    sup = Supervisor(cfg, bus, MonotonicClock(), on_event=on_event, scenario=scenario,
+                     config_path=config or DEFAULT_CONFIG)
     stops = _wire_pipeline(sup, bus, cfg)  # <- HOOK (see above)
     from argus.uploader import start_uploader  # L4: idles quietly while unpaired, never exits
 
@@ -561,6 +570,11 @@ def trigger(
         pipe.stop()
         sup.stop()
     typer.echo(f"queued in {pipe.queue.root}: {', '.join(p.name for p in pipe.queue.ready())}")
+
+
+from argus.team_cli import team_app
+
+app.add_typer(team_app, name="team")
 
 
 if __name__ == "__main__":  # pragma: no cover

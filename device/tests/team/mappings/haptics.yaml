@@ -1,0 +1,3 @@
+# Mapping for tests/team/fakes/fake_haptics.py: lines on stdin, like the Arduino sketch (spec §2.4)
+command: [python, ../../../tests/team/fakes/fake_haptics.py]
+line: "H,{motor},{pwm}\n"

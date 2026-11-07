@@ -1,36 +1,43 @@
-# team/camera: paste-your-script template
+# team/camera: plug in your script
 
-Status: **template only.** `create()` raises `NotImplementedError("team impl for camera not pasted
-yet - see README")`, so the supervisor treats this impl as unavailable and falls back (spec §5.4).
+Status: **not configured yet.** Until `mapping.yaml` has a `save_command`, `create()` raises
+`NotImplementedError("team impl for camera not pasted yet")` and the supervisor falls back (spec section 5.4).
 
-## Flow (spec §5.5)
+The camera adapter is deliberately minimal (spec sections 3.1, 5.5). Your script keeps its own rolling buffer
+(30 s or more) and can save the last N seconds to an MP4 on request. The adapter runs it as a subprocess.
 
-1. Send Claude your tested camera script with the hand-off template:
+## Steps
 
+1. Copy your capture and clip scripts into `vendor/`. Do not change them.
+2. `cd device && uv run argus-cli team init camera`, then fill in `mapping.yaml`:
+
+   ```yaml
+   command: [python, vendor/capture.py]       # optional: long-running capture, started and stopped with the module
+   save_command: [python, vendor/save_clip.py, --seconds, "{seconds}", --out, "{path}"]
+   save_timeout_s: 30
    ```
-   Module: camera
-   Wiring: pins / I2C address / power used
-   Libraries + versions: (pip freeze excerpt)
-   What it outputs: example output lines (10-20 lines of real data)
-   Units + rate: e.g. "distance in cm, ~10 readings/s"
-   Known quirks: e.g. "sensor 3 reads 0 sometimes", "needs 2s warmup"
-   ```
 
-2. The script is copied here as `their_script.py`, **hardware logic unchanged**.
-3. `adapter.py` converts it to the contract: MP4 clip via ffmpeg -c copy.
-4. Run the contract tests with the hardware attached:
-   `uv run pytest tests/contract --module camera --impl team`
-5. Select it in `config.yaml` (`impl: team` or `fallback: team`) and `argus-cli reload camera`.
+   Placeholders in `save_command`: `{path}` the file to write, `{seconds}` the clip length,
+   `{end_ago_s}` how long ago the clip should end, `{start_ns}` and `{end_ns}` the window on the shared clock.
+3. On the Pi: `uv run pytest tests/contract --module camera --impl team`.
+4. Turn it on in `device/config.local.yaml` (gitignored): `modules: {camera: {impl: team, fallback: mock}}`,
+   then `uv run argus-cli reload camera`. The camera owns the hardware, so the old impl is stopped first.
+5. Send the integrator the hand-off template below, then open a pull request that touches only
+   `device/hardware/team/camera/`.
 
-## Two adapter patterns (both sketched in `adapter.py`)
+```
+Module: camera
+Wiring: pins / I2C address / power used
+Libraries + versions: (pip freeze excerpt)
+What it outputs: 10-20 lines of real output, pasted as is
+Units + rate: e.g. "distance in cm, ~10 readings/s"
+Known quirks: e.g. "sensor 3 reads 0 sometimes", "needs 2s warmup"
+```
 
-- **(a) import-and-call in a thread**: their code exposes a function; the adapter calls it in a loop.
-- **(b) subprocess + stdout**: their script is a blocking `while True: print(...)`. The adapter runs
-  it unchanged and parses each printed line (stamped on arrival with the shared clock).
+## What the module must deliver
 
-Shared helpers: `hardware/team/_adapter_base.py` (`StreamAdapter`, `SubprocessAdapter`).
-
-## Rules the contract enforces
-
-Monotonic clock only, `read()` returns within 5 ms and drains everything since the last call, never
-raise out of `read()`/`set()`, honest `health()`. See `argus/contracts.py`.
+`save_clip(t_start_ns, t_end_ns, path) -> ClipInfo` writing a real MP4. Frames must be stamped with the shared
+monotonic clock (`time.monotonic_ns()`), not the camera's own clock. If `save_command` fails or writes
+nothing, `save_clip` raises and the event keeps its sensor data without video. If your clip tool needs
+per-frame timestamps or a segment ring, write a class in `adapter.py` instead (the mock camera in
+`hardware/mock/camera` is a complete working reference).

@@ -23,7 +23,7 @@ from typing import Any
 
 import httpx
 
-from argus.config import DEFAULT_CONFIG_PATH, ArgusConfig, ConfigError, load_config
+from argus.config import DEFAULT_CONFIG_PATH, ArgusConfig, ConfigError, load_config, local_config_path
 
 log = logging.getLogger("argus.uploader")
 
@@ -62,6 +62,17 @@ def queue_dir_from_config(cfg: ArgusConfig) -> Path:
     return p if p.is_absolute() else Path(__file__).resolve().parents[1] / p
 
 
+def _local_mtime(path: Path | str | None) -> int | None:
+    """mtime of config.local.yaml, which `pair` writes; only merged in when no explicit config is used."""
+    if path or os.environ.get("ARGUS_CONFIG"):
+        return None
+    lp = local_config_path()
+    try:
+        return lp.stat().st_mtime_ns if lp else None
+    except OSError:
+        return None
+
+
 def config_provider(path: Path | str | None) -> Callable[[], BackendSettings]:
     """Re-reads the YAML only when its mtime changes (cheap to call every loop)."""
     cache: dict[str, Any] = {"key": None, "val": BackendSettings()}
@@ -69,7 +80,7 @@ def config_provider(path: Path | str | None) -> Callable[[], BackendSettings]:
     def get() -> BackendSettings:
         try:
             p = Path(path or os.environ.get("ARGUS_CONFIG") or DEFAULT_CONFIG_PATH)
-            key = (str(p), p.stat().st_mtime_ns)
+            key = (str(p), p.stat().st_mtime_ns, _local_mtime(path))
         except OSError:
             key = None
         if key is None or key != cache["key"]:

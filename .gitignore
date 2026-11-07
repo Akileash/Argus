@@ -18,3 +18,6 @@ supabase/.temp/
 coverage/
 playwright-report/
 test-results/
+
+# per-machine overrides (teammates: impl team, ports, pairing); see CONTRIBUTING.md
+device/config.local.yaml

@@ -52,7 +52,7 @@ class Harness:
 
 
 @pytest.fixture
-def make_dut(module: str, impl: str, tmp_path: Path):
+def make_dut(module: str, impl: str, tmp_path: Path, request: pytest.FixtureRequest):
     """Factory returning a (not yet started) Harness; started instances are stopped at teardown."""
     made: list[Harness] = []
 
@@ -80,6 +80,9 @@ def make_dut(module: str, impl: str, tmp_path: Path):
                 for m in mocks:
                     samples.extend(m.read())
             options["file"] = str(write_recording(tmp_path / "rec.jsonl", samples))
+        tm = request.config.getoption("--team-mapping")
+        if impl == "team" and tm:  # point the team adapter at another mapping (a file, or a folder of <module>.yaml)
+            options["mapping_file"] = str(Path(tm) / f"{module}.yaml" if Path(tm).is_dir() else tm)
         inst = load_impl(module, impl, ModuleContext(clock, options, scenario))
         h = Harness(module, impl, clock, inst, virtual)
         made.append(h)

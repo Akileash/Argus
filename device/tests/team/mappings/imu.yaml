@@ -1,0 +1,14 @@
+# Mapping for tests/team/fakes/fake_imu.py (a made-up teammate: m/s^2, rad/s, their x = hat right, y = hat forward)
+command: [python, ../../../tests/team/fakes/fake_imu.py]
+format: json
+fields:
+  ax: accel.x
+  ay: accel.y
+  az: accel.z
+  gx: gyro_rads.0
+  gy: gyro_rads.1
+  gz: gyro_rads.2
+accel_unit: m/s2
+gyro_unit: rad/s
+axes: { x: y, y: -x, z: z }     # hat x forward = their y; hat y left = minus their x
+restart: { initial_s: 0.2, max_s: 1 }
