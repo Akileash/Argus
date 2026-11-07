@@ -54,7 +54,7 @@ export function setAt<T>(obj: T, path: string, value: unknown): T {
   const rec = (node: unknown, i: number): unknown => {
     const isArr = Array.isArray(node);
     const key: string | number = isArr ? Number(segs[i]) : segs[i];
-    const copy: any = isArr ? [...(node as unknown[])] : { ...((node as object) ?? {}) };
+    const copy = (isArr ? [...(node as unknown[])] : { ...((node as object) ?? {}) }) as Record<string | number, unknown>;
     copy[key] = i === segs.length - 1 ? value : rec(copy[key], i + 1);
     return copy;
   };

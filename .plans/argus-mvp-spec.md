@@ -70,8 +70,8 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 | Function | Pins |
 |---|---|
 | I2C bus (IMU, VL53L0X, SCD41) | GPIO2 (SDA), GPIO3 (SCL) |
-| Motor top (EN1, PWM) | GPIO12 (hardware PWM0) |
-| Motor back (EN2, PWM) | GPIO13 (hardware PWM1) |
+| Motor top (EN1, PWM) | GPIO12 (software PWM via lgpio) |
+| Motor back (EN2, PWM) | GPIO13 (software PWM via lgpio) |
 | HC-SR04 R2 (7.5° left) TRIG / ECHO | GPIO19 / GPIO26 |
 | HC-SR04 R3 (7.5° right) TRIG / ECHO | GPIO23 / GPIO24 |
 | Reserved for more sensors later (keeps existing IDs) | R1 GPIO5 / GPIO6, R4 GPIO16 / GPIO25, TOP GPIO20 / GPIO21 |
@@ -691,6 +691,7 @@ Target: trigger an event at the start of the pitch and present the finished repo
 2. **Live struck-by:** a teammate swings the tested demo object (§3.2a) toward the wearer from straight behind, staying inside the ±15° zone. Mark the spot on the floor and rehearse it. The back motor buzzes and the event appears on the dashboard as "uploading".
 3. **Drop / impact:** drop the hat about 1m onto a mat → `fall`/`head_impact` event.
 4. **Hat-off:** take the hat off and set it down → `hat_removed` PPE event within about 3s.
+   **Timing to rehearse:** the wearer feels the buzz right away, but the event reaches the dashboard about 11s later, because the hat records the 10s post-roll before uploading. Measured on mock hardware: a near miss appears at about 11s, a fall at about 12s, and a hat-off about 4s after the trigger. Fill that pause with narration. Real Gemini and Claude reports will take longer than the canned report (the estimate in §3.3 is 1.5–3 min).
 5. While talking, show the progress stepper. At the end, open the struck-by incident: video synced with the sensor chart, plus the full report and corrective actions.
 6. **Backups:**
    - a pre-recorded event with a completed report already in the DB;
