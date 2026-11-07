@@ -302,7 +302,7 @@ def scenario(
     steps = int((seconds or sc.duration_s) / 0.01)
     typer.echo(f"scenario {name}: {sc.spec.description.strip()}")
     typer.echo(f"expected: {[(e.type, e.sensors, e.t_window_s) for e in sc.expected] or 'no events'}")
-    typer.echo("   t[s]   |a|[g]   gyro[dps]   ToF[mm]   " + "  ".join(f"{s:>6}" for s in (*order, "TOP")))
+    typer.echo("   t[s]   |a|[g]   gyro[dps]   ToF[mm]   " + "  ".join(f"{s:>6}" for s in order))
     next_print = 0.0
     imu_row = (0.0, 0.0)
     tof_row: Any = None
@@ -322,7 +322,7 @@ def scenario(
         if t >= next_print:
             next_print += every
             cells = "  ".join(f"{'--' if last_range.get(k) is None else f'{last_range[k]:.0f}':>6}"
-                              for k in (*order, "TOP"))
+                              for k in order)
             typer.echo(f"{t:7.2f}  {imu_row[0]:6.2f}  {imu_row[1]:9.1f}  {tof_row!s:>8}   {cells}")
     if record:
         write_recording(record, all_samples, {"source": f"mock:{name}"})

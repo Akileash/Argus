@@ -108,7 +108,7 @@ export function RegisterDeviceForm({ orgId, supabaseUrl }: { orgId: string; supa
             ) : null}
             {warnings.includes("supabase_loopback") ? (
               <strong className="text-incident-fg" data-testid="supabase-loopback-warning">
-                NEXT_PUBLIC_SUPABASE_URL is {supabaseUrl}, which the Pi cannot reach. Pairing will work but every upload from the hat will fail. Set it to the laptop&apos;s LAN IP (for example http://192.168.1.20:54321) in web/.env.local, restart the dashboard, then pair again.{" "}
+                NEXT_PUBLIC_SUPABASE_URL is {supabaseUrl}, which the Pi cannot reach. Pairing will work but every upload from the hat will fail. Set it to the laptop&apos;s LAN IP (for example http://192.168.1.20:54321) in web/.env.local, rebuild and restart the dashboard (the value is fixed at build time), then pair again.{" "}
               </strong>
             ) : null}
             The dashboard URL must be reachable from the Pi on its network. Afterwards run{" "}

@@ -373,6 +373,11 @@ class Uploader:
         s = self._settings()
         if self._clock_checked_token == s.token:
             return
+        # While the backend is unreachable, retry at most every 5 min so the check never delays uploads.
+        now = time.monotonic()
+        if now < getattr(self, "_clock_retry_at", 0.0):
+            return
+        self._clock_retry_at = now + 300.0
         try:
             me = pairing.fetch_me(s.base_url, s.token, timeout_s=s.timeout_s, transport=self._transport)
         except pairing.PairingError as e:
