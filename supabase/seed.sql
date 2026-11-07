@@ -26,7 +26,7 @@ select md5('worker-'||i)::uuid, 'a0000000-0000-4000-8000-000000000001',
          'Harper','Emery','Logan','Marlow','Nico','Parker','Reese','Sloane','Tatum','Wren'])[((i-1) % 20)+1]
    || ' ' ||
   (array['Okafor','Lindqvist','Barrera','Nakamura','Fitzgerald','Haddad','Petrov','Moreau','Castellan','Ibsen',
-         'Duquesne','Varga','Oyelaran','Stroud','Kowalski','Brandt','Mirza','Halvorsen','Quintero','Ashby'])[(((i-1)*7) % 20)+1],
+         'Duquesne','Varga','Oyelaran','Stroud','Kowalski','Brandt','Mirza','Halvorsen','Quintero','Ashby'])[(((i-1)*7 + ((i-1)/20)) % 20)+1],  -- the /20 term keeps all 40 full names unique
   (array['Carpenter','Ironworker','Concrete finisher','Electrician','Pipefitter','Labourer','Crane operator','Roofer'])[((i-1) % 8)+1],
   'NB-'||(1000+i)
 from generate_series(1,40) i;
@@ -232,6 +232,11 @@ begin
       case when v_sen is not null then jsonb_build_object('name','sensor','value',v_sen) end,
       case when v_ff is not null then jsonb_build_object('name','free_fall','value',v_ff||' ms') end,
       jsonb_build_object('name','hat_on','value','true')], null)));
+    -- Vary risk per event so the seeded list looks like a real site, not one repeated template.
+    v_draft := jsonb_set(jsonb_set(jsonb_set(v_draft,
+      '{risk,severity}', to_jsonb((array[4,3,3,4,3,4,5,3,0,0,0,5])[e.idx])),
+      '{risk,likelihood}', to_jsonb((array[3,2,3,4,2,4,3,3,0,0,0,4])[e.idx])),
+      '{risk,score}', to_jsonb((array[4,3,3,4,3,4,5,3,0,0,0,5])[e.idx] * (array[3,2,3,4,2,4,3,3,0,0,0,4])[e.idx]));
     update public.events set severity = (v_draft#>>'{risk,score}')::smallint where id = v_eid;
 
     v_final := v_draft;
