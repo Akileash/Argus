@@ -50,6 +50,18 @@ export class SupabaseStore implements Store {
     return won.length === 1 ? id : null;
   }
 
+  async reclaimStale(maxAgeMs: number): Promise<string[]> {
+    const cutoff = new Date(Date.now() - maxAgeMs).toISOString();
+    const res = await this.db
+      .from(T.events)
+      .update({ [E.status]: "uploaded" })
+      .eq(E.status, "analyzing")
+      .lt(E.updatedAt, cutoff)
+      .select(E.id);
+    const rows = must(res, "reclaim stale events") as unknown as Row[];
+    return rows.map((r) => r[E.id] as string);
+  }
+
   async loadContext(eventId: string): Promise<EventContext> {
     const evRow = must(
       await this.db.from(T.events).select("*").eq(E.id, eventId).single(),

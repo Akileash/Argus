@@ -213,3 +213,34 @@ describe("retry then fail", () => {
     expect(store.events.get(id)!.error).toContain("GEMINI_MODEL is blank");
   });
 });
+
+describe("stale analyzing recovery (crashed worker)", () => {
+  it("re-queues events stuck in analyzing > 5 min and processes them", async () => {
+    let now = 1_000_000;
+    const store = seed("struck_by_near_miss");
+    store.now = () => now;
+    const ev = store.events.get(id)!;
+    ev.status = "analyzing"; // a worker claimed it, then died
+    ev.updated_at = now;
+    const deps = { store, cfg: cfg(), providers: {}, log: silent, sleep: noSleep };
+
+    now += 4 * 60_000; // 4 min: a slow-but-alive worker may still own it
+    expect(await runOnce(deps)).toBe(false);
+    expect(ev.status).toBe("analyzing");
+
+    now += 61_000; // > 5 min since updated_at
+    expect(await runOnce(deps)).toBe(true);
+    expect(ev.status, ev.error ?? "").toBe("ready");
+    expect(store.reports.has(id)).toBe(true);
+  });
+
+  it("leaves fresh analyzing and failed events alone", async () => {
+    const store = seed("fall");
+    const ev = store.events.get(id)!;
+    ev.status = "analyzing";
+    expect(await store.reclaimStale(300_000)).toEqual([]);
+    ev.status = "failed";
+    store.now = () => Date.now() + 3_600_000;
+    expect(await store.reclaimStale(300_000)).toEqual([]);
+  });
+});

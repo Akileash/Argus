@@ -8,6 +8,8 @@ export interface MemoryEvent {
   llm_suggested_class: string | null;
   llm_reclass_reason: string | null;
   severity: number | null;
+  /** ms since epoch of the last status change (mirrors events.updated_at). */
+  updated_at: number;
 }
 
 export interface MemoryReport {
@@ -29,6 +31,8 @@ export class MemoryStore implements Store {
   baseCostUsd = 0;
   /** Test hook: make the next N download() calls fail. */
   failDownloads = 0;
+  /** Test hook: clock. */
+  now: () => number = Date.now;
 
   addEvent(ctx: EventContext, status = "uploaded"): void {
     this.events.set(ctx.eventId, {
@@ -38,6 +42,7 @@ export class MemoryStore implements Store {
       llm_suggested_class: null,
       llm_reclass_reason: null,
       severity: null,
+      updated_at: this.now(),
     });
   }
 
@@ -45,10 +50,23 @@ export class MemoryStore implements Store {
     for (const [id, ev] of this.events) {
       if (ev.status === "uploaded") {
         ev.status = "analyzing";
+        ev.updated_at = this.now();
         return id;
       }
     }
     return null;
+  }
+
+  async reclaimStale(maxAgeMs: number): Promise<string[]> {
+    const ids: string[] = [];
+    for (const [id, ev] of this.events) {
+      if (ev.status === "analyzing" && this.now() - ev.updated_at > maxAgeMs) {
+        ev.status = "uploaded";
+        ev.updated_at = this.now();
+        ids.push(id);
+      }
+    }
+    return ids;
   }
 
   private get(eventId: string): MemoryEvent {
@@ -101,6 +119,7 @@ export class MemoryStore implements Store {
   async markReady(eventId: string, s: LlmSuggestion, severity: number): Promise<void> {
     const ev = this.get(eventId);
     ev.status = "ready";
+    ev.updated_at = this.now();
     ev.error = null;
     ev.llm_suggested_class = s.suggested_class;
     ev.llm_reclass_reason = s.reason;
@@ -110,6 +129,7 @@ export class MemoryStore implements Store {
   async markFailed(eventId: string, error: string): Promise<void> {
     const ev = this.get(eventId);
     ev.status = "failed";
+    ev.updated_at = this.now();
     ev.error = error;
   }
 }

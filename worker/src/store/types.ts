@@ -39,6 +39,8 @@ export interface LlmSuggestion {
 export interface Store {
   /** Atomically move one `uploaded` event to `analyzing`; null when nothing is waiting. */
   claimNext(): Promise<string | null>;
+  /** Re-queue events stuck in `analyzing` for longer than maxAgeMs (crashed worker). Returns their ids. */
+  reclaimStale(maxAgeMs: number): Promise<string[]>;
   loadContext(eventId: string): Promise<EventContext>;
   /** Download an object from the event-media bucket. */
   download(path: string): Promise<Uint8Array>;
