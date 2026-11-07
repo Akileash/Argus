@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from argus.contracts import SENSOR_IDS, Clock
+from argus.contracts import DEFAULT_ACTIVE_SENSORS, Clock
 
 Printer = Callable[[str], None]
 
@@ -106,13 +106,17 @@ class Bench:
 
         s = self.wait(3.0, live=live)
         seen = {x.sensor_id for x in s}
-        self.add("all 5 sensors report", seen == set(SENSOR_IDS), f"seen {sorted(seen)}")
-        rate = len(s) / 5 / 3.0
-        self.add("~6.7 Hz per sensor (+-20%)", 5.3 <= rate <= 8.1, f"{rate:.1f} Hz")
+        active = tuple(getattr(self.inst, "sensors", DEFAULT_ACTIVE_SENSORS))
+        self.add(f"all {len(active)} active sensors report", seen == set(active), f"seen {sorted(seen)}")
+        # From timestamps: the wait loop oversleeps, so its nominal 3 s is not the real elapsed time.
+        span_s = (s[-1].t_ns - s[0].t_ns) / 1e9 if len(s) > 1 else 0.0
+        rate = (len(s) - 1) / len(active) / span_s if span_s > 0 else 0.0
+        want = 1.0 / (0.03 * len(active))
+        self.add(f"~{want:.1f} Hz per sensor (+-20%)", 0.8 * want <= rate <= 1.2 * want, f"{rate:.1f} Hz")
 
         def hand(samples: list[Any]) -> tuple[bool, str]:
             med = {sid: statistics.median([x.range_mm for x in samples if x.sensor_id == sid and x.range_mm]
-                                          or [float("nan")]) for sid in SENSOR_IDS}
+                                          or [float("nan")]) for sid in active}
             near = [sid for sid, v in med.items() if not math.isnan(v) and abs(v - 500) < 80]
             return near == ["R2"], f"sensors near 500 mm: {near}"
 

@@ -17,7 +17,7 @@ yet - see README")`, so the supervisor treats this impl as unavailable and falls
    ```
 
 2. The script is copied here as `their_script.py`, **hardware logic unchanged**.
-3. `adapter.py` converts it to the contract: mm (their script may print cm: multiply by 10); None = no echo; sensor_id in R1,R2,R3,R4,TOP.
+3. `adapter.py` converts it to the contract: mm (their script may print cm: multiply by 10); None = no echo; sensor_id R2 or R3 for the MVP (full set: R1,R2,R3,R4,TOP).
 4. Run the contract tests with the hardware attached:
    `uv run pytest tests/contract --module range --impl team`
 5. Select it in `config.yaml` (`impl: team` or `fallback: team`) and `argus-cli reload range`.

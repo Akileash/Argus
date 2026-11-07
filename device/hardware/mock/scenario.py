@@ -37,8 +37,7 @@ GRID_HZ = 2000
 BEAM_HALF_DEG = 7.5
 RANGE_TILT_DEG = 5.0
 HC_SR04_MIN_M, HC_SR04_MAX_M = 0.02, 4.0
-SWEEP_S = 0.15  # five sensors, 30 ms apart
-SENSOR_SLOT_S = SWEEP_S / 5
+SENSOR_SLOT_S = 0.03  # one sensor fires every 30 ms; sweep = slot x active sensors
 IMU_CLIP_G, GYRO_CLIP_DPS = 16.0, 1000.0
 SCENARIO_DIR = Path(os.environ.get("ARGUS_SCENARIOS", Path(__file__).resolve().parents[2] / "scenarios"))
 
@@ -303,7 +302,7 @@ class Scenario:
         return best if HC_SR04_MIN_M <= best <= HC_SR04_MAX_M else None
 
     def range_mm(self, t_s: float, sensor: str, n: int) -> float | None:
-        """Noisy reading for sample index ``n`` (n = sweep*5 + sensor slot). Includes 3% dropouts."""
+        """Noisy reading for sample index ``n`` (n = running sensor-slot count). Includes 3% dropouts."""
         d = self.true_range_m(t_s, sensor)
         z = self._normals(2, np.array([n]), 2)[0]
         if d is None or z[1] > 1.88:

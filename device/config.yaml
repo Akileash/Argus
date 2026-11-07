@@ -4,7 +4,8 @@
 #   imu: { impl: argus, fallback: team }
 modules:
   imu:     { impl: mock }
-  range:   { impl: mock }
+  # MVP: 2 rear sensors, spec §3.2a. Add ids here to add sensors (reserved pins are in the spec, §2.3).
+  range:   { impl: mock, options: { order: [R2, R3], slot_ms: 30 } }
   hat_on:  { impl: mock }
   env:     { impl: mock }
   haptics: { impl: mock }
@@ -24,7 +25,7 @@ thresholds:          # names = what the detectors read (tests/unit/test_config_k
     range_min_m: 0.03
     range_max_m: 2.5
     track_len: 4
-    min_track_samples: 4
+    min_track_samples: 3
     jump_m: 0.35
     first_step_max_rate_mps: 4.0
     handoff_tol_m: 0.2

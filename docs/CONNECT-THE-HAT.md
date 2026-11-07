@@ -187,12 +187,9 @@ Use this table to check your wiring. It is copied from spec section 2.3 (Pi 4, B
 | I2C bus (IMU, VL53L0X, SCD41) | GPIO2 (SDA), GPIO3 (SCL) |
 | Motor top (EN1, PWM) | GPIO12 (hardware PWM0) |
 | Motor back (EN2, PWM) | GPIO13 (hardware PWM1) |
-| HC-SR04 R1 (−22.5°) TRIG / ECHO | GPIO5 / GPIO6 |
-| HC-SR04 R2 (−7.5°) TRIG / ECHO | GPIO19 / GPIO26 |
-| HC-SR04 R3 (+7.5°) TRIG / ECHO | GPIO23 / GPIO24 |
-| HC-SR04 R4 (+22.5°) TRIG / ECHO | GPIO16 / GPIO25 |
-| HC-SR04 Top TRIG / ECHO | GPIO20 / GPIO21 |
-| Spare for 6th/7th HC-SR04 (layout E) | GPIO22 / GPIO27, GPIO7 / GPIO8 (SPI must stay disabled) |
+| HC-SR04 R2 (7.5° left of straight back) TRIG / ECHO | GPIO19 / GPIO26 |
+| HC-SR04 R3 (7.5° right of straight back) TRIG / ECHO | GPIO23 / GPIO24 |
+| Reserved for more sensors later | R1 GPIO5 / GPIO6, R4 GPIO16 / GPIO25, TOP GPIO20 / GPIO21 |
 | Status LED (optional) | GPIO17 |
 
 Other wiring rules from the spec:
@@ -290,7 +287,7 @@ For each one:
 | Module | What the test checks | You should see |
 |---|---|---|
 | `imu` | accelerometer, sample rate, error count | `PASS` lines. Accel z about +1 g when the hat is flat. Rate about 1000 Hz. |
-| `range` | five sensors, sweep order | all five sensors report every ~150 ms, in order R1, R2, R3, R4, TOP. A flat target at 0.5, 1.0 and 2.0 m reads within ±1 cm. |
+| `range` | two sensors, sweep order | R2 and R3 both report every ~60 ms. A flat target at 0.5, 1.0 and 2.0 m reads within ±1 cm. |
 | `hat_on` | on-head reading | about 50 to 80 mm with the hat on your head. `out_of_range` with the hat off. |
 | `env` | first CO2 reading | first sample after about 5 s. CO2 about 400 to 1000 ppm. |
 | `haptics` | motor drive | `argus-cli buzz both` makes both motors buzz (see step 4). |
@@ -517,7 +514,7 @@ To record a labelled run, use `argus-cli record`. Stop the service first, becaus
 
 ```bash
 sudo systemctl stop argus
-.venv/bin/argus-cli record --label board_swing_rear_left --seconds 30 \
+.venv/bin/argus-cli record --label board_swing_rear --seconds 30 \
   --expect struck_by_near_miss --config /etc/argus/config.yaml
 ```
 

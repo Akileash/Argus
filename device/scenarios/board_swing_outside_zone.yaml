@@ -1,0 +1,15 @@
+name: board_swing_outside_zone
+description: >
+  Documents a limit the team accepted (spec §3.2a). A board comes from behind-left at about 35 deg
+  and stops short of the hat, staying outside the R2/R3 beams. The 2-sensor MVP gives no warning.
+  Adding R1 and R4 would catch it.
+duration_s: 6
+seed: 6
+wearer: { hat_height_m: 1.7 }
+world:
+  planes: [ { axis: z, at: 3.2 } ]
+  objects:
+    - { start: [-2.05, 1.43, 0.22], aim: [-0.33, 0.23, 0.03], speed_mps: 2.5, t_start: 2.0 }
+tof: { keyframes: [[0, 62.0]] }
+expected: []
+allowed_extra: [hat_on]

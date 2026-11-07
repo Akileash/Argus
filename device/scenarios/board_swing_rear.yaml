@@ -1,0 +1,17 @@
+name: board_swing_rear
+description: >
+  The pitch demo. A board swings in from straight behind, 2.5 m away, closing at 2.5 m/s while the
+  wearer stands still. It stays inside the +-15 deg MVP zone, in the R2/R3 beams. Expect one
+  struck_by_near_miss on R2 or R3; the board never touches the hat (no impact).
+duration_s: 6
+seed: 5
+wearer: { hat_height_m: 1.7 }
+world:
+  planes: [ { axis: z, at: 3.2 } ]
+  objects:
+    - { start: [-2.5, 0.15, 0.22], aim: [-0.15, 0.02, 0.012], speed_mps: 2.5, t_start: 2.0 }
+tof: { keyframes: [[0, 62.0]] }
+expected:
+  - { type: struck_by_near_miss, sensors: [R2, R3], t_window_s: [2.1, 2.8],
+      notes: "3-sample track + confirming sweep once the board is inside 2 m" }
+allowed_extra: [struck_by_warning, hat_on]

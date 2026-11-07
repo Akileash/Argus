@@ -238,12 +238,13 @@ def make_range(widths=None, **opts):
 def test_range_protocol_and_defaults():
     drv, _ = make_range()
     assert isinstance(drv, PROTOCOL_FOR["range"])
-    assert drv._order == ["R1", "R2", "R3", "R4", "TOP"]
+    assert drv._order == ["R2", "R3"]  # MVP pair, spec §3.2a
     assert drv._pins["R1"] == (5, 6) and drv._pins["TOP"] == (20, 21)
 
 
 def test_range_pulse_to_mm_and_timeout_none():
-    drv, g = make_range({6: 5830.0, 26: None, 24: 1166.0, 25: 11660.0, 21: None})
+    drv, g = make_range({6: 5830.0, 26: None, 24: 1166.0, 25: 11660.0, 21: None},
+                        order=["R1", "R2", "R3", "R4", "TOP"])
     out = drv.sweep_once()
     by = {s.sensor_id: s.range_mm for s in out}
     assert by["R1"] == pytest.approx(1000.0, abs=1)

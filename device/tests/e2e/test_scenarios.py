@@ -65,7 +65,7 @@ def test_files_match_event_json(name, tmp_path):
 
 
 def test_board_swing_trace_and_haptics(tmp_path):
-    _, r = _run("board_swing_rear_left", tmp_path)
+    _, r = _run("board_swing_rear", tmp_path)
     ev = r.events()[0]
     assert ev["type"] == "struck_by_near_miss" and ev["device_class"] == "near_miss"
     assert ev["metrics"]["closing_rate_mps"] > 1.5 and ev["metrics"]["ttc_s"] < 1.3

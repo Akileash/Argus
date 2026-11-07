@@ -25,9 +25,8 @@ Record **at least 20-30 labelled runs**, more is better. Suggested minimum:
 
 | Run | Count | What to do | Label (`expected`) |
 |---|---|---|---|
-| Board swing from behind | 8 | Swing a board toward the back of the hat, from different rear angles (left, centre, right) and speeds. Stop it short of the hat. | `struck_by_near_miss` at the closest-approach time |
+| Board swing from behind | 8 | Swing a board toward the back of the hat, inside the zone about 15° either side of straight behind, at different speeds. Stop it short of the hat. | `struck_by_near_miss` at the closest-approach time |
 | Walk backward toward a wall | 5 | Walk backward at normal and brisk pace and stop at the wall. Do this with the hat on. | none (any event is a false alarm) |
-| Stand up under a beam | 3 | Crouch, then stand up under a low beam (top sensor sees it). | none |
 | Drop the hat | 5 | Drop it from about 1 m onto a soft surface. | `fall` |
 | Remove the hat | 3 | Take it off normally and put it on a table. | `hat_removed` |
 | Knock the hat off | 3 | Hit the side so it comes off. | `head_impact`, `hat_knocked_off` |
@@ -51,22 +50,22 @@ Each recording `name.jsonl` has a sidecar `name.labels.json` next to it:
 
 ```json
 {
-  "label": "board_swing_rear_left",
+  "label": "board_swing_rear",
   "expected": [
-    {"type": "struck_by_near_miss", "t_s": 4.1, "sensor": "R1"}
+    {"type": "struck_by_near_miss", "t_s": 4.1, "sensor": "R2"}
   ],
-  "notes": "board from behind-left, about 2.5 m/s, stopped 20 cm short"
+  "notes": "board from straight behind, about 2.5 m/s, stopped 20 cm short"
 }
 ```
 
-- Record with `argus-cli record --label board_swing_rear_left` and add the `expected` entries when asked
+- Record with `argus-cli record --label board_swing_rear` and add the `expected` entries when asked
   (or edit the sidecar by hand). Format details: `device/hardware/replay/FORMAT.md`.
 - `type` is one of `struck_by_near_miss`, `struck_by_contact`, `head_impact`, `fall`, `hat_knocked_off`,
   `hat_removed`.
 - `t_s` is the time in seconds from the start of the recording (use `argus-cli replay` or read the
   timestamps). It is optional: without it the event may happen anywhere in the recording. For struck-by,
   use the moment of closest approach or contact; that is what makes the **warning lead time** meaningful.
-- `sensor` is optional (`R1`..`R4`, `TOP`); `sensors` takes a list. Use it only when you are sure.
+- `sensor` is optional (`R2` or `R3` on the MVP hat); `sensors` takes a list. Use it only when you are sure.
 - Also supported: `t_window_s: [lo, hi]` to accept anything inside a time window instead of `t_s +- 0.75 s`
   (used by the exported mock scenarios).
 - A drop of the hat usually also produces a head impact on landing in the real world. If the scorecard
@@ -148,7 +147,7 @@ second per setting, so grids of hundreds of points are fine.
 | Parameter (`struck_by.`) | In plain words | Try | Trade-off |
 |---|---|---|---|
 | `ego_tau_s` | How long the hat "remembers" its own walking speed before letting it fade. Longer memory follows brisk walking better. | 1.0, 1.5, 2.0 | Too short: walking backward fast looks like something approaching (false alarm). Too long: the speed estimate drifts. This is the first thing to try if walking-backward runs false-alarm. |
-| `min_track_samples` | How many echoes in a row are needed before we trust a moving object. | 3, 4 | 3 gives one more sweep (about 0.15 s) of warning at 2.5 m/s, where the first warning is otherwise very late (about 0.36 s before contact). 4 is steadier against echo glitches. |
+| `min_track_samples` | How many echoes in a row are needed before we trust a moving object. | 3, 4 | 3 is the MVP default and gives one more sweep (about 0.06 s) of warning than 4 at 2.5 m/s, where the first warning is otherwise very late (about 0.36 s before contact). 4 is steadier against echo glitches. |
 | `v_obj_min_mps` | Minimum speed of the object itself, after subtracting the wearer's motion. | 1.0, 1.5, 2.0 | Lower catches slow swings but lets noise through. |
 | `suppress_v_obj_min_mps` | Stricter speed needed when most of the apparent closing is the wearer's own movement. | 2.0, 2.5, 3.0 | Higher kills walking false alarms but can miss a board swung while you walk. |
 | `suppress_ego_ratio` | How much of the closing speed must be explained by the wearer's motion before the stricter rule applies. | 0.4, 0.6, 0.8 | Lower is more cautious near walls. |

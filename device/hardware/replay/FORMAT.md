@@ -4,7 +4,7 @@ One JSON object per line. Written by `argus-cli record` (later task) and by
 `hardware.replay.recording.write_recording`; read by the `replay` impls (spec §5.3, §5.6).
 
 ```jsonl
-{"meta": {"source": "mock:board_swing_rear_left", "created": "2026-11-07T12:00:00Z"}}
+{"meta": {"source": "mock:board_swing_rear", "created": "2026-11-07T12:00:00Z"}}
 {"stream": "imu",   "t_ns": 1000000000, "ax": 0.01, "ay": -0.00, "az": 1.01, "gx": 0.4, "gy": -0.3, "gz": 0.2}
 {"stream": "range", "t_ns": 1000000000, "sensor_id": "R1", "range_mm": 2390.5}
 {"stream": "range", "t_ns": 1030000000, "sensor_id": "R2", "range_mm": null}

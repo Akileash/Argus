@@ -13,7 +13,7 @@ what the unit tests fake.
 | Module | Key (default) |
 |---|---|
 | `imu` | `i2c_bus` (1), `address` (0x68), `sample_rate_hz` (1000), `dlpf_cfg` (0), `drain_interval_ms` (20, clamped to <= 40), `read_chunk_samples` (20), `axis_map` ({x: "+x", y: "+y", z: "+z"}), `queue_max` (8192), `stale_ms` (500) |
-| `range` | `pins` ({R1:[5,6], R2:[19,26], R3:[23,24], R4:[16,25], TOP:[20,21]} as [trig, echo]), `order` ([R1,R2,R3,R4,TOP]; use [R1,R3,TOP,R2,R4] for the spec §3.2 crosstalk-minimising order), `slot_ms` (30), `trigger_us` (10), `echo_timeout_ms` (slot-3), `min_range_mm` (20), `max_range_mm` (4000), `temp_c` (null = 343 m/s), `gpiochip` (0), `stale_ms` (500) |
+| `range` | `pins` ({R1:[5,6], R2:[19,26], R3:[23,24], R4:[16,25], TOP:[20,21]} as [trig, echo]), `order` ([R2,R3], the MVP pair; list more ids to add sensors, e.g. [R1,R3,TOP,R2,R4] for the full crosstalk-minimising order), `slot_ms` (30), `trigger_us` (10), `echo_timeout_ms` (slot-3), `min_range_mm` (20), `max_range_mm` (4000), `temp_c` (null = 343 m/s), `gpiochip` (0), `stale_ms` (500) |
 | `hat_on` | `timing_budget_us` (33000), `poll_interval_ms` (50), `max_range_mm` (1200; farther = out_of_range), `queue_max`, `stale_ms` (3000) |
 | `env` | `poll_interval_s` (1.0), `temperature_offset_c` (null), `queue_max`, `stale_ms` (30000) |
 | `haptics` | `pins` ({top: 12, back: 13}), `pwm_hz` (1000), `min_duty` (0.0), `max_duty` (1.0), `gpiochip` (0) |
@@ -64,7 +64,7 @@ is not implemented (out of scope).
 3. `argus-cli test imu`: accel z ~ +1 g when flat (hat frame z up), rate >= 400 Hz (expect ~1000), `error_count`
    stays 0 over 60 s. Tilt/tap: check axis signs; set `axis_map` if x/y/z are wrong. Shake hard: no FIFO overflow notes.
 4. `argus-cli test range`: for each sensor hold a flat target at 0.5 / 1.0 / 2.0 m; error should be within +-1 cm;
-   all five report in the R1,R2,R3,R4,TOP order every ~150 ms; unplugged echo -> `None`. If jitter > +-1 cm,
+   R2 and R3 both report every ~60 ms; unplugged echo -> `None`. If jitter > +-1 cm,
    switch `range` to the `team` impl or the Arduino fallback (spec §2.4). Check ECHO divider voltage (<= 3.3 V) first.
 5. `argus-cli test hat_on`: hat on head -> `ok` ~50-80 mm; off head -> `out_of_range`.
 6. `argus-cli test env`: first sample after ~5 s, CO2 ~ 400-1000 ppm.

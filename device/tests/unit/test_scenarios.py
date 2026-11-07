@@ -15,7 +15,7 @@ from hardware.mock.imu import MockImu
 from hardware.mock.scenario import BEAM_AXES, G, list_scenarios, load_scenario
 
 SPEC_SCENARIOS = {
-    "board_swing_rear_left", "walk_backward_wall", "stand_up_under_beam", "hat_drop_1m",
+    "board_swing_rear", "walk_backward_wall", "stand_up_under_beam", "hat_drop_1m",
     "hat_removed_table", "hat_knocked_off", "idle", "walk_forward",
 }
 HZ = 400
@@ -53,12 +53,12 @@ def test_expected_events_are_well_formed(name):
 
 def test_expected_events_summary():
     exp = {n: [e.type for e in load_scenario(n).expected] for n in SPEC_SCENARIOS}
-    assert exp["board_swing_rear_left"] == ["struck_by_near_miss"]
+    assert exp["board_swing_rear"] == ["struck_by_near_miss"]
     assert exp["walk_backward_wall"] == exp["stand_up_under_beam"] == exp["idle"] == exp["walk_forward"] == []
     assert exp["hat_drop_1m"] == ["fall"]
     assert exp["hat_removed_table"] == ["hat_removed"]
     assert exp["hat_knocked_off"] == ["head_impact", "hat_knocked_off"]
-    assert load_scenario("board_swing_rear_left").expected[0].sensors == ["R1", "R2"]
+    assert load_scenario("board_swing_rear").expected[0].sensors == ["R2", "R3"]
 
 
 def test_idle_gravity_on_z_and_small_gyro():
@@ -126,15 +126,14 @@ def test_stand_up_is_vertical_ego_motion_on_top_sensor():
     assert peak_az == pytest.approx(1.0 + 4.5 / G, abs=0.08)  # accelerating upward adds to gravity
 
 
-def test_board_swing_object_closes_at_2_5_mps_from_rear_left_with_still_wearer():
-    sc, _, m = imu("board_swing_rear_left")
+def test_board_swing_object_closes_at_2_5_mps_from_straight_behind_with_still_wearer():
+    sc, _, m = imu("board_swing_rear")
     assert np.all(np.abs(mag(m) - 1.0) < 0.06) and np.all(np.abs(m[:, 3:]) < 3)  # wearer still
-    first = next(x for x in np.arange(1.9, 3.0, 0.01) if sc.true_range_m(float(x), "R1") is not None)
-    assert 1.95 < first < 2.1 and sc.true_range_m(float(first), "R1") == pytest.approx(2.5, abs=0.1)
-    assert true_closing(sc, "R1", 2.4) == pytest.approx(2.5, abs=0.15)
-    assert sc.true_range_m(2.4, "R4") is None and sc.true_range_m(2.4, "R3") is None
-    assert sc.true_range_m(1.0, "R1") is None
-    assert sc.true_range_m(2.9, "R2") is not None  # slid into R2's beam as it passed
+    first = next(x for x in np.arange(1.9, 3.0, 0.01) if sc.true_range_m(float(x), "R2") is not None)
+    assert 1.95 < first < 2.1 and sc.true_range_m(float(first), "R2") == pytest.approx(2.5, abs=0.1)
+    assert true_closing(sc, "R2", 2.4) == pytest.approx(2.5, abs=0.15)
+    assert sc.true_range_m(2.4, "R1") is None and sc.true_range_m(2.4, "R4") is None  # inside the MVP zone only
+    assert sc.true_range_m(1.0, "R2") is None
     assert sc.true_range_m(2.4, "TOP") == pytest.approx(1.5, abs=0.01)  # only the ceiling above
 
 
@@ -206,3 +205,18 @@ def test_walk_forward_ranges_only_grow():
     assert len(rs) >= 4
     assert all(b > a for a, b in itertools.pairwise(rs))
     assert all(true_closing(sc, "R2", float(x)) < 0 for x in np.arange(2.5, 3.5, 0.25))
+
+
+def test_mock_range_fires_only_the_mvp_pair_by_default_and_honours_order():
+    from hardware.mock.clock import VirtualClock
+    from hardware.mock.range import create
+
+    def seen(options):
+        clock = VirtualClock()
+        r = create(ModuleContext(clock, options, "idle"))
+        r.start()
+        clock.advance(1.0)
+        return {s.sensor_id for s in r.read()}
+
+    assert seen({}) == {"R2", "R3"}
+    assert seen({"order": ["R1", "R2", "R3", "R4", "TOP"]}) == set(SENSOR_IDS)

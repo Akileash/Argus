@@ -65,7 +65,7 @@ class StruckByThresholds(_Thresholds):
     range_min_m: float = 0.03  # valid range bounds
     range_max_m: float = 2.5
     track_len: int = 4
-    min_track_samples: int = 4  # sweep target: 3 buys one sweep of warning time
+    min_track_samples: int = 3  # spec §3.2a; 4 trades one sweep of warning for steadier tracks
     jump_m: float = 0.35
     first_step_max_rate_mps: float = 4.0
     handoff_tol_m: float = 0.2

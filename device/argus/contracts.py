@@ -19,6 +19,8 @@ from typing import Literal, Protocol, runtime_checkable
 
 SensorId = Literal["R1", "R2", "R3", "R4", "TOP"]
 SENSOR_IDS: tuple[SensorId, ...] = ("R1", "R2", "R3", "R4", "TOP")
+# MVP fires only these (spec §3.2a). Override with modules.range.options.order; every id stays valid.
+DEFAULT_ACTIVE_SENSORS: tuple[SensorId, ...] = ("R2", "R3")
 Motor = Literal["top", "back"]
 ModuleName = Literal["imu", "range", "hat_on", "env", "haptics", "camera"]
 MODULE_NAMES: tuple[ModuleName, ...] = ("imu", "range", "hat_on", "env", "haptics", "camera")

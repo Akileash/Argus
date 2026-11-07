@@ -158,7 +158,7 @@ SINCE="$(python3 -c 'from datetime import datetime,timezone,timedelta;print((dat
 # camera ring holds the full 20 s pre-roll (a real hat has been running for minutes); run time =
 # lead-in + time to the event + 10 s post-roll + clip encode margin.
 LEAD=21
-SCENARIOS=("board_swing_rear_left:struck_by_near_miss:39" "hat_drop_1m:fall:40" "hat_removed_table:hat_removed:33")
+SCENARIOS=("board_swing_rear:struck_by_near_miss:39" "hat_drop_1m:fall:40" "hat_removed_table:hat_removed:33")
 EXPECT=()
 for spec in "${SCENARIOS[@]}"; do
   IFS=: read -r name etype secs <<<"$spec"
@@ -182,7 +182,7 @@ RC=$?
 
 if [ "$RC" = 0 ] && [ "$UI" = 1 ]; then
   log "UI check: opening the struck-by incident in Playwright"
-  EID="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["board_swing_rear_left"]["event_id"])' "$DEMO_DIR/summary.json")"
+  EID="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["board_swing_rear"]["event_id"])' "$DEMO_DIR/summary.json")"
   (cd web && WEB_BASE_URL="$BASE" E2E_INCIDENT_ID="$EID" pnpm exec playwright test -c tests/e2e/playwright.config.ts e2e-struck-by) \
     >"$LOG_DIR/playwright.log" 2>&1 || { tail -30 "$LOG_DIR/playwright.log" >&2; RC=1; }
   [ "$RC" = 0 ] && log "UI check passed (screenshot: web/tests/e2e/__screenshots__/e2e-struck-by.png)"

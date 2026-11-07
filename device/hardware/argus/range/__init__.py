@@ -1,6 +1,6 @@
 """5x HC-SR04 interleaved sequential sweep (spec §3.2). Echo width via lgpio edge alerts (no busy-wait).
 
-One sensor at a time, `slot_ms` (30) per sensor, 10 us trigger, order default R1,R2,R3,R4,TOP.
+One sensor at a time, `slot_ms` (30) per sensor, 10 us trigger, order default R2,R3 (spec §3.2a).
 distance_mm = width_us * speed_of_sound(m/s) / 2 / 1000 ; speed = 343 m/s, or 331.3 + 0.606*T if `temp_c` set.
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 import threading
 import time
 
-from argus.contracts import Health, ModuleContext, RangeSample
+from argus.contracts import DEFAULT_ACTIVE_SENSORS, Health, ModuleContext, RangeSample
 
 from .._common import Gpio, HealthTracker, LgpioGpio, StoppableThread
 
@@ -20,7 +20,7 @@ DEFAULT_PINS = {  # (trig, echo) BCM, spec §2.3
     "R4": (16, 25),
     "TOP": (20, 21),
 }
-DEFAULT_ORDER = ["R1", "R2", "R3", "R4", "TOP"]
+DEFAULT_ORDER = list(DEFAULT_ACTIVE_SENSORS)
 
 
 def width_to_mm(width_us: float, temp_c: float | None = None) -> float:
@@ -42,6 +42,7 @@ class Hcsr04Array:
         self._chip = int(o.get("gpiochip", 0))
         pins = {k: tuple(v) for k, v in {**DEFAULT_PINS, **(o.get("pins") or {})}.items()}
         self._order = list(o.get("order", DEFAULT_ORDER))
+        self.sensors = tuple(self._order)
         for sid in self._order:
             if sid not in pins:
                 raise ValueError(f"unknown sensor {sid}")

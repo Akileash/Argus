@@ -97,7 +97,7 @@ def test_crashing_team_code_is_contained_and_counted():
 # ------------------------------------------------------------------ CLI
 def test_cli_scenario_list_and_run(tmp_path):
     r = runner.invoke(app, ["scenario", "--list"])
-    assert r.exit_code == 0 and "hat_drop_1m" in r.output and "board_swing_rear_left" in r.output
+    assert r.exit_code == 0 and "hat_drop_1m" in r.output and "board_swing_rear" in r.output
     rec = tmp_path / "out.jsonl"
     r = runner.invoke(app, ["scenario", "walk_backward_wall", "--seconds", "1.5", "--record", str(rec)])
     assert r.exit_code == 0 and "expected: no events" in r.output and rec.exists()
@@ -136,7 +136,7 @@ def test_cli_bench_camera_on_mock():
 
 
 def test_cli_run_for_a_second():
-    r = runner.invoke(app, ["run", "--duration", "1.2", "--no-control", "--scenario", "board_swing_rear_left"])
+    r = runner.invoke(app, ["run", "--duration", "1.2", "--no-control", "--scenario", "board_swing_rear"])
     assert r.exit_code == 0 and "buffered" in r.output
 
 

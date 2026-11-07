@@ -15,7 +15,7 @@ The Pi runs six hardware modules. Each one has a fixed name:
 | Module | What it reads or drives |
 |---|---|
 | `imu` | MPU-6050 (accelerometer + gyro) |
-| `range` | the five HC-SR04 ultrasonic sensors (R1, R2, R3, R4, TOP) |
+| `range` | the two rear HC-SR04 ultrasonic sensors (R2, R3) |
 | `hat_on` | VL53L0X time-of-flight sensor in the crown |
 | `env` | SCD41 CO2, temperature and humidity |
 | `haptics` | the two vibration motors (top and back) through the L293D |
@@ -243,7 +243,7 @@ units and fields.
 | Module | Method(s) | Sample fields and units | Expected rate | Staleness limit (fallback) |
 |---|---|---|---|---|
 | `imu` | `read() -> list[ImuSample]` | `t_ns`, `ax`, `ay`, `az` in **g**; `gx`, `gy`, `gz` in **deg/s** | at least **400 Hz** (our driver runs at about 1000 Hz) | 500 ms |
-| `range` | `read() -> list[RangeSample]` | `t_ns`, `sensor_id` (one of `R1`, `R2`, `R3`, `R4`, `TOP`), `range_mm` in **mm** or `None` for no echo | each sensor about **6.7 readings/s** (one full sweep about 150 ms, so about 33 samples/s in total) | 500 ms |
+| `range` | `read() -> list[RangeSample]` | `t_ns`, `sensor_id` (`R2` or `R3` for the MVP; `R1`, `R4` and `TOP` stay valid for later), `range_mm` in **mm** or `None` for no echo | each sensor about **6.7 readings/s** (one full sweep about 150 ms, so about 33 samples/s in total) | 500 ms |
 | `hat_on` | `read() -> list[TofSample]` | `t_ns`, `range_mm` in **mm** or `None`, `status` (one of `ok`, `out_of_range`, `error`) | about **10 Hz** | 3 s |
 | `env` | `read() -> list[EnvSample]` | `t_ns`, `co2_ppm`, `temp_c`, `rh_pct` | about **0.2 Hz** (one reading every 5 s) | 30 s |
 | `haptics` | `set(motor, intensity)`, `off_all()` | `motor` is `top` or `back`; `intensity` is 0.0 to 1.0 | no samples. Patterns are not in the driver. | self-test every 1 s |

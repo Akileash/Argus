@@ -102,14 +102,14 @@ def test_apply_round_trip_changes_only_requested_keys(tmp_path):
     cfg = tmp_path / "config.yaml"
     shutil.copy(DEFAULT_CONFIG_PATH, cfg)
     before = cfg.read_text()
-    apply_to_config(cfg, {"struck_by.ego_tau_s": 2.0, "struck_by.min_track_samples": 3,
+    apply_to_config(cfg, {"struck_by.ego_tau_s": 2.0, "struck_by.min_track_samples": 4,
                           "struck_by.ego_compensation": False})
     after = cfg.read_text()
     changed = [(a, b) for a, b in zip(before.splitlines(), after.splitlines(), strict=True) if a != b]
     assert len(changed) == 3 and len(before.splitlines()) == len(after.splitlines())
     new = load_config(cfg)
     old = load_config(DEFAULT_CONFIG_PATH)
-    assert new.thresholds.struck_by.ego_tau_s == 2.0 and new.thresholds.struck_by.min_track_samples == 3
+    assert new.thresholds.struck_by.ego_tau_s == 2.0 and new.thresholds.struck_by.min_track_samples == 4
     assert new.thresholds.struck_by.ego_compensation is False
     assert new.thresholds.fall_impact == old.thresholds.fall_impact
     assert new.modules == old.modules
