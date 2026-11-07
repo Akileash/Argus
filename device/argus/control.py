@@ -38,6 +38,9 @@ def handle(sup: Supervisor, req: dict[str, Any]) -> dict[str, Any]:
             inst = sup.module(req["module"])
             getattr(inst, req["kind"])()  # kill | stall | revive (mock impls only)
             return {"ok": True}
+        extra = getattr(sup, "control_handlers", {}).get(cmd)  # registered by argus.pipeline (e.g. "trigger")
+        if extra is not None:
+            return extra(sup, req)
         return {"ok": False, "error": f"unknown cmd {cmd!r}"}
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}

@@ -89,6 +89,9 @@ events:                 # spec §4.4
   post_roll_s: 10
   merge_extend_max_s: 10
   cooldown_s: 5
+  queue_dir: var/queue        # contracts/device_queue.md; relative paths resolve against device/
+  queue_max_mb: 2048
+  firmware_version: "0.1.0"
 
 backend:                # blank on purpose; set by `argus-cli pair`
   base_url: ""

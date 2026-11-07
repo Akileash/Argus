@@ -152,6 +152,10 @@ class EventsCfg(_Strict):
     post_roll_s: float = 10.0
     merge_extend_max_s: float = 10.0
     cooldown_s: float = 5.0
+    # contracts/device_queue.md. Relative paths resolve against device/. Blank firmware_version -> package default.
+    queue_dir: str = "var/queue"
+    queue_max_mb: int = 2048
+    firmware_version: str = "0.1.0"
 
 
 class BusCfg(_Strict):

@@ -110,30 +110,28 @@ class MockCamera:
 
     def _ensure_segments(self, first: int, last: int) -> list[Path]:
         self.cache.mkdir(parents=True, exist_ok=True)
-        missing = [k for k in range(first, last + 1) if not self._seg_path(k).exists()]
-        i = 0
-        while i < len(missing):  # one ffmpeg process per contiguous run of missing seconds
-            j = i
-            while j + 1 < len(missing) and missing[j + 1] == missing[j] + 1:
-                j += 1
-            self._generate(missing[i], missing[j] - missing[i] + 1)
-            i = j + 1
+        for k in range(first, last + 1):
+            if not self._seg_path(k).exists():
+                self._generate(k)
         return [self._seg_path(k) for k in range(first, last + 1)]
 
-    def _generate(self, start_s: int, count: int) -> None:
+    def _generate(self, k: int) -> None:
+        """Encode scenario second ``k`` as its own file.
+
+        One ffmpeg per second on purpose: the segment muxer puts 2 s in the first file when the
+        input starts at t=0, which left one file too few and shifted every later second.
+        """
         with tempfile.TemporaryDirectory(dir=self.cache) as td:
+            tmp = Path(td) / "seg.ts"
             self._ffmpeg_run([
-                "-ss", str(start_s), "-f", "lavfi", "-i", f"testsrc2=size={self.size}:rate={self.fps}",
-                "-t", str(count), "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
+                "-ss", str(k), "-f", "lavfi", "-i", f"testsrc2=size={self.size}:rate={self.fps}",
+                "-t", "1", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
                 "-g", str(self.fps), "-keyint_min", str(self.fps), "-sc_threshold", "0",
-                "-force_key_frames", "expr:gte(t,n_forced*1)", "-f", "segment", "-segment_time", "1",
-                "-segment_format", "mpegts", "-reset_timestamps", "1", f"{td}/s_%06d.ts",
+                "-f", "mpegts", str(tmp),
             ])
-            made = sorted(Path(td).glob("s_*.ts"))
-            if len(made) < count:
-                raise CameraError(f"ffmpeg produced {len(made)} of {count} segments")
-            for i, p in enumerate(made[:count]):
-                p.replace(self._seg_path(start_s + i))
+            if not tmp.exists() or tmp.stat().st_size == 0:
+                raise CameraError(f"ffmpeg produced no segment for second {k}")
+            tmp.replace(self._seg_path(k))
 
     def _ffmpeg_run(self, args: list[str]) -> None:
         assert self._ffmpeg
