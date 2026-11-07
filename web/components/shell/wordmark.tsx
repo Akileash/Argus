@@ -11,7 +11,7 @@ export function Wordmark({ size = "md", className }: { size?: "md" | "lg"; class
         <rect x="4" y="15.5" width="16" height="2.5" rx="1.25" fill="var(--ink)" />
         <rect x="11" y="5.5" width="2" height="5" rx="1" fill="var(--ink)" />
       </svg>
-      <span className={cn("font-extrabold tracking-[0.2em]", size === "lg" ? "text-2xl" : "text-base")}>ARGUS</span>
+      <span className={cn("font-extrabold tracking-[0.2em] text-ink", size === "lg" ? "text-2xl" : "text-[1rem]")}>ARGUS</span>
     </span>
   );
 }

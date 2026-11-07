@@ -11,4 +11,9 @@ Dense, form-like, projector-friendly. Tokens live in `app/globals.css` as CSS va
 - **Type:** Inter (`font-sans`) for UI; JetBrains Mono (`font-mono`) for numbers. Use the `.num` class (mono + tabular numerals) on every metric, ID and timestamp column. `.field-label` is the small uppercase form label.
 - **Density:** base font 15px, 6px radius, 1px borders instead of shadows, table rows ~36px. Print: `.no-print` hides chrome; base font drops to 12px.
 - **Focus:** 2px orange outline (`--ring`) on `:focus-visible`.
+- **Elevation:** cards use `shadow-card` (two low-alpha ink layers) with a 1px border kept for structure; popovers, toasts and dialogs use `shadow-pop`. Shadows are stripped in print.
+- **Wordmark:** `components/shell/wordmark.tsx` (hard-hat glyph on orange tile + tracked caps). Pitfall: `text-base` is the *base surface colour* in this theme, not a font size; use `text-[1rem]`.
+- **Projector:** root font-size steps from 15px to 17px at >=1800px wide.
+- **Motion:** one curve `--ease-out-strong` (cubic-bezier(0.23,1,0.32,1)). Only for: new incident row (250ms slide + 2.4s orange fade), toast in 200ms / out 150ms, processing stepper step colour 200ms, banners and header (`.anim-banner`, 220ms), report reveal when ready (`.anim-reveal`, 280ms), button/filter press scale 0.96 in 150ms. Under `prefers-reduced-motion` movement and scale are dropped and only opacity fades remain.
+- **Nav:** active page has an orange underline and `aria-current="page"`.
 - **Components:** `components/ui/*` follow the shadcn/ui pattern (Button, Input, Label, Card) and read these tokens; `components/chips.tsx` holds the domain chips.

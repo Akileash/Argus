@@ -13,7 +13,7 @@ const buttonVariants = cva(
         ghost: "text-ink hover:bg-surface-2",
         link: "text-accent-text underline-offset-4 hover:underline",
       },
-      size: { default: "h-9 px-3.5", sm: "h-8 px-2.5 text-xs", lg: "h-11 px-5 text-base" },
+      size: { default: "h-9 px-3.5", sm: "h-8 px-2.5 text-xs", lg: "h-11 px-5 text-[1rem]" },
     },
     defaultVariants: { variant: "default", size: "default" },
   },
