@@ -24,6 +24,8 @@ export interface WorkerConfig {
   spendCapUsd: number;
   pollIntervalMs: number;
   retryDelayMs: number;
+  /** Events stuck in `analyzing` longer than this (by updated_at) are re-queued: the worker that claimed them died. */
+  staleAnalyzingMs: number;
   maxAttempts: number;
   geminiPrice: { input: number; output: number };
 }
@@ -56,6 +58,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     spendCapUsd: num(env.LLM_SPEND_CAP_USD, 25),
     pollIntervalMs: num(env.WORKER_POLL_MS, 2000),
     retryDelayMs: num(env.WORKER_RETRY_DELAY_MS, 3000),
+    staleAnalyzingMs: num(env.WORKER_STALE_ANALYZING_MS, 5 * 60_000),
     maxAttempts: 2, // 1 try + 1 retry
     geminiPrice: {
       input: num(env.GEMINI_PRICE_IN_PER_MTOK, dflt.input),

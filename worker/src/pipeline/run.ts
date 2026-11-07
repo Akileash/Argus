@@ -233,6 +233,8 @@ export async function processClaimed(deps: PipelineDeps, eventId: string): Promi
 
 /** Claim and process a single event. Returns false when nothing was waiting. */
 export async function runOnce(deps: PipelineDeps): Promise<boolean> {
+  const stale = await deps.store.reclaimStale(deps.cfg.staleAnalyzingMs);
+  if (stale.length) (deps.log ?? consoleLogger).warn(`re-queued ${stale.length} event(s) stuck in analyzing: ${stale.join(", ")}`);
   const id = await deps.store.claimNext();
   if (!id) return false;
   await processClaimed(deps, id);

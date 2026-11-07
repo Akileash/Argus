@@ -18,6 +18,7 @@ export const TABLES = {
 export const EVENT_COLS = {
   id: "id",
   status: "status",
+  updatedAt: "updated_at",
   error: "error",
   deviceId: "device_id",
   workerId: "worker_id",
