@@ -62,12 +62,12 @@ class FallImpactDetector:
         assert p is not None
         self._pulse = None
         self._debounce_until = p["last_hi"] + self.debounce_ns
-        common = dict(
-            t_ns=p["start"],
-            peak_g=p["peak"],
-            peak_g_saturated=p["sat"],
-            debug={"pulse_ms": (p["last_hi"] - p["start"]) / _MS},
-        )
+        common = {
+            "t_ns": p["start"],
+            "peak_g": p["peak"],
+            "peak_g_saturated": p["sat"],
+            "debug": {"pulse_ms": (p["last_hi"] - p["start"]) / _MS},
+        }
         if p["kind"] == "fall":
             t = p["ff_ms"] / 1000.0
             return Detection(
@@ -121,15 +121,14 @@ class FallImpactDetector:
                 self._mark(t)
 
         # 3) pulse start
-        if self._pulse is None and t >= self._debounce_until:
-            if mag >= self.landing_g:
-                ff_ms = self._landing_candidate(t)
-                if ff_ms is not None:
-                    self._pulse = dict(start=t, last_hi=t, peak=mag, sat=sat, kind="fall", ff_ms=ff_ms)
-                    self._ff_start = None
-                    self._armed = None
-                elif mag >= self.impact_g:
-                    self._pulse = dict(start=t, last_hi=t, peak=mag, sat=sat, kind="impact", ff_ms=0.0)
+        if self._pulse is None and t >= self._debounce_until and mag >= self.landing_g:
+            ff_ms = self._landing_candidate(t)
+            if ff_ms is not None:
+                self._pulse = {"start": t, "last_hi": t, "peak": mag, "sat": sat, "kind": "fall", "ff_ms": ff_ms}
+                self._ff_start = None
+                self._armed = None
+            elif mag >= self.impact_g:
+                self._pulse = {"start": t, "last_hi": t, "peak": mag, "sat": sat, "kind": "impact", "ff_ms": 0.0}
         return out
 
     def on_range(self, s: RangeSample, state: DetectorState) -> list[Detection]:

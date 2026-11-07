@@ -10,6 +10,8 @@ import importlib
 import json
 import logging
 import os
+import signal
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -22,7 +24,7 @@ from argus.bench import Bench
 from argus.bus import SampleBus
 from argus.config import ArgusConfig, ConfigError, ModuleCfg, load_config
 from argus.contracts import MODULE_NAMES, ModuleContext, MonotonicClock
-from argus.supervisor import STREAM_FOR, ModuleLoadError, Supervisor, load_impl, shadow
+from argus.supervisor import EXCLUSIVE_MODULES, STREAM_FOR, ModuleLoadError, Supervisor, load_impl, shadow
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="Argus smart hard hat: device CLI")
 
@@ -110,15 +112,23 @@ def run(
         typer.echo("backend not paired: detecting and queueing events locally (run `argus-cli pair` to upload)")
     typer.echo(f"argus running (scenario={scenario}); Ctrl-C to stop")
     t_end = time.monotonic() + duration if duration else None
+    # `systemctl stop/restart` sends SIGTERM: treat it like Ctrl-C so open events get flushed (clip + trace
+    # written, queue committed) instead of being lost mid post-roll.
+    stopping = threading.Event()
+    prev_term = signal.signal(signal.SIGTERM, lambda signum, frame: stopping.set())
     try:
-        while t_end is None or time.monotonic() < t_end:
-            time.sleep(1.0)
+        while (t_end is None or time.monotonic() < t_end) and not stopping.is_set():
+            if stopping.wait(1.0):
+                break
             counts = {s: len(bus.window(s, 0, 1 << 62)) for s in ("imu", "range", "tof", "env")}
             impls = {n: v["impl"] for n, v in sup.status().items()}
             typer.echo(f"buffered {counts} impls {impls}")
     except KeyboardInterrupt:
         pass
     finally:
+        signal.signal(signal.SIGTERM, prev_term)
+        if stopping.is_set():
+            typer.echo("SIGTERM received: flushing open events, then exiting")
         for stop in stops:
             stop()
         if srv:
@@ -140,6 +150,9 @@ def reload(
     if not resp["ok"]:
         raise _fail(f"reload failed: {resp['error']}")
     typer.echo(f"{module} now on {resp['impl']} (swapped in {resp['seconds'] * 1000:.0f} ms)")
+    if module in EXCLUSIVE_MODULES:
+        typer.echo(f"note: {module} owns exclusive hardware, so the old impl was stopped before the new one "
+                   "started and the new one passed its health check; there was a short gap in its data.")
 
 
 @app.command()

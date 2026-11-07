@@ -211,6 +211,10 @@ class EventManager:
             try:
                 info = self.camera.save_clip(start_ns, end_ns, str(tmp / "clip.mp4"))
                 clip_s = info.duration_s
+                # window = what the video really holds (it may start at an earlier keyframe, or be short):
+                # the dashboard places t0 at pre_s from the start of the video.
+                pre_s = min(max(0.0, (ev.t0_ns - info.t_start_ns) / NS), info.duration_s)
+                post_s = max(0.0, (info.t_end_ns - ev.t0_ns) / NS)
             except Exception as e:  # noqa: BLE001 - an event without video still matters
                 log.error("save_clip failed for %s: %s", ev.event_id, e)
                 (tmp / "clip.mp4").unlink(missing_ok=True)

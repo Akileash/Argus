@@ -1,6 +1,7 @@
-"""5x HC-SR04 interleaved sequential sweep (spec §3.2). Echo width via lgpio edge alerts (no busy-wait).
+"""HC-SR04 sequential sweep, MVP = 2 rear sensors R2,R3 (spec §3.2a); pins for R1/R4/TOP stay defined for later.
+Echo width via lgpio edge alerts (no busy-wait).
 
-One sensor at a time, `slot_ms` (30) per sensor, 10 us trigger, order default R2,R3 (spec §3.2a).
+One sensor at a time, `slot_ms` (30) per sensor, 10 us trigger: 60 ms per sweep, ~16.7 Hz per sensor with the pair.
 distance_mm = width_us * speed_of_sound(m/s) / 2 / 1000 ; speed = 343 m/s, or 331.3 + 0.606*T if `temp_c` set.
 """
 

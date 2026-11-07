@@ -7,10 +7,14 @@ Policy choices (documented, configurable):
   `below_min_policy`: "clamp" (default; treat as a valid reading of min_range_mm, the head
   is very close) or "ignore" (drop the sample).
 - Before calibration `hat_on` is True (matches DetectorState default; nothing is suppressed).
+- Boot per spec §4.3 happens on a table, so a stable target that is far away is the TABLE, not the
+  head. The baseline is only accepted inside the head band (`baseline_max_mm`, default 120 mm); a stable
+  out-of-band reading never calibrates. If the real hat measures more than that on the head, raise
+  `thresholds.hat_state.baseline_max_mm` (docs/CONNECT-THE-HAT.md).
 - Detection t_ns is the confirmation time (monotonic order for the runtime); the moment the
   ToF change began is in debug["off_start_ns"].
 
-cfg keys (optional): baseline_mm (preset, skips calibration), min_range_mm, max_range_mm,
+cfg keys (optional): baseline_mm (preset, skips calibration), baseline_max_mm, min_range_mm, max_range_mm,
 calibration_s, stable_spread_mm, off_delta_mm, on_band_mm, off_confirm_s, on_confirm_s,
 knock_lookback_s, knock_slack_ms, below_min_policy.
 """
@@ -30,6 +34,7 @@ class HatStateDetector:
         c = cfg or {}
         self.min_range = float(c.get("min_range_mm", 50.0))
         self.max_range = float(c.get("max_range_mm", 1200.0))
+        self.baseline_max = float(c.get("baseline_max_mm", 120.0))
         self.calibration_ns = int(float(c.get("calibration_s", 3.0)) * _S)
         self.spread = float(c.get("stable_spread_mm", 10.0))
         self.off_delta = float(c.get("off_delta_mm", 30.0))
@@ -66,10 +71,9 @@ class HatStateDetector:
         return any(t - lb <= m <= t for m in self._own_markers)
 
     def on_imu(self, s: ImuSample, state: DetectorState) -> list[Detection]:
-        if self.impact_source is None:
-            if (s.ax * s.ax + s.ay * s.ay + s.az * s.az) ** 0.5 > 3.0:
-                self._own_markers.append(s.t_ns)
-                self._own_markers = [m for m in self._own_markers if s.t_ns - m < 30 * _S]
+        if self.impact_source is None and (s.ax * s.ax + s.ay * s.ay + s.az * s.az) ** 0.5 > 3.0:
+            self._own_markers.append(s.t_ns)
+            self._own_markers = [m for m in self._own_markers if s.t_ns - m < 30 * _S]
         return []
 
     # ------------------------------------------------------------ ToF
@@ -94,7 +98,7 @@ class HatStateDetector:
         return self._track_off(s.t_ns, val)
 
     def _calibrate(self, t: int, r: float | None) -> None:
-        if r is None:
+        if r is None or r > self.baseline_max:  # no target, or the table (outside the head band)
             self._buf.clear()
             return
         self._buf.append((t, r))

@@ -113,21 +113,27 @@ cd ~/argus
 ./device/install.sh
 ```
 
-The installer takes several minutes. It installs system packages, enables I2C, turns on the camera
-and the motor PWM, creates the Python environment, and sets up the `argus` service.
+The installer takes several minutes. It installs system packages, enables I2C and sets it to
+400 kHz (`dtparam=i2c_arm_baudrate=400000`, needed to read the IMU at 1 kHz), turns on the camera,
+creates the Python environment, and sets up the `argus` service. The motors use software PWM, so the
+installer does **not** add a hardware PWM overlay. (If an older install added a `dtoverlay=pwm-2chan`
+line to `/boot/firmware/config.txt`, the installer tells you to delete it.)
 
 It ends with a checklist. The first run usually ends like this:
 
 ```
-REBOOT REQUIRED. I2C, camera and PWM boot settings changed.
+REBOOT REQUIRED. I2C (400 kHz) and camera boot settings changed.
   1. sudo reboot
 ```
 
 and later:
 
 ```
-device is not paired yet, so the service was NOT started.
+device is not paired yet, so the service was NOT started now.
 ```
+
+The service is still **enabled**: after any reboot it starts by itself, even before pairing. Until it is
+paired it detects events and keeps them on the SD card.
 
 **You should see:** `Argus device install finished.` near the end.
 
@@ -150,7 +156,9 @@ cd ~/argus
 ```
 
 **You should see:** no `REBOOT REQUIRED` line this time. The last lines say the service was **not**
-started, because the device is not paired yet. That is correct.
+started now, because the device is not paired yet. That is correct. (If you rebooted in step b4 before
+pairing, the service already started by itself after the reboot. That is fine too. Stop it with
+`sudo systemctl stop argus` before the bench tests in step (d).)
 
 Check that the I2C bus exists:
 
@@ -185,8 +193,8 @@ Use this table to check your wiring. It is copied from spec section 2.3 (Pi 4, B
 | Function | Pins |
 |---|---|
 | I2C bus (IMU, VL53L0X, SCD41) | GPIO2 (SDA), GPIO3 (SCL) |
-| Motor top (EN1, PWM) | GPIO12 (hardware PWM0) |
-| Motor back (EN2, PWM) | GPIO13 (hardware PWM1) |
+| Motor top (EN1, PWM) | GPIO12 (PWM, generated in software by the driver) |
+| Motor back (EN2, PWM) | GPIO13 (PWM, generated in software by the driver) |
 | HC-SR04 R2 (7.5° left of straight back) TRIG / ECHO | GPIO19 / GPIO26 |
 | HC-SR04 R3 (7.5° right of straight back) TRIG / ECHO | GPIO23 / GPIO24 |
 | Reserved for more sensors later | R1 GPIO5 / GPIO6, R4 GPIO16 / GPIO25, TOP GPIO20 / GPIO21 |
@@ -286,12 +294,12 @@ For each one:
 
 | Module | What the test checks | You should see |
 |---|---|---|
-| `imu` | accelerometer, sample rate, error count | `PASS` lines. Accel z about +1 g when the hat is flat. Rate about 1000 Hz. |
+| `imu` | accelerometer, sample rate, FIFO overflows | `PASS` lines. Accel z about +1 g when the hat is flat. Rate about 1000 Hz (the test **fails** below 800 Hz or if the FIFO overflows; check the 400 kHz I2C setting from step b3). |
 | `range` | two sensors, sweep order | R2 and R3 both report every ~60 ms. A flat target at 0.5, 1.0 and 2.0 m reads within ±1 cm. |
-| `hat_on` | on-head reading | about 50 to 80 mm with the hat on your head. `out_of_range` with the hat off. |
+| `hat_on` | on-head reading, ~10 Hz | about 50 to 80 mm with the hat on your head. `out_of_range` with the hat off. **Write down the number on your head**: it must be 120 mm or less (see step g). |
 | `env` | first CO2 reading | first sample after about 5 s. CO2 about 400 to 1000 ppm. |
 | `haptics` | motor drive | `argus-cli buzz both` makes both motors buzz (see step 4). |
-| `camera` | 720p recording and clip save | a clip saved. `ffprobe` shows H.264, 1280×720, about 30 fps. |
+| `camera` | 720p recording and clip save | a clip saved. `ffprobe` shows H.264, 1280×720, about 30 fps. Save a second clip right after the first: it must be full length too. |
 
 4. Buzz the motors (for `haptics`):
 
@@ -323,6 +331,10 @@ sed -n 1,12p /etc/argus/config.yaml
 ---
 
 ## (e) Pair the hat with the backend
+
+You can pair while the service is running. It notices the new token (and the new serial) within about
+10 seconds, and events that were queued before pairing upload with the serial the device has when it
+uploads.
 
 ### e0. Choose an address the hat can reach
 
@@ -452,7 +464,26 @@ A new device with no events has an empty queue (`queue_depth=0`).
 
 ## (g) Your first real event
 
-1. Leave the hat still on a table for about 10 seconds. The detectors calibrate after the service starts.
+1. **Calibrate (spec 4.3).** The hat calibrates once, at boot, in two steps. Watch it in the log:
+
+   ```bash
+   journalctl -u argus -f | grep '\[boot\]'
+   ```
+
+   - `[boot] CALIBRATING: keep the hat still, resting on a table`. Leave the hat still on a table for
+     about 3 seconds. (If you set `device.status_led_pin: 17` in `/etc/argus/config.yaml`, the status LED
+     on GPIO17 is **solid** during this step. The default is no LED.)
+   - `[boot] PUT THE HAT ON your head now ...`. The LED **blinks**. Put the hat on your head and hold still
+     for about 3 seconds. The hat-on sensor takes its baseline now.
+   - `[boot] READY: calibration done`. The LED goes off.
+
+   The hat-on baseline is only accepted when the reading is **120 mm or less** (the head band,
+   `thresholds.hat_state.baseline_max_mm`). A steady reading farther away is the table, so it is ignored and
+   the hat keeps waiting for a head. If the log stays on `PUT THE HAT ON` with the hat on your head, read the
+   on-head distance from `argus-cli test hat_on` (step d). If it is **more than 120 mm**, raise
+   `baseline_max_mm` in `/etc/argus/config.yaml` to about 30 mm above that distance (for example `180`),
+   then `sudo systemctl restart argus`. It must stay well below the table distance: the head band and
+   the `off_delta_mm` margin (30 mm) are what tell "on the head" from "on the table".
 2. Open the dashboard and go to **Incidents**. Leave the page open.
 3. Put a soft mat on the floor, next to the table.
 4. Hold the hat about 1 m above the mat. Drop it.
@@ -471,7 +502,9 @@ A new device with no events has an empty queue (`queue_depth=0`).
   so it goes straight to **ready**.
 
 Optional second test: take the hat off and put it on the table. Expect a `hat_removed` event within
-about 3 seconds.
+about 3 seconds. Put it back on your head: after about 2 seconds the log shows the hat is on again
+(`hat_on` is not an event, so there is no dashboard row). If neither happens, the baseline was not taken
+on your head: check the `[boot]` lines above.
 
 **If you don't:**
 - **No `EVENT` line:** check that the impls show `argus`, not `mock` (step f). Drop from a higher
@@ -532,6 +565,7 @@ This writes a `.jsonl` recording and a `.labels.json` file to `device/recordings
 | **Uploads stuck**: events do not reach the dashboard | `.venv/bin/argus-cli upload --status --config /etc/argus/config.yaml`. Read `queue_depth`, `pending`, `rejected` and `last_error`. | If `last_error` says a network problem, check the Pi's Wi-Fi and the dashboard URL. To push the queue once, stop the service and run `.venv/bin/argus-cli upload --once --config /etc/argus/config.yaml`. It exits with 0 when nothing is pending or rejected. Start the service again after. |
 | **401 after re-pair**: uploads say `401 unauthorized` | The device token in `/etc/argus/config.yaml`. | Register the device again in the dashboard with **Issue a new token if already paired** ticked. Copy the new token. Run `.venv/bin/argus-cli pair --url <dashboard URL> --config /etc/argus/config.yaml` and paste the token. A running service notices the new token within about 10 s. Check with `pair --check`. |
 | **Under-voltage**: the Pi slows down or restarts when the motors buzz | `vcgencmd get_throttled` | `throttled=0x0` is good. Any other value means the power is dropping. Use a supply that gives 5 V and 3 A. The Anker power bank is for demos only (5 V, 3 A max). Run the motors and sensors together for 10 minutes and check again. |
+| **Stuck on `PUT THE HAT ON`**: the log never reaches `READY` | The on-head reading from `argus-cli test hat_on`. | If it is above 120 mm, raise `thresholds.hat_state.baseline_max_mm` (see step g) and restart the service. If it is much lower than 50 mm, the sensor is too close to the head (spec 2.5: mount it at least 50 mm away). |
 | Service keeps restarting | `journalctl -u argus -n 100 --no-pager` | Read the last error and fix that first. |
 | `module_fallback` in the log | The `reason` in the event line | Fix the module that failed, then `.venv/bin/argus-cli reload <module>`. Fallbacks do not switch back by themselves. |
 

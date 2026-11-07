@@ -20,7 +20,8 @@ Restart=always
 RestartSec=2
 # Sensor timing (HC-SR04 echo, IMU FIFO) needs a higher scheduling priority.
 Nice=-5
-TimeoutStopSec=15
+# SIGTERM flushes events that are still in their post-roll (clip + trace), which can take a few seconds.
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target

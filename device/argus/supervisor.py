@@ -39,6 +39,9 @@ log = logging.getLogger(__name__)
 
 STREAM_FOR: dict[str, str] = {"imu": "imu", "range": "range", "hat_on": "tof", "env": "env"}
 VAR_DIR = Path(__file__).resolve().parents[1] / "var"
+# Hardware that can be opened by only one owner at a time (GPIO pins claimed through lgpio, the camera).
+# Swapping these must release the old impl BEFORE the new one starts. I2C modules can be shared.
+EXCLUSIVE_MODULES = frozenset({"range", "haptics", "camera"})
 HEALTH_EVERY_S = 0.1
 SELFTEST_EVERY_S = 1.0
 
@@ -91,7 +94,8 @@ class _Proxy:
         self._sup, self._slot = sup, slot
 
     def __getattr__(self, item: str) -> Any:
-        return getattr(self._slot.inst, item)
+        with self._slot.lock:  # wait out an in-progress swap of exclusive hardware
+            return getattr(self._slot.inst, item)
 
 
 class HapticsProxy(_Proxy):
@@ -117,7 +121,8 @@ class HapticsProxy(_Proxy):
     def _call(self, fn: Callable[[Any], None]) -> None:
         for attempt in (0, 1):
             try:
-                fn(self._slot.inst)
+                with self._slot.lock:
+                    fn(self._slot.inst)
                 return
             except Exception as e:  # noqa: BLE001
                 log.error("haptics driver raised: %s", e)
@@ -198,22 +203,27 @@ class Supervisor:
         """Drain one module's ``read()`` into the bus. Returns the number of samples published."""
         slot = self._slots[name]
         stream = STREAM_FOR.get(name)
-        inst = slot.inst
-        if stream is None or inst is None:
-            return 0
-        try:
-            samples = inst.read()
-        except Exception as e:  # noqa: BLE001 - contract violation: read() must not raise
-            self.fallback(name, f"read() raised {type(e).__name__}: {e}")
-            return 0
-        if samples:
-            self.bus.publish(stream, samples)
-            slot.last_progress_ns = self.clock.now_ns()
-        return len(samples)
+        with slot.lock:  # not while an exclusive module is being swapped
+            inst = slot.inst
+            if stream is None or inst is None:
+                return 0
+            try:
+                samples = inst.read()
+            except Exception as e:  # noqa: BLE001 - contract violation: read() must not raise
+                self.fallback(name, f"read() raised {type(e).__name__}: {e}")
+                return 0
+            if samples:
+                self.bus.publish(stream, samples)
+                slot.last_progress_ns = self.clock.now_ns()
+            return len(samples)
 
     def check_once(self, name: str, *, selftest: bool = True) -> None:
         """Health / staleness / haptics self-test for one module; engages fallback when needed."""
         slot = self._slots[name]
+        with slot.lock:  # not while an exclusive module is being swapped (the old impl is stopped then)
+            self._check_locked(name, slot, selftest)
+
+    def _check_locked(self, name: str, slot: _Slot, selftest: bool) -> None:
         inst = slot.inst
         if inst is None or slot.gave_up:
             return
@@ -258,10 +268,28 @@ class Supervisor:
     def _ctx(self, slot: _Slot) -> ModuleContext:
         return ModuleContext(self.clock, dict(slot.cfg.options), self.scenario)
 
+    def _start_checked(self, slot: _Slot, inst: Any) -> str | None:
+        """Start ``inst`` and check ``health()``. Drivers never raise from ``start()``; an init failure (busy
+        GPIO, camera in use) only shows up as ``health().ok == False``. Returns the problem, or None."""
+        try:
+            inst.start()
+            h = inst.health()
+        except Exception as e:  # noqa: BLE001
+            return f"{type(e).__name__}: {e}"
+        return None if h.ok else (h.note or "health not ok right after start()")
+
     def _swap(self, slot: _Slot, impl: str) -> None:
-        """Create+start ``impl`` then atomically replace the live one. The old impl keeps running if
-        the new one fails to load or start."""
+        """Replace the live impl with ``impl``.
+
+        Streaming I2C modules: create+start the new one, then switch and stop the old (the old keeps
+        running if the new one fails to load). Exclusive hardware (``EXCLUSIVE_MODULES``): the old impl
+        must release the pins/camera first, so it is stopped, the new one is started and its health
+        checked, and on failure the old impl is started again and ``ModuleLoadError`` says so.
+        """
         new = load_impl(slot.name, impl, self._ctx(slot))
+        if slot.name in EXCLUSIVE_MODULES:
+            self._swap_exclusive(slot, new, impl)
+            return
         new.start()
         with slot.lock:
             old, slot.inst, slot.impl_name = slot.inst, new, impl
@@ -271,6 +299,40 @@ class Supervisor:
                 old.stop()
             except Exception:
                 log.exception("stopping old %s impl", slot.name)
+
+    def _swap_exclusive(self, slot: _Slot, new: Any, impl: str) -> None:
+        with slot.lock:
+            old, old_impl = slot.inst, slot.impl_name
+            if old is not None:
+                try:
+                    old.stop()  # release the GPIO pins / camera before the new impl claims them
+                except Exception:
+                    log.exception("stopping old %s impl", slot.name)
+            problem = self._start_checked(slot, new)
+            if problem is None:
+                slot.inst, slot.impl_name = new, impl
+                slot.last_progress_ns = self.clock.now_ns()
+                return
+            try:
+                new.stop()  # give back whatever it did manage to claim
+            except Exception:
+                log.exception("stopping failed %s impl %s", slot.name, impl)
+            if old is None:
+                raise ModuleLoadError(f"{slot.name}: {impl} did not start: {problem}")
+            restored = "could NOT be restarted"
+            try:
+                again = load_impl(slot.name, old_impl, self._ctx(slot))
+                err = self._start_checked(slot, again)
+                if err is None:
+                    slot.inst, slot.last_progress_ns = again, self.clock.now_ns()
+                    restored = "was restarted and is running again"
+                else:
+                    again.stop()
+                    restored = f"could NOT be restarted ({err})"
+            except Exception as e:  # noqa: BLE001
+                restored = f"could NOT be restarted ({type(e).__name__}: {e})"
+            raise ModuleLoadError(f"{slot.name}: {impl} did not start: {problem}; "
+                                  f"the previous impl {old_impl} {restored}")
 
     def fallback(self, name: str, reason: str) -> bool:
         """Switch ``name`` to its configured fallback impl. Emits a ``module_fallback`` record."""

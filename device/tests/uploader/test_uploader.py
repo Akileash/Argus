@@ -142,7 +142,7 @@ def env(tmp_path: Path):
     q.mkdir()
     be = FakeBackend()
     clock = Clock()
-    box = {"s": BackendSettings("http://backend.test", TOKEN, 5.0, 60.0)}
+    box = {"s": BackendSettings("http://backend.test", TOKEN, 5.0, 60.0, SERIAL)}
     up = Uploader(q, lambda: box["s"], transport=be.transport(), now=clock, rng=random.Random(1))
     return q, be, clock, box, up
 
@@ -245,18 +245,37 @@ def test_401_rereads_config_and_waits(env):
 
 
 def test_4xx_rejects_and_keeps_files(env):
-    q, be, clock, _, up = env
-    d = make_event(q, serial="ARG-9999")  # server answers 403 serial_mismatch
-    good = make_event(q)
-    assert up.drain_once() == {"uploaded": 1, "retry": 0, "rejected": 1, "waiting": 0, "skipped": 0}
+    q, be, clock, box, up = env
+    box["s"] = BackendSettings("http://backend.test", TOKEN, 5.0, 60.0, "ARG-9999")  # config serial is wrong
+    d = make_event(q)  # server answers 403 serial_mismatch for the (current but wrong) serial
+    assert up.drain_once() == {"uploaded": 0, "retry": 0, "rejected": 1, "waiting": 0, "skipped": 0}
     st = json.loads((d / "upload_state.json").read_text())
     assert st["server_status"] == "rejected" and "serial_mismatch" in st["last_error"]
-    assert (d / "clip.mp4").exists() and not good.exists()
+    assert (d / "clip.mp4").exists()
     n = len(be.log)
     clock.t += 1000
     assert up.drain_once()["rejected"] == 0 and len(be.log) == n  # never retried
     s = up.status()
     assert s["rejected"] == 1 and s["pending"] == 0
+
+
+def test_event_written_before_pairing_uploads_with_current_serial(env):
+    q, be, _, _, up = env
+    d = make_event(q, serial="unprovisioned")  # written while device.serial was still blank
+    assert up.drain_once()["uploaded"] == 1 and not d.exists()
+    assert be.events[next(iter(be.events))]["ev"]["device_serial"] == SERIAL
+
+
+def test_serial_paired_while_running_is_picked_up(env):
+    q, be, clock, box, up = env
+    box["s"] = BackendSettings("http://backend.test", TOKEN, 5.0, 60.0, "")  # paired without a known serial
+    d = make_event(q, serial="unprovisioned")
+    assert up.drain_once() == {"uploaded": 0, "retry": 1, "rejected": 0, "waiting": 0, "skipped": 0}
+    st = json.loads((d / "upload_state.json").read_text())
+    assert st.get("server_status") != "rejected" and "serial_mismatch" in st["last_error"]
+    box["s"] = BackendSettings("http://backend.test", TOKEN, 5.0, 60.0, SERIAL)  # `argus-cli pair` filled it
+    clock.t += 1000
+    assert up.drain_once()["uploaded"] == 1 and not d.exists()
 
 
 def test_422_rejected(env):

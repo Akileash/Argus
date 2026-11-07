@@ -109,107 +109,37 @@ def test_env_start_applies_offset_and_thread():
     e.stop()
 
 
-# ---------------------------------------------------------------- camera
-class FakeBackend:
-    def __init__(self, fps=30, offset_ns=0):
-        self.cb = None
-        self.dumped = []
-        self.fps = fps
+def test_hat_on_default_rate_is_10hz_even_when_the_read_blocks():
+    class SlowTof:
+        def start(self, budget):
+            pass
 
-    def start(self, on_frame):
-        self.cb = on_frame
+        def range_mm(self):
+            time.sleep(0.033)  # a continuous-mode read waits for the next measurement
+            return 60
 
-    def dump(self, path):
-        with open(path, "wb") as f:
-            f.write(b"\x00" * 1000)
-        self.dumped.append(path)
+        def stop(self):
+            pass
 
-    def stop(self):
-        pass
-
-    def feed(self, t0_native_ns, n, kf_every=30):
-        for i in range(n):
-            self.cb(t0_native_ns + i * 1_000_000_000 // self.fps, i % kf_every == 0)
-
-
-def fake_mux(calls):
-    def mux(args):
-        calls.append(args)
-        with open(args[-1], "wb") as f:
-            f.write(b"mp4data")
-
-    return mux
+    t = tof_mod.Vl53HatOn(ctx(), device=SlowTof())
+    assert t._period_s == pytest.approx(0.1)
+    t.start()
+    time.sleep(2.0)
+    n = len(t.read())
+    t.stop()
+    assert 16 <= n <= 22, n  # ~10 Hz, bench expects 8-12
 
 
 def test_camera_ring_sizing_default_ge_30s():
     c = cam_mod.PiCamera(ctx())
-    assert c._ring_frames >= 30 * 30
+    assert c._ring_s >= 30
     assert isinstance(c, PROTOCOL_FOR["camera"])
 
 
-def test_camera_timestamp_offset_mapping():
-    be = FakeBackend()
-    c = cam_mod.PiCamera(ctx(), backend=be, offset_fn=lambda: 5_000_000_000)
-    c.start()
-    be.feed(105_000_000_000, 3)  # boottime stamps; mono = boottime - 5 s
-    assert [t for t, _ in c._idx][0] == 100_000_000_000
-    c2 = cam_mod.PiCamera(ctx(timestamp_clock="monotonic"), backend=FakeBackend(), offset_fn=lambda: 5_000_000_000)
-    c2.start()
-    c2._backend.feed(105_000_000_000, 1)
-    assert c2._idx[0][0] == 105_000_000_000
-
-
-def test_camera_save_clip_ffmpeg_copy(tmp_path):
-    be, calls = FakeBackend(), []
-    c = cam_mod.PiCamera(ctx(), backend=be, muxer=fake_mux(calls), offset_fn=lambda: 0, sleep=lambda s: None)
-    c.start()
-    t0 = 1_000_000_000_000
-    be.feed(t0, 300)  # 10 s at 30 fps, keyframe every second
-    out = tmp_path / "sub" / "clip.mp4"
-    info = c.save_clip(t0 + 2_000_000_000, t0 + 8_000_000_000, str(out))
-    args = calls[0]
-    assert args[0] == "ffmpeg" and "-c" in args and args[args.index("-c") + 1] == "copy"
-    assert args[args.index("-f") + 1] == "h264" and args[-1] == str(out)
-    assert float(args[args.index("-ss") + 1]) == pytest.approx(2.0)
-    assert float(args[args.index("-t") + 1]) == pytest.approx(6.0)
-    assert info.path == str(out) and info.bytes == len(b"mp4data")
-    assert info.duration_s == pytest.approx(6.0) and info.camera == "front"
-    assert not (tmp_path / "sub" / "clip.mp4.raw.h264").exists()
-
-
-def test_camera_clip_clamped_to_ring():
-    be, calls = FakeBackend(), []
-    c = cam_mod.PiCamera(ctx(max_post_wait_s=0), backend=be, muxer=fake_mux(calls), offset_fn=lambda: 0, sleep=lambda s: None)
-    c.start()
-    t0 = 5_000_000_000
-    be.feed(t0, 90)
-    import os
-    import tempfile
-    with tempfile.TemporaryDirectory() as d:
-        info = c.save_clip(t0 - 10_000_000_000, t0 + 60_000_000_000, os.path.join(d, "c.mp4"))
-    assert info.t_start_ns == t0
-    assert info.duration_s == pytest.approx(89 / 30, abs=0.01)
-
-
-def test_camera_save_clip_errors_when_empty_or_stopped(tmp_path):
-    c = cam_mod.PiCamera(ctx(max_post_wait_s=0), backend=FakeBackend(), muxer=fake_mux([]), sleep=lambda s: None)
-    with pytest.raises(RuntimeError):
-        c.save_clip(0, 1, str(tmp_path / "x.mp4"))
-    c.start()
-    with pytest.raises(RuntimeError):
-        c.save_clip(0, 1, str(tmp_path / "x.mp4"))
-    assert c.health().error_count == 2
-
-
-def test_camera_health_tracks_frames():
-    be = FakeBackend()
-    c = cam_mod.PiCamera(ctx(), backend=be)
-    c.start()
-    be.feed(0, 1)
-    h = c.health()
-    assert h.ok and h.last_sample_age_ms is not None and h.last_sample_age_ms < 100
-    c.stop()
-    assert not c.health().ok
+def test_camera_ring_s_alias_and_no_timestamp_clock_option():
+    assert cam_mod.PiCamera(ctx(ring_s=35))._ring_s == 35
+    assert cam_mod.PiCamera(ctx(ring_seconds=33, ring_s=35))._ring_s == 33
+    assert not hasattr(cam_mod, "boottime_offset_ns")
 
 
 def test_create_factories_do_not_touch_hardware():

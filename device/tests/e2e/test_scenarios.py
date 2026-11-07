@@ -99,3 +99,28 @@ def test_real_ffmpeg_clip(tmp_path):
     assert (d / "clip.mp4").stat().st_size > 1000
     clip = next(m for m in ev["media"] if m["kind"] == "clip")
     assert clip["duration_s"] >= 29 and clip["bytes"] == (d / "clip.mp4").stat().st_size
+
+
+def test_boot_prompts_and_led_follow_calibration(tmp_path):
+    from argus.status_led import StatusLed  # noqa: F401  (type of the hook)
+
+    class FakeLed:
+        def __init__(self):
+            self.modes = []
+
+        def set_mode(self, m):
+            self.modes.append(m)
+
+        def close(self):
+            pass
+
+    run = make_run("idle", tmp_path)
+    led = FakeLed()
+    run.pipe.led = led
+    run.pipe.boot_phase = ""
+    run.pipe._update_phase()
+    assert run.pipe.boot_phase == "calibrating" and led.modes == ["solid"]
+    run.advance(8.0)
+    assert run.pipe.boot_phase == "ready"
+    assert led.modes[0] == "solid" and led.modes[-1] == "off"
+    assert set(led.modes) <= {"solid", "blink", "off"}

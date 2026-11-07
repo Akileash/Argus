@@ -1,8 +1,9 @@
-"""VL53L0X hat-on ToF via the Adafruit CircuitPython library, continuous mode."""
+"""VL53L0X hat-on ToF via the Adafruit CircuitPython library, continuous mode, polled at 10 Hz (spec §4.3)."""
 
 from __future__ import annotations
 
 import threading
+import time
 from collections import deque
 from typing import Protocol
 
@@ -41,7 +42,7 @@ class Vl53HatOn:
         self._dev = device or AdafruitVl53()
         self._budget_us = int(o.get("timing_budget_us", 33000))
         self._max_mm = float(o.get("max_range_mm", 1200))
-        self._period_s = float(o.get("poll_interval_ms", 50)) / 1000.0
+        self._period_s = float(o.get("poll_interval_ms", 100)) / 1000.0
         self._q: deque[TofSample] = deque(maxlen=int(o.get("queue_max", 512)))
         self._lock = threading.Lock()
         self._health = HealthTracker(ctx.clock, stale_ms=float(o.get("stale_ms", 3000)))
@@ -65,9 +66,12 @@ class Vl53HatOn:
         return s
 
     def _loop(self, stop: threading.Event) -> None:
+        # Fixed rate (spec: 10 Hz): sleep only what is left of the period, because range_mm() itself
+        # blocks for up to one measurement (~33 ms), so "read, then sleep a full period" would run slower.
         while not stop.is_set():
+            t0 = time.monotonic()
             self.poll_once()
-            stop.wait(self._period_s)
+            stop.wait(max(0.0, self._period_s - (time.monotonic() - t0)))
 
     def start(self) -> None:
         if self._thread is not None:

@@ -149,6 +149,31 @@ def test_camera_failure_still_queues_event_with_trace(env):
     assert [m["kind"] for m in ev["media"]] == ["sensor_trace"]
 
 
+def _short_clip(env, start_off_s, end_off_s):
+    from argus.contracts import ClipInfo
+
+    def save(t_start, t_end, path):
+        Path(path).write_bytes(b"\x00\x00\x00\x18ftypmp42stub")
+        a, b = BASE + int(start_off_s * S), BASE + int(end_off_s * S)
+        return ClipInfo(path, a, b, (b - a) / 1e9, 16)
+
+    env.cam.save_clip = save
+
+
+@pytest.mark.parametrize("start,end,pre,post", [
+    (-6.0, 4.0, 6.0, 4.0),     # `trigger` right after boot: short buffers on both sides
+    (-21.0, 10.0, 21.0, 10.0),  # clip began at an earlier keyframe than requested
+    (-3.0, -1.0, 2.0, 0.0),     # buffer ended before t0: t0 pinned to the end of the video
+])
+def test_window_reports_what_the_clip_really_holds(env, start, end, pre, post):
+    _short_clip(env, start, end)
+    env.mgr.on_detection(env.det("fall", 0), env.now)
+    env.at(10)
+    [ev] = env.events()
+    assert ev["window"] == {"pre_s": pre, "post_s": post}
+    assert ev["window"]["pre_s"] <= (end - start) + 1e-9  # t0 is never past the end of the video
+
+
 def test_flush_truncates_post_roll(env):
     env.mgr.on_detection(env.det("fall", 0), env.now)
     env.at(3)

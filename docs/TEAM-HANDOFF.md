@@ -141,6 +141,14 @@ running.
 
    The swap takes about two seconds or less.
 
+   **Two kinds of module.** `imu`, `hat_on` and `env` share the I2C bus, so the new
+   implementation starts first and the old one stops after it: no gap in the data.
+   `range`, `haptics` and `camera` own GPIO pins or the camera, which only one program can hold. For
+   these the old implementation is **stopped first**, then the new one starts, and its health is
+   checked. That means a short gap (the range module sends no samples, the camera records no frames,
+   the motors cannot buzz) while the swap runs, normally well under two seconds. The same order is
+   used for the automatic fallback.
+
 To try an implementation without editing the file, pass `--impl`:
 
 ```bash
@@ -150,8 +158,16 @@ To try an implementation without editing the file, pass `--impl`:
 If you see `no running 'argus-cli run' found`, the service is not running. Start it with
 `sudo systemctl start argus`, then try again.
 
-If you see `reload failed: ...`, the old implementation is still running. Read the error, fix the
-script or the config, and try again.
+If you see `reload failed: ...`, read the whole message, because it says what happened to the
+old implementation:
+
+- For `imu`, `hat_on` and `env` the old implementation never stopped. It is still running.
+- For `range`, `haptics` and `camera` the old implementation was stopped to free the hardware. The
+  message then says either `the previous impl X was restarted and is running again` (you are back
+  where you started) or `the previous impl X could NOT be restarted` (the module is down: fix the
+  cause, then run `argus-cli reload <module>` again, or restart the service).
+
+Fix the script or the config and try again.
 
 ---
 
@@ -243,7 +259,7 @@ units and fields.
 | Module | Method(s) | Sample fields and units | Expected rate | Staleness limit (fallback) |
 |---|---|---|---|---|
 | `imu` | `read() -> list[ImuSample]` | `t_ns`, `ax`, `ay`, `az` in **g**; `gx`, `gy`, `gz` in **deg/s** | at least **400 Hz** (our driver runs at about 1000 Hz) | 500 ms |
-| `range` | `read() -> list[RangeSample]` | `t_ns`, `sensor_id` (`R2` or `R3` for the MVP; `R1`, `R4` and `TOP` stay valid for later), `range_mm` in **mm** or `None` for no echo | each sensor about **6.7 readings/s** (one full sweep about 150 ms, so about 33 samples/s in total) | 500 ms |
+| `range` | `read() -> list[RangeSample]` | `t_ns`, `sensor_id` (`R2` or `R3` for the MVP; `R1`, `R4` and `TOP` stay valid for later), `range_mm` in **mm** or `None` for no echo | each sensor about **16.7 readings/s** (one sweep of the R2 + R3 pair about 60 ms, so about 33 samples/s in total) | 500 ms |
 | `hat_on` | `read() -> list[TofSample]` | `t_ns`, `range_mm` in **mm** or `None`, `status` (one of `ok`, `out_of_range`, `error`) | about **10 Hz** | 3 s |
 | `env` | `read() -> list[EnvSample]` | `t_ns`, `co2_ppm`, `temp_c`, `rh_pct` | about **0.2 Hz** (one reading every 5 s) | 30 s |
 | `haptics` | `set(motor, intensity)`, `off_all()` | `motor` is `top` or `back`; `intensity` is 0.0 to 1.0 | no samples. Patterns are not in the driver. | self-test every 1 s |

@@ -18,7 +18,11 @@ readonly ARGUS_CONFIG="${ARGUS_CONF_DIR}/config.yaml"
 readonly JOURNALD_DROPIN_DIR="/etc/systemd/journald.conf.d"
 readonly JOURNALD_DROPIN="${JOURNALD_DROPIN_DIR}/argus.conf"
 readonly BOOT_CONFIG="/boot/firmware/config.txt"
-readonly PWM_OVERLAY="dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4"
+# The haptics driver uses lgpio software PWM (tx_pwm) on GPIO12/13, so the hardware-PWM overlay is NOT
+# installed (it would put those pins in the PWM alt function and could block the GPIO claim).
+readonly OLD_PWM_OVERLAY="dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4"
+# The IMU is read at 1 kHz over I2C; 400 kHz is needed for the FIFO bursts to keep up.
+readonly I2C_BAUD_LINE="dtparam=i2c_arm_baudrate=400000"
 readonly PYTHON_BIN="/usr/bin/python3"
 
 FORCE=0
@@ -108,7 +112,7 @@ ensure_boot_line() {
 }
 
 configure_boot() {
-  log "Enabling I2C, camera and hardware PWM"
+  log "Enabling I2C (400 kHz) and the camera"
   [[ -f "${BOOT_CONFIG}" ]] || die "${BOOT_CONFIG} not found. Is this Bookworm?"
 
   sudo raspi-config nonint do_i2c 0
@@ -121,8 +125,14 @@ configure_boot() {
     ensure_boot_line "camera_auto_detect=1"
   fi
 
-  # GPIO12/13 hardware PWM for the L293D haptic motors (spec 2.3).
-  ensure_boot_line "${PWM_OVERLAY}"
+  ensure_boot_line "${I2C_BAUD_LINE}"
+
+  # Earlier versions of this script added a hardware-PWM overlay. The motors use software PWM, so say so
+  # instead of silently editing a boot file the user may have changed.
+  if sudo grep -qxF "${OLD_PWM_OVERLAY}" "${BOOT_CONFIG}"; then
+    warn "${BOOT_CONFIG} still has '${OLD_PWM_OVERLAY}' from an older install. The haptics driver uses"
+    warn "software PWM, so remove that line: sudo sed -i.bak '/^dtoverlay=pwm-2chan/d' ${BOOT_CONFIG}   then reboot."
+  fi
 
   if [[ ! -e /dev/i2c-1 ]]; then
     REBOOT_NEEDED=1
@@ -270,10 +280,11 @@ start_or_explain() {
     sudo systemctl restart "${SERVICE_NAME}"
     info "service started (restarted to load the current code)"
   else
-    info "device is not paired yet, so the service was NOT started."
-    info "Pair the device first:"
+    info "device is not paired yet, so the service was NOT started now."
+    info "It IS enabled: after any reboot it starts by itself and queues events locally until paired."
+    info "Pair the device (works while the service runs; the uploader picks the token up within ~10 s):"
     info "  cd ${DEVICE_DIR} && .venv/bin/argus-cli pair"
-    info "Then start it:  sudo systemctl start ${SERVICE_NAME}"
+    info "Start it now:  sudo systemctl start ${SERVICE_NAME}"
   fi
 }
 
@@ -286,7 +297,7 @@ Argus device install finished.
 EOF
   if [[ "${REBOOT_NEEDED}" -eq 1 ]]; then
     cat <<EOF
-REBOOT REQUIRED. I2C, camera and PWM boot settings changed.
+REBOOT REQUIRED. I2C (400 kHz) and camera boot settings changed.
   1. sudo reboot
   2. after boot, re-run this script (it is idempotent), or check the items below.
 EOF

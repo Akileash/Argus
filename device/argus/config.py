@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from argus.contracts import MODULE_NAMES, ImplName
 
@@ -43,7 +43,18 @@ class ModulesCfg(_Strict):
 
 
 class DetectorCfg(_Strict):
+    """Detectors are not swappable: argus/pipeline.py always builds the built-in ones, so anything but
+    ``argus`` would be silently ignored. Reject it instead of pretending."""
+
     impl: ImplName = "argus"
+
+    @field_validator("impl")
+    @classmethod
+    def _only_argus(cls, v: str) -> str:
+        if v != "argus":
+            raise ValueError(f"detectors cannot be swapped yet (got {v!r}); only 'argus' is supported. "
+                             "Tune thresholds under `thresholds:` instead")
+        return v
 
 
 class DetectorsCfg(_Strict):
@@ -128,6 +139,7 @@ class HatStateThresholds(_Thresholds):
 
     min_range_mm: float = 50.0
     max_range_mm: float = 1200.0
+    baseline_max_mm: float = 120.0  # head band: stable readings beyond this are the table and never calibrate
     calibration_s: float = 3.0
     stable_spread_mm: float = 10.0
     off_delta_mm: float = 30.0
@@ -171,6 +183,7 @@ class BackendCfg(_Strict):
 
 class DeviceCfg(_Strict):
     serial: str = ""  # filled by `argus-cli pair` from GET /api/devices/me
+    status_led_pin: int | None = None  # BCM pin of the optional boot-status LED (17 on the real hat); None = no LED
 
 
 class ArgusConfig(_Strict):

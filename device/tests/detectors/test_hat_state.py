@@ -130,3 +130,32 @@ def test_preset_baseline():
     for s in sy.tof_series(0, 4.0, 200):
         out += h.on_tof(s, ST)
     assert [d.type for d in out] == ["hat_removed"]
+
+
+# ---- baseline must be taken on the head, not the table (spec §4.3 boots on a table)
+def test_boot_on_table_then_head_then_off_and_on_again():
+    """The review's case: table at 150 mm during boot, head at 60 mm, hat off onto the table, re-don."""
+    f = FallImpactDetector({})
+    h = HatStateDetector({}, f)
+    out = feed(h, f, [], sy.tof_series(0, 6.0, 150))  # 6 s on the table: stable, but outside the head band
+    assert not h.calibrated and h.hat_on and out == []
+    out = feed(h, f, [], sy.tof_series(6.0, 4.0, 60))  # put on the head
+    assert h.calibrated and abs(h.baseline_mm - 60) < 2 and h.hat_on and out == []
+    out = feed(h, f, [], sy.tof_series(10.0, 6.0, 150))  # take it off, onto the table
+    assert [d.type for d in out] == ["hat_removed"] and not h.hat_on
+    out = feed(h, f, [], sy.tof_series(16.0, 4.0, 60))  # re-don
+    assert [d.type for d in out] == ["hat_on"] and h.hat_on
+
+
+def test_stable_target_beyond_head_band_never_calibrates():
+    f = FallImpactDetector({})
+    h = HatStateDetector({}, f)
+    feed(h, f, [], sy.tof_series(0, 30.0, 121))
+    assert not h.calibrated
+
+
+def test_baseline_max_mm_is_the_documented_fix_for_a_far_mount():
+    f = FallImpactDetector({})
+    h = HatStateDetector({"baseline_max_mm": 200.0}, f)
+    feed(h, f, [], sy.tof_series(0, 4.0, 150))
+    assert h.calibrated and abs(h.baseline_mm - 150) < 2

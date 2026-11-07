@@ -12,7 +12,7 @@ import threading
 from collections import deque
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from argus.bus import SampleBus
 from argus.config import ArgusConfig
@@ -24,6 +24,7 @@ from argus.events.haptics import HapticPlayer
 from argus.events.manager import EventManager
 from argus.events.queue import EventQueue
 from argus.events.trace import TraceRecorder
+from argus.status_led import StatusLed, open_led
 from argus.supervisor import Supervisor
 
 log = logging.getLogger(__name__)
@@ -43,8 +44,11 @@ class Pipeline:
         queue_dir: str | None = None,
         wall_fn: Callable[[], datetime] = lambda: datetime.now(UTC),
         async_cut: bool = True,
+        led: StatusLed | None = None,
     ) -> None:
         self.sup, self.bus, self.cfg = sup, bus, cfg
+        self.led = led
+        self.boot_phase = ""
         self.clock = sup.clock
         self.state = DetectorState(hat_on=True)
         self.struck_by = StruckByDetector(cfg.detector_cfg("struck_by"))
@@ -80,6 +84,7 @@ class Pipeline:
         if handlers is None:
             handlers = sup.control_handlers = {}  # type: ignore[attr-defined]
         handlers["trigger"] = self._control_trigger
+        self._update_phase()
 
     # ------------------------------------------------------------ plumbing
     def _impls(self) -> tuple[dict[str, str], list[str]]:
@@ -95,6 +100,26 @@ class Pipeline:
             self._inbox.append((s.t_ns, prio, self._seq, stream, s))
 
         return cb
+
+    # ------------------------------------------------------------ boot prompts (spec §4.3)
+    PHASE_TEXT: ClassVar[dict[str, str]] = {
+        "calibrating": "CALIBRATING: keep the hat still, resting on a table",
+        "put_on": "PUT THE HAT ON your head now (calibrating the hat-on sensor, hold still for ~3 s)",
+        "ready": "READY: calibration done",
+    }
+    PHASE_LED: ClassVar[dict[str, str]] = {"calibrating": "solid", "put_on": "blink", "ready": "off"}
+
+    def _update_phase(self) -> None:
+        if self.struck_by.imu.calibrated:
+            phase = "ready" if self.hat.calibrated else "put_on"
+        else:
+            phase = "calibrating"
+        if phase == self.boot_phase:
+            return
+        self.boot_phase = phase
+        log.info("[boot] %s", self.PHASE_TEXT[phase])
+        if self.led is not None:
+            self.led.set_mode(self.PHASE_LED[phase])
 
     # ------------------------------------------------------------ the runtime step
     def step(self, now_ns: int | None = None, holdback_ns: int = 0) -> list[Detection]:
@@ -116,6 +141,7 @@ class Pipeline:
                 out.extend(self._feed(stream, s, now))
             self.player.tick(now)
             self.manager.tick(now)
+            self._update_phase()
         return out
 
     def _feed(self, stream: str, s: Any, now: int) -> list[Detection]:
@@ -200,10 +226,12 @@ class Pipeline:
                 self.manager.drain()
         except Exception:
             log.exception("pipeline shutdown failed")
+        if self.led is not None:
+            self.led.close()
 
 
 def wire(sup: Supervisor, bus: SampleBus, cfg: ArgusConfig) -> Callable[[], None]:
     """Pipeline hook for ``argus-cli`` (see cli._wire_pipeline). Never depends on backend pairing."""
-    p = Pipeline(sup, bus, cfg)
+    p = Pipeline(sup, bus, cfg, led=open_led(cfg.device.status_led_pin))
     p.start()
     return p.stop

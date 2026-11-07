@@ -93,3 +93,14 @@ def test_load_errors(tmp_path):
     bad.write_text("- a list")
     with pytest.raises(ConfigError, match="mapping"):
         load_config(bad)
+
+
+def test_swapping_a_detector_impl_is_a_clear_config_error():
+    r = raw()
+    r["detectors"]["struck_by"]["impl"] = "team"
+    with pytest.raises(ConfigError, match="detectors cannot be swapped"):
+        parse_config(r)
+
+
+def test_hat_state_head_band_default():
+    assert load_config().thresholds.hat_state.baseline_max_mm == 120.0

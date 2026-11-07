@@ -9,10 +9,10 @@ modules:
   hat_on:  { impl: mock }
   env:     { impl: mock }
   haptics: { impl: mock }
-  camera:  { impl: mock, options: { ring_s: 35 } }
+  camera:  { impl: mock, options: { ring_s: 35 } }   # real camera: `ring_seconds` (>= 30); `ring_s` is accepted by both
   # camera.rear intentionally absent: the rear camera is out of scope (phase 2).
 
-detectors:
+detectors:           # NOT swappable: only `argus` is accepted (anything else is a config error); tune `thresholds:`
   struck_by:   { impl: argus }
   fall_impact: { impl: argus }
   hat_state:   { impl: argus }
@@ -75,6 +75,8 @@ thresholds:          # names = what the detectors read (tests/unit/test_config_k
   hat_state:   # spec §4.3
     min_range_mm: 50.0
     max_range_mm: 1200.0
+    baseline_max_mm: 120.0   # a stable reading farther than this is the table, not the head: it never calibrates.
+                             # If the hat reads more than this on a real head, raise it (CONNECT-THE-HAT.md, step g).
     calibration_s: 3.0
     stable_spread_mm: 10.0
     off_delta_mm: 30.0
@@ -102,3 +104,4 @@ backend:                # blank on purpose; set by `argus-cli pair`
 
 device:
   serial: ""            # set by `argus-cli pair`
+  status_led_pin: null  # 17 on the real hat: solid = calibrating, blinking = put the hat on, off = ready

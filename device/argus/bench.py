@@ -18,6 +18,7 @@ from typing import Any
 from argus.contracts import DEFAULT_ACTIVE_SENSORS, Clock
 
 Printer = Callable[[str], None]
+REAL_IMU_MIN_HZ = 800.0  # MPU-6050 at 1 kHz; below this the I2C bus (400 kHz?) or the drain loop is too slow
 
 
 @dataclass
@@ -69,6 +70,12 @@ class Bench:
         ok, detail = judge(samples)
         self.add(name, ok, detail)
 
+    def _error_count(self) -> int:
+        try:
+            return int(self.inst.health().error_count)
+        except Exception:  # noqa: BLE001 - a module without health() just reports no errors
+            return 0
+
     # ---- per module
     def run(self) -> list[Check]:
         self.out(f"bench self-test: {self.module}")
@@ -87,10 +94,20 @@ class Bench:
             s = b[-1]
             return f"a=({s.ax:+.2f},{s.ay:+.2f},{s.az:+.2f}) g  w=({s.gx:+.1f},{s.gy:+.1f},{s.gz:+.1f}) dps"
 
-        s = self.wait(2.0, live=live)
+        errors_before = self._error_count()
+        s = self.wait(3.0, live=live)
         mags = [(x.ax**2 + x.ay**2 + x.az**2) ** 0.5 for x in s]
         med = statistics.median(mags) if mags else 0.0
-        self.add("rate >= 320 Hz (spec: 400 Hz)", len(s) / 2.0 >= 320, f"{len(s) / 2.0:.0f} Hz")
+        # Rate from the sample timestamps: the wait loop oversleeps, so its nominal 3 s is not real time.
+        span_s = (s[-1].t_ns - s[0].t_ns) / 1e9 if len(s) > 1 else 0.0
+        rate = (len(s) - 1) / span_s if span_s > 0 else 0.0
+        # The real driver (hardware.argus.imu) must hold ~1 kHz; the mock deliberately runs at the spec's 400 Hz.
+        real = type(self.inst).__module__.startswith("hardware.argus")
+        want = REAL_IMU_MIN_HZ if real else 320.0
+        self.add(f"rate >= {want:.0f} Hz ({'real driver, expect ~1000' if real else 'spec: 400 Hz'})",
+                 rate >= want, f"{rate:.0f} Hz")
+        overflows = self._error_count() - errors_before
+        self.add("no FIFO overflows / driver errors", overflows == 0, f"{overflows} new errors")
         self.add("stationary |a| ~ 1 g", 0.9 <= med <= 1.1, f"median {med:.3f} g")
 
         def tilt(samples: list[Any]) -> tuple[bool, str]:

@@ -43,6 +43,7 @@ class BackendSettings:
     token: str = ""
     timeout_s: float = 30.0
     max_backoff_s: float = 60.0
+    serial: str = ""  # current device.serial; written into every event body at upload time
 
     @property
     def paired(self) -> bool:
@@ -51,7 +52,8 @@ class BackendSettings:
 
 def settings_from_config(cfg: ArgusConfig) -> BackendSettings:
     b = cfg.backend
-    return BackendSettings(b.base_url.strip().rstrip("/"), b.device_token.strip(), b.timeout_s, b.max_backoff_s)
+    return BackendSettings(b.base_url.strip().rstrip("/"), b.device_token.strip(), b.timeout_s, b.max_backoff_s,
+                           (cfg.device.serial or "").strip())
 
 
 def queue_dir_from_config(cfg: ArgusConfig) -> Path:
@@ -103,7 +105,7 @@ def _err_text(r: httpx.Response) -> str:
         if j.get("errors"):
             txt += f" {j['errors']}"
         return f"HTTP {r.status_code} {txt}".strip()
-    except Exception:
+    except Exception:  # noqa: BLE001 - any unparsable body: fall back to the raw text
         return f"HTTP {r.status_code} {r.text[:200]}"
 
 
@@ -127,6 +129,7 @@ class Uploader:
         self._auth_failed_token: str | None = None
         self._warned_unpaired = False
         self.last_error: str | None = None
+        self._serial_sent_is_current = True
 
     # ------------------------------------------------------------------ queue scanning
     def _event_dirs(self) -> list[Path]:
@@ -157,7 +160,7 @@ class Uploader:
     @staticmethod
     def _t0(d: Path, ev: dict[str, Any]) -> float:
         try:
-            return datetime.fromisoformat(str(ev["t0"]).replace("Z", "+00:00")).astimezone(UTC).timestamp()
+            return datetime.fromisoformat(str(ev["t0"])).astimezone(UTC).timestamp()
         except (KeyError, ValueError):
             try:
                 return (d / READY_FILE).stat().st_mtime
@@ -209,7 +212,12 @@ class Uploader:
             raise _Unauthorized(_err_text(r))
         if r.status_code >= 500 or r.status_code == 409:
             raise _Retry(_err_text(r))
-        raise _Reject(_err_text(r))
+        text = _err_text(r)
+        if r.status_code == 403 and "serial_mismatch" in text and not self._serial_sent_is_current:
+            # We could not send a trustworthy serial (blank in config: paired without verification or not
+            # paired yet). Not the event's fault: keep it queued and retry once the config has a serial.
+            raise _Retry(f"{text} (local device.serial is blank; run `argus-cli pair`)")
+        raise _Reject(text)
 
     @staticmethod
     def _file_iter(path: Path) -> Iterator[bytes]:
@@ -237,7 +245,13 @@ class Uploader:
         # Only describe files that actually exist (the writer may have dropped clip.mp4 under disk pressure).
         media = [m for m in ev.get("media", []) if (d / m["filename"]).is_file()]
         body = {**ev, "media": media}
+        # The serial in event.json was read when the event was written. A device paired while the service
+        # was running (or an event written before pairing: "unprovisioned") would be refused with 403
+        # serial_mismatch, so always send the serial the device has *now*.
+        if s.serial:
+            body["device_serial"] = s.serial
         types = {m["filename"]: m["content_type"] for m in media}
+        self._serial_sent_is_current = bool(s.serial)
         with httpx.Client(transport=self._transport, timeout=s.timeout_s, follow_redirects=False) as c:
             res = self._request(c, "POST", f"{s.base_url}/api/events", s, json=body).json()
             uploads = res.get("uploads") or []
