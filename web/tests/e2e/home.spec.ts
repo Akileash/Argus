@@ -28,3 +28,12 @@ test("home: login, KPI row, seeded incident list, screenshot", async ({ page }) 
 
   await page.screenshot({ path: path.join(__dirname, "__screenshots__", "home.png"), fullPage: true });
 });
+
+test("a wrong password keeps the typed email", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel(/email/i).fill("demo@argus.local");
+  await page.getByLabel(/password/i).fill("not-the-password");
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await expect(page.getByRole("alert")).toContainText("Invalid email or password");
+  await expect(page.getByLabel(/email/i)).toHaveValue("demo@argus.local");
+});

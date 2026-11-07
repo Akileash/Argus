@@ -12,7 +12,7 @@ export function LoginForm({ demoHint }: { demoHint: boolean }) {
     <form action={action} className="space-y-4">
       <div>
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="username" required defaultValue={demoHint ? "demo@argus.local" : ""} />
+        <Input id="email" name="email" type="email" autoComplete="username" required defaultValue={state.email ?? (demoHint ? "demo@argus.local" : "")} />
       </div>
       <div>
         <Label htmlFor="password">Password</Label>

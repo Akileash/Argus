@@ -1,4 +1,6 @@
-export const DISPLAY_TZ = "America/Edmonton";
+// Mountain Time. Same rules as Edmonton, but Chromium 158 keeps America/Edmonton on MDT after DST ended
+// in Nov 2026 (one hour wrong on stage), while America/Denver is correct in both Chromium and Node.
+export const DISPLAY_TZ = "America/Denver";
 
 export function fmtDateTime(iso: string | null | undefined): string {
   if (!iso) return "—";
