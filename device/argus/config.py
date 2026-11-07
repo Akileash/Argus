@@ -169,6 +169,12 @@ class BusCfg(_Strict):
 class BackendCfg(_Strict):
     base_url: str = ""  # blank on purpose; filled by `argus-cli pair` / the team
     device_token: str = ""
+    timeout_s: float = 30.0  # per HTTP request (uploader / pairing)
+    max_backoff_s: float = 60.0  # uploader retry cap (contracts/api.md: 1 s -> 60 s)
+
+
+class DeviceCfg(_Strict):
+    serial: str = ""  # filled by `argus-cli pair` from GET /api/devices/me
 
 
 class ArgusConfig(_Strict):

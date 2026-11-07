@@ -98,6 +98,9 @@ def run(
 
     sup = Supervisor(cfg, bus, MonotonicClock(), on_event=on_event, scenario=scenario, config_path=config)
     stops = _wire_pipeline(sup, bus, cfg)  # <- HOOK (see above)
+    from argus.uploader import start_uploader  # L4: idles quietly while unpaired, never exits
+
+    stops.append(start_uploader(config))
     sup.start()
     srv = control.ControlServer(sup) if control_socket else None
     if srv:
@@ -290,6 +293,82 @@ def scenario(
     if record:
         write_recording(record, all_samples, {"source": f"mock:{name}"})
         typer.echo(f"recording written: {record} ({len(all_samples)} samples)")
+
+
+@app.command()
+def pair(
+    url: Annotated[str | None, typer.Option("--url", help="backend base URL, e.g. https://argus.example.com")] = None,
+    token: Annotated[str | None, typer.Option("--token", help="device token shown once in the dashboard")] = None,
+    config: ConfigOpt = None,
+    check: Annotated[bool, typer.Option("--check", help="only verify the configured credentials")] = False,
+    verify: Annotated[bool, typer.Option("--verify/--no-verify", help="call GET /api/devices/me before saving")] = True,
+) -> None:
+    """Store backend URL + device token in config.yaml and verify them (spec §5.8 device auth)."""
+    from argus import pairing
+
+    path = pairing.resolve_config_path(config)
+    if check:
+        cfg = _config(config)
+        if not (cfg.backend.base_url and cfg.backend.device_token):
+            raise _fail("not paired: backend.base_url / backend.device_token are blank (run `argus-cli pair`)")
+        try:
+            me = pairing.fetch_me(cfg.backend.base_url, cfg.backend.device_token, timeout_s=cfg.backend.timeout_s)
+        except pairing.PairingError as e:
+            raise _fail(str(e)) from None
+        typer.echo(f"OK {pairing.describe(me)}")
+        return
+    url = url or typer.prompt("Backend base URL")
+    token = token or typer.prompt("Device token", hide_input=True)
+    me = None
+    if verify:
+        try:
+            me = pairing.fetch_me(url, token)
+        except pairing.PairingError as e:
+            raise _fail(f"{e}\nNothing was written. Use --no-verify to save anyway.") from None
+    try:
+        pairing.write_pairing(path, url, token, me["serial"] if me else None)
+    except OSError as e:
+        raise _fail(f"cannot write {path}: {e}") from None
+    typer.echo(f"paired; wrote {path}")
+    if me:
+        typer.echo(pairing.describe(me))
+    typer.echo("a running `argus-cli run` notices the new token within ~10 s")
+
+
+@app.command()
+def upload(
+    config: ConfigOpt = None,
+    once: Annotated[bool, typer.Option("--once", help="drain the queue once and exit (ignores backoff timers)")] = False,
+    status: Annotated[bool, typer.Option("--status", help="print queue depth, oldest age, last error")] = False,
+    queue_dir: Annotated[Path | None, typer.Option("--queue-dir", help="override the queue directory")] = None,
+) -> None:
+    """Upload queued events to the backend (normally runs inside `argus-cli run`)."""
+    from argus import uploader as up
+
+    cfg = _config(config)
+    u = up.Uploader(queue_dir or up.queue_dir_from_config(cfg), up.config_provider(config))
+    if status:
+        typer.echo(u.status_line())
+        return
+    if not once:
+        typer.echo(f"uploader running on {u.queue_dir}; Ctrl-C to stop")
+        try:
+            u.run_forever()
+        except KeyboardInterrupt:
+            pass
+        return
+    if not u._settings().paired:
+        raise _fail("not paired: run `argus-cli pair` first")
+    deadline = time.time() + 120
+    while True:
+        counts = u.drain_once(ignore_backoff=True)
+        typer.echo(json.dumps(counts))
+        left = u.status()
+        if left["pending"] == 0 or counts["skipped"] or time.time() > deadline:
+            break
+        time.sleep(2.0)
+    typer.echo(u.status_line())
+    raise typer.Exit(0 if left["pending"] == 0 and left["rejected"] == 0 else 1)
 
 
 if __name__ == "__main__":  # pragma: no cover

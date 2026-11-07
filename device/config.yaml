@@ -99,3 +99,8 @@ device:
 backend:                # blank on purpose; set by `argus-cli pair`
   base_url: ""
   device_token: ""
+  timeout_s: 30         # per HTTP request
+  max_backoff_s: 60     # uploader retry cap
+
+device:
+  serial: ""            # set by `argus-cli pair`
