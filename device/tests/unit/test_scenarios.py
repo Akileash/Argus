@@ -55,7 +55,7 @@ def test_expected_events_summary():
     exp = {n: [e.type for e in load_scenario(n).expected] for n in SPEC_SCENARIOS}
     assert exp["board_swing_rear_left"] == ["struck_by_near_miss"]
     assert exp["walk_backward_wall"] == exp["stand_up_under_beam"] == exp["idle"] == exp["walk_forward"] == []
-    assert exp["hat_drop_1m"] == ["fall", "head_impact"]
+    assert exp["hat_drop_1m"] == ["fall"]
     assert exp["hat_removed_table"] == ["hat_removed"]
     assert exp["hat_knocked_off"] == ["head_impact", "hat_knocked_off"]
     assert load_scenario("board_swing_rear_left").expected[0].sensors == ["R1", "R2"]

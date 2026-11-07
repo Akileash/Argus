@@ -93,9 +93,6 @@ events:                 # spec §4.4
   queue_max_mb: 2048
   firmware_version: "0.1.0"
 
-device:
-  serial: ""            # blank until provisioned
-
 backend:                # blank on purpose; set by `argus-cli pair`
   base_url: ""
   device_token: ""

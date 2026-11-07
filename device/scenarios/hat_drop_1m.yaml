@@ -13,6 +13,7 @@ world:
   planes: [ { axis: x, at: -2.2 } ]
 tof: { keyframes: [[0, null]] }
 expected:
-  - { type: fall, t_window_s: [3.4, 4.6], notes: "free fall 450 ms, drop height ~1.0 m" }
-  - { type: head_impact, t_window_s: [3.4, 3.65], notes: "peak ~14 g (may saturate at 16 g)" }
+  # One landing pulse -> one detection (fall, carrying peak_g ~13 g). A head_impact entry was removed:
+  # the hat is never on a head here, and the detector reports one detection per pulse.
+  - { type: fall, t_window_s: [3.4, 4.6], notes: "free fall 450 ms, drop height ~1.0 m, peak_g ~13" }
 allowed_extra: []

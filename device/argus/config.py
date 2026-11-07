@@ -158,10 +158,6 @@ class EventsCfg(_Strict):
     firmware_version: str = "0.1.0"
 
 
-class DeviceCfg(_Strict):
-    serial: str = ""  # blank -> events use "unprovisioned" until `argus-cli pair` / provisioning sets it
-
-
 class BusCfg(_Strict):
     history_s: float = 35.0
 
