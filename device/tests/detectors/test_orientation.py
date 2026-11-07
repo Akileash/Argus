@@ -6,7 +6,7 @@ import math
 
 import numpy as np
 import pytest
-from synth import Scene, SimConfig, Trajectory, simulate, still
+from tests.detectors.synth import Scene, SimConfig, Trajectory, simulate, still
 
 from argus.contracts import ImuSample
 from argus.detectors.orientation import (

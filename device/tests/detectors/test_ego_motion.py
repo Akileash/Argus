@@ -6,7 +6,7 @@ import math
 
 import numpy as np
 import pytest
-from synth import Scene, SimConfig, Trajectory, VelocityProfile, simulate
+from tests.detectors.synth import Scene, SimConfig, Trajectory, VelocityProfile, simulate
 
 from argus.contracts import ImuSample
 from argus.detectors.ego_motion import EgoMotionEstimator, ImuPipeline

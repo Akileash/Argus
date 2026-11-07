@@ -12,7 +12,7 @@ import time
 
 import numpy as np
 import pytest
-from synth import (
+from tests.detectors.synth import (
     Impact,
     Plane,
     Scene,
