@@ -130,12 +130,27 @@ Legend: **[H]** Haiku · **[S]** Sonnet · **[O]** Opus · **[PM]** done by the 
 ## 6. Task board
 | Task | Model | Status |
 |---|---|---|
-| M0.1 Toolchain | PM | ⏳ waiting on Homebrew password |
-| M0.2 Contracts | PM | ☐ |
-| M0.3 Scaffold | H | ☐ |
-| M1.1–M1.4 | S,S,S,H | ☐ |
-| M2.1–M2.5 | O,S,S,S,S | ☐ |
-| M3.1–M3.2 | S,H | ☐ |
-| M4.1–M4.3 | S,S,S | ☐ |
-| M5.1–M5.5 | S×5 | ☐ |
-| M6.1–M6.3 | S,H→PM,O | ☐ |
+| M0.1 Toolchain | PM | ✅ brew, uv, Py 3.11, Node 22, pnpm, ffmpeg, shellcheck, Supabase CLI (pnpm). ⏳ Docker Desktop: user runs `brew install --cask docker` |
+| M0.2 Contracts | PM | ✅ `contracts/*`, `device/argus/contracts.py`, `detectors/base.py` |
+| M0.3 Scaffold | PM | ✅ (done by PM, faster than delegating) |
+| M1.1–M1.4 core, mocks, scenarios, contract tests, team template | S | 🔄 running |
+| M2.1 orientation + ego-motion + struck-by | O | 🔄 running |
+| M2.2 fall/impact + hat-state + classify | S | 🔄 running |
+| M2.3 event manager / clip writer | S | ☐ after M1 |
+| M2.4 uploader | S | ☐ after M1 |
+| M2.5 tuning toolkit (record/sweep/eval) | S | ☐ after M1 + M2.1/2.2 |
+| M3.1 argus drivers | S | 🔄 running |
+| M3.2 install.sh + systemd | H | 🔄 running |
+| M4.1 schema + RLS + seed | S | 🔄 running |
+| M4.2 device API | S | ☐ after M4.1 (inside web/) |
+| M4.3 shared pkg + report worker | S | 🔄 running |
+| M5.1–M5.5 dashboard | S | ☐ after M4.1 |
+| M6.1–M6.3 E2E, docs, final review | S, H→PM, O | ☐ |
+
+## 7. PM follow-ups (collected from agent reports)
+- [ ] `argus-cli run` must idle-wait (not exit) when unpaired, so systemd doesn't restart-loop every 2 s (M3.2 report).
+- [ ] Worker: recover events stuck in `analyzing` after a crash (e.g. reclaim if `updated_at` > 5 min old) (M4.3 report).
+- [ ] ruff per-file ignores for intentional broad `except` in `hardware/argus/**` (never-raise contract) + fix C408/SIM102 in detectors.
+- [ ] Reconcile detector cfg keys (M2.1, M2.2 reports) and driver option keys (M3.1 report) into `device/config.yaml` once M1 lands.
+- [ ] Web: swap `web/lib/contracts` for `@argus/shared` after M4.2/M5.1 merges.
+- [ ] Verify with real keys: Gemini file upload + `responseJsonSchema`, Claude structured output acceptance, prices.
