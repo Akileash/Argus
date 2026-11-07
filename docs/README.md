@@ -24,9 +24,6 @@ Start here. Pick the guide that matches what you need to do.
 
 You can run the whole system on a laptop with simulated sensors. You do not need a Pi.
 
-> ⚠️ PM: verify — `scripts/demo-e2e.sh` is being written now and is not in the repo at the time of
-> writing. Once it exists, this is the one command to start the full demo (device, backend and dashboard).
-
 ```bash
 ./scripts/demo-e2e.sh
 ```
