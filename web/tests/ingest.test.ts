@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { completeEvent, ingestEvent } from "@/lib/api/events";
 import { isSafeFilename, mediaPath } from "@/lib/api/storage";
 import { FakeDb } from "./helpers/fake-db";
-import { DEVICE, EVENT_ID, hatRemovedEvent, nearMissEvent } from "./helpers/fixtures";
+import { CLIP_BYTES, DEVICE, EVENT_ID, TRACE_BYTES, hatRemovedEvent, nearMissEvent } from "./helpers/fixtures";
 
 let db: FakeDb;
 beforeEach(() => {
@@ -85,6 +85,7 @@ describe("completeEvent", () => {
   async function setup() {
     await ingestEvent(db.asClient(), DEVICE, nearMissEvent());
     db.objects["event-media"] = { [`${folder}/front.mp4`]: 1000, [`${folder}/sensor_trace.json`]: 200 };
+    db.contents["event-media"] = { [`${folder}/front.mp4`]: CLIP_BYTES, [`${folder}/sensor_trace.json`]: TRACE_BYTES };
   }
 
   it("confirms media and moves event to uploaded", async () => {
@@ -103,6 +104,23 @@ describe("completeEvent", () => {
     await expect(completeEvent(db.asClient(), DEVICE, EVENT_ID, ["front.mp4", "sensor_trace.json"])).rejects.toMatchObject({ status: 409 });
     expect(db.tables.media.some((m) => m.confirmed)).toBe(false);
     expect(db.tables.events[0].status).toBe("uploading");
+  });
+
+  it("409 when the object has the declared size but a different sha256 (contracts/api.md #5); nothing confirmed", async () => {
+    await setup();
+    db.contents["event-media"][`${folder}/sensor_trace.json`] = new Uint8Array(200).fill(1);
+    await expect(completeEvent(db.asClient(), DEVICE, EVENT_ID, ["front.mp4", "sensor_trace.json"])).rejects.toMatchObject({
+      status: 409,
+      extra: { problems: [expect.stringContaining("sensor_trace.json: sha256")] },
+    });
+    expect(db.tables.media.some((m) => m.confirmed)).toBe(false);
+    expect(db.tables.events[0].status).toBe("uploading");
+  });
+
+  it("409 when a listed object cannot be read back", async () => {
+    await setup();
+    delete db.contents["event-media"][`${folder}/front.mp4`];
+    await expect(completeEvent(db.asClient(), DEVICE, EVENT_ID, ["front.mp4", "sensor_trace.json"])).rejects.toMatchObject({ status: 409 });
   });
 
   it("409 when a media file is not reported as uploaded", async () => {

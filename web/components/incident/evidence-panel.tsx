@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Film, Pause, Play, SkipBack, TriangleAlert } from "lucide-react";
 import type { SensorTrace } from "@argus/shared";
 import type { IncidentEvent, TraceState } from "@/lib/queries/incident";
+import { fmtPeakG } from "@/lib/report/format";
 import { clamp, fmtOffset, traceToVideo, videoToTrace, windowDomain, xToTime } from "@/lib/report/timeline";
 import { CHART_MARGIN, SENSOR_COLORS, SensorChart } from "./sensor-chart";
 import { Button } from "@/components/ui/button";
@@ -328,12 +329,13 @@ function KeyValues({ event }: { event: IncidentEvent }) {
   const f = (v: number | null, unit: string, d = 1) => (v == null ? "—" : `${v.toFixed(d)} ${unit}`);
   return (
     <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-3" data-testid="key-values">
-      <Kv label="Peak accel" value={event.peak_g == null ? "—" : `${event.peak_g.toFixed(1)} g${event.peak_g_saturated ? " (saturated)" : ""}`} warn={event.peak_g_saturated} />
+      <Kv label="Peak accel" value={fmtPeakG(event.peak_g, event.peak_g_saturated)} warn={event.peak_g_saturated} />
       <Kv label="Closing rate" value={f(event.closing_rate_mps, "m/s")} />
       <Kv label="Time to contact" value={f(event.ttc_s, "s")} />
       <Kv label="Min range" value={f(event.range_m, "m")} />
       <Kv label="Sensor" value={event.sensor_id ?? "—"} />
       <Kv label="Hat on" value={event.hat_on == null ? "—" : event.hat_on ? "Yes" : "No"} />
+      {event.fallbacks_active.length > 0 && <Kv label="Fallback active" value={event.fallbacks_active.join(", ")} warn />}
     </div>
   );
 }

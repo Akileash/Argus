@@ -109,6 +109,14 @@ export NEXT_PUBLIC_SUPABASE_ANON_KEY="$SB_ANON"
 export SUPABASE_SERVICE_ROLE_KEY="$SB_SERVICE"
 export SUPABASE_URL="$SB_URL"
 export REPORT_MODE="${REPORT_MODE:-fixture}"
+
+# The seed has media rows but no files; attach a clip and a matching sensor trace to the seeded events so the
+# backup event (spec section 7) and the history play video. Idempotent. Needs ffmpeg (checked above).
+if [ "$RESET" = 1 ]; then
+  log "attaching clips and sensor traces to the seeded events (pnpm demo:seed-media)"
+  (cd web && pnpm exec tsx scripts/dev-attach-media.ts) >"$LOG_DIR/seed-media.log" 2>&1 \
+    || { tail -20 "$LOG_DIR/seed-media.log" >&2; die "seeding media failed, see $LOG_DIR/seed-media.log"; }
+fi
 export WORKER_POLL_MS="${WORKER_POLL_MS:-1000}"
 log "report mode: $REPORT_MODE"
 
@@ -190,8 +198,12 @@ fi
 
 echo
 if [ "$RC" = 0 ]; then printf '\033[32mRESULT: PASS\033[0m\n'; else printf '\033[31mRESULT: FAIL\033[0m (logs: %s)\n' "$LOG_DIR"; fi
-echo "Dashboard: $BASE   login: demo@argus.local / argus-demo-2026"
-if [ -f "$SUMMARY" ]; then
+if [ "$KEEP" = 1 ]; then
+  echo "Dashboard: $BASE   login: demo@argus.local / argus-demo-2026"
+else
+  echo "Dashboard: stopped with this script. Re-run with --keep-running to browse it (login: demo@argus.local / argus-demo-2026)."
+fi
+if [ "$KEEP" = 1 ] && [ -f "$SUMMARY" ]; then
   python3 - "$SUMMARY" "$BASE" <<'EOF'
 import json, sys
 for sc, v in json.load(open(sys.argv[1])).items():

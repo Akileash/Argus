@@ -68,10 +68,10 @@ insert into tpl values
 ('near', $j${
  "summary": "A rear-mounted ultrasonic sensor detected an object closing on the worker from behind at high speed. The haptic alert fired and the worker stepped aside; no contact was recorded.",
  "sequence_of_events": [
-  {"offset_s": -1.4, "description": "Rear sensor begins tracking an object approaching from behind.", "source": "sensor"},
+  {"offset_s": -0.5, "description": "Rear sensor begins tracking an object approaching from behind.", "source": "sensor"},
   {"offset_s": 0.0, "description": "Time-to-collision threshold crossed; rear haptic motor fires.", "source": "sensor"},
   {"offset_s": 0.5, "description": "Worker turns and moves clear of the path of the moving load.", "source": "video"},
-  {"offset_s": 1.8, "description": "Object passes behind the worker without contact.", "source": "inferred"}],
+  {"offset_s": 0.8, "description": "Object passes behind the worker without contact.", "source": "inferred"}],
  "evidence": {"clip_refs": [{"offset_s": 0.5, "observation": "Worker turns toward the alert and steps sideways."}],
   "environment": "Ambient CO2 and temperature normal for outdoor work; readings are biased by the wearer."},
  "hazard": {"category": "struck_by", "energy_source": "Moving equipment or materials (kinetic)"},
@@ -111,7 +111,7 @@ insert into tpl values
 ('fall', $j${
  "summary": "The hat recorded a free-fall followed by a hard landing, consistent with a fall from a low height. The worker was on the ground briefly and then stood up.",
  "sequence_of_events": [
-  {"offset_s": -0.5, "description": "Free-fall detected on the hat accelerometer.", "source": "sensor"},
+  {"offset_s": -0.4, "description": "Free-fall detected on the hat accelerometer.", "source": "sensor"},
   {"offset_s": 0.0, "description": "Landing impact recorded.", "source": "sensor"},
   {"offset_s": 1.0, "description": "Worker is seated on the ground.", "source": "video"},
   {"offset_s": 8.0, "description": "Worker stands up and a coworker approaches.", "source": "video"}],
@@ -183,7 +183,7 @@ begin
     v_peak := case e.type when 'head_impact' then 9.4 when 'fall' then 12.1 when 'hat_knocked_off' then 6.2 when 'struck_by_contact' then 5.1 else null end;
     v_cl  := case when e.type in ('struck_by_near_miss','struck_by_contact') then 3.1 + e.idx * 0.3 end;
     v_ttc := case when e.type = 'struck_by_near_miss' then 0.7 end;
-    v_rng := case when e.type in ('struck_by_near_miss','struck_by_contact') then 1.2 end;
+    v_rng := case when e.type in ('struck_by_near_miss','struck_by_contact') then round((3.1 + e.idx * 0.3) * 0.7, 2) end;  -- range = closing rate x ttc (0.7 s), as the device computes it
     v_sen := case when e.type in ('struck_by_near_miss','struck_by_contact') then 'R3' end;
     v_ff  := case when e.type = 'fall' then 410 end;
     v_dh  := case when e.type = 'fall' then round((0.5 * 9.81 * 0.41 * 0.41)::numeric, 2) end;

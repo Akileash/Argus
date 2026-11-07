@@ -1,0 +1,216 @@
+{
+ "event": {
+  "type": "fall",
+  "device_class": "incident",
+  "metrics": {
+   "peak_g": 13.976760521316018,
+   "peak_g_saturated": false,
+   "closing_rate_mps": null,
+   "ttc_s": null,
+   "range_m": null,
+   "free_fall_ms": 450.0,
+   "drop_height_m": 0.9929233125,
+   "sensor_id": null,
+   "hat_on": true
+  },
+  "env": {
+   "co2_ppm": 684.6,
+   "temp_c": 22.39,
+   "rh_pct": 41.08
+  },
+  "window": {
+   "pre_s": 20.0,
+   "post_s": 10.0
+  },
+  "merged_triggers": [],
+  "firmware": {
+   "version": "0.1.0",
+   "impls": {
+    "imu": "mock",
+    "range": "mock",
+    "hat_on": "mock",
+    "env": "mock",
+    "haptics": "mock",
+    "camera": "mock"
+   },
+   "fallbacks_active": []
+  }
+ },
+ "trace": {
+  "schema_version": "1",
+  "event_id": "2cf29d7b-249c-41fc-a42b-e3717a6379f5",
+  "t_start_s": -20.0,
+  "t_end_s": 10.0,
+  "imu": {
+   "t": [
+    -20.0,
+    -19.99,
+    -19.985,
+    -19.975,
+    -19.9575
+   ],
+   "a_mag_g": [
+    1.0016,
+    1.0026,
+    1.0092,
+    1.0143,
+    1.0104
+   ],
+   "ax": [
+    -0.0039,
+    -0.006,
+    -0.0037,
+    -0.0003,
+    0.0042
+   ],
+   "ay": [
+    0.0002,
+    -0.0109,
+    0.0028,
+    0.0098,
+    -0.006
+   ],
+   "az": [
+    1.0016,
+    1.0025,
+    1.0092,
+    1.0143,
+    1.0103
+   ],
+   "gx": [
+    0.55,
+    0.57,
+    0.57,
+    0.39,
+    0.24
+   ],
+   "gy": [
+    -0.53,
+    -0.28,
+    0.11,
+    -0.37,
+    -0.17
+   ],
+   "gz": [
+    0.31,
+    0.09,
+    -0.11,
+    0.57,
+    0.43
+   ]
+  },
+  "imu_peaks": [
+   {
+    "t": 0.0,
+    "a_mag_g": 3.532,
+    "saturated": false
+   },
+   {
+    "t": 0.0025,
+    "a_mag_g": 5.333,
+    "saturated": false
+   },
+   {
+    "t": 0.005,
+    "a_mag_g": 7.04,
+    "saturated": false
+   }
+  ],
+  "ranges": {
+   "R2": {
+    "t": [
+     -19.955,
+     -19.895,
+     -19.835,
+     -19.775,
+     -19.715
+    ],
+    "range_m": [
+     2.2275,
+     2.226,
+     2.2327,
+     2.2302,
+     2.2239
+    ],
+    "closing_mps": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "R3": {
+    "t": [
+     -19.985,
+     -19.925,
+     -19.865,
+     -19.805,
+     -19.745
+    ],
+    "range_m": [
+     2.2316,
+     2.2233,
+     2.2191,
+     null,
+     2.2245
+    ],
+    "closing_mps": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   }
+  },
+  "tof": {
+   "t": [
+    -19.955,
+    -19.855,
+    -19.755,
+    -19.655,
+    -19.555
+   ],
+   "range_mm": [
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  },
+  "hat_on": [
+   {
+    "t": -20.0,
+    "on": true
+   }
+  ],
+  "haptics": [
+   {
+    "t": 0.1058,
+    "motor": "both",
+    "pattern": "ack_1500ms",
+    "duration_s": 1.504
+   }
+  ],
+  "detections": [
+   {
+    "t": 0.0,
+    "type": "fall",
+    "sensor_id": null,
+    "peak_g": 13.9768,
+    "free_fall_ms": 450.0,
+    "drop_height_m": 0.9929,
+    "debug": {
+     "pulse_ms": 47.5
+    }
+   }
+  ],
+  "env": {
+   "co2_ppm": 684.6,
+   "temp_c": 22.39,
+   "rh_pct": 41.08
+  }
+ }
+}

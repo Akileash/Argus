@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { SHORT_CIRCUIT_TYPES, type ArgusEvent } from "@/lib/contracts/event";
 import type { AuthedDevice } from "./device-auth";
@@ -120,7 +121,23 @@ export async function ingestEvent(db: SupabaseClient, device: AuthedDevice, ev: 
   return { httpStatus: created ? 201 : 200, body: { event_id: row.id, status, uploads } };
 }
 
-/** contracts/api.md #5. Verifies objects exist with the declared size, confirms media, sets status uploaded. */
+/** Objects up to this size are read back and hashed on /complete (a 30 s 720p clip is ~10 MB; a trace ~0.2 MB). */
+const MAX_VERIFY_BYTES = 64 * 1024 * 1024;
+
+/** contracts/api.md #5 requires size AND sha256: download the object and compare with the declared hash. */
+async function checksumProblem(
+  db: SupabaseClient,
+  m: { filename: string; sha256: string | null; storage_path: string },
+  size: number | undefined,
+): Promise<string | null> {
+  if (!m.sha256 || (size ?? 0) > MAX_VERIFY_BYTES) return null;
+  const dl = await db.storage.from(MEDIA_BUCKET).download(m.storage_path);
+  if (dl.error || !dl.data) return `${m.filename}: could not read back to verify sha256`;
+  const got = createHash("sha256").update(Buffer.from(await dl.data.arrayBuffer())).digest("hex");
+  return got === m.sha256.toLowerCase() ? null : `${m.filename}: sha256 ${got} != declared ${m.sha256}`;
+}
+
+/** contracts/api.md #5. Verifies objects exist with the declared size and sha256, confirms media, sets status uploaded. */
 export async function completeEvent(
   db: SupabaseClient,
   device: AuthedDevice,
@@ -133,9 +150,9 @@ export async function completeEvent(
   if (!row || row.device_id !== device.id) throw new ApiError(404, "not_found", "Unknown event");
   if (!PENDING_STATUSES.has(row.status)) return { status: row.status }; // already completed / short-circuit: idempotent
 
-  const mq = await db.from("media").select("id, filename, bytes, storage_path, confirmed").eq("event_id", row.id);
+  const mq = await db.from("media").select("id, filename, bytes, sha256, storage_path, confirmed").eq("event_id", row.id);
   dbErr(mq.error, "load media");
-  const all = (mq.data ?? []) as { id: string; filename: string; bytes: number | null; storage_path: string; confirmed: boolean }[];
+  const all = (mq.data ?? []) as { id: string; filename: string; bytes: number | null; sha256: string | null; storage_path: string; confirmed: boolean }[];
 
   const declared = new Set(uploaded);
   const problems: string[] = [];
@@ -153,7 +170,11 @@ export async function completeEvent(
     const size = obj?.metadata?.size as number | undefined;
     if (!obj) problems.push(`${m.filename}: object not found`);
     else if (m.bytes != null && size !== Number(m.bytes)) problems.push(`${m.filename}: size ${size} != declared ${m.bytes}`);
-    else toConfirm.push(m.id);
+    else {
+      const bad = await checksumProblem(db, m, size);
+      if (bad) problems.push(bad);
+      else toConfirm.push(m.id);
+    }
   }
   if (problems.length) {
     throw new ApiError(409, "upload_incomplete", problems.join("; "), { problems });

@@ -2,6 +2,7 @@ import { REPORT_FOOTER } from "@argus/shared";
 import type { SensorTrace } from "@argus/shared";
 import { ClassChip, RiskChip, StatusChip, type EventClass } from "@/components/chips";
 import { Time } from "./time";
+import { fmtPeakG } from "@/lib/report/format";
 import { fmtOffset, windowDomain } from "@/lib/report/timeline";
 import {
   CAUSE_KIND_OPTIONS,
@@ -190,7 +191,7 @@ export function PrintReport({
         )}
         <dl className="mt-2 grid grid-cols-6 gap-2">
           {[
-            ["Peak accel", event.peak_g == null ? "—" : `${event.peak_g.toFixed(1)} g${event.peak_g_saturated ? " (sat.)" : ""}`],
+            ["Peak accel", fmtPeakG(event.peak_g, event.peak_g_saturated)],
             ["Closing rate", f(event.closing_rate_mps, "m/s")],
             ["Time to contact", f(event.ttc_s, "s")],
             ["Min range", f(event.range_m, "m")],

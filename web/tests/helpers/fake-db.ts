@@ -8,6 +8,8 @@ export class FakeDb {
   tables: Record<string, Row[]> = { events: [], media: [], devices: [], device_assignments: [], sites: [] };
   /** bucket -> path -> size */
   objects: Record<string, Record<string, number>> = {};
+  /** bucket -> path -> bytes, for download() (sha256 verification on /complete) */
+  contents: Record<string, Record<string, Uint8Array>> = {};
   signed: string[] = [];
   orgId = "org-1";
   /** conflict keys per table */
@@ -22,6 +24,11 @@ export class FakeDb {
       createSignedUploadUrl: async (path: string) => {
         this.signed.push(path);
         return { data: { signedUrl: `http://storage.test/upload/${path}?token=t`, token: "t", path }, error: null };
+      },
+      download: async (path: string) => {
+        const bytes = this.contents[bucket]?.[path];
+        if (!bytes) return { data: null, error: { message: "Object not found" } };
+        return { data: { arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) }, error: null };
       },
       list: async (folder: string, opts?: { search?: string }) => {
         const objs = this.objects[bucket] ?? {};

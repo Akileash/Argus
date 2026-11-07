@@ -178,14 +178,20 @@ async function attempt(deps: PipelineDeps, eventId: string, log: Logger): Promis
   if (ctx.event.device_class === "system") throw new NonRetryableError("system events do not produce reports");
   const trace = await loadTrace(deps, ctx);
 
+  // A clip-less event (upload failed, or the clip was never produced) still gets a report from the sensor data,
+  // with the missing video recorded in confidence_and_gaps, instead of ending as `failed` with nothing.
+  // hat_removed / module_fallback keep their existing rule: no clip, no report.
+  const sensorOnly = deps.cfg.mode !== "fixture" && !ctx.clip && ctx.event.type !== "hat_removed";
+  if (sensorOnly) log.warn(`event ${eventId} has no clip; writing a sensor-only report`);
+
   let draft: unknown;
-  if (deps.cfg.mode === "fixture") {
+  if (deps.cfg.mode === "fixture" || sensorOnly) {
     const t = Date.now();
-    draft = buildFixtureDraft(ctx, trace);
+    draft = buildFixtureDraft(ctx, trace, { videoMissing: !ctx.clip });
     await deps.store.insertAnalysis({
       event_id: eventId,
       stage: "report_draft",
-      model: "fixture",
+      model: sensorOnly ? "sensor-only" : "fixture",
       input_tokens: 0,
       output_tokens: 0,
       cost_usd: 0,

@@ -28,7 +28,7 @@ You can run the whole system on a laptop with simulated sensors. You do not need
 ./scripts/demo-e2e.sh
 ```
 
-Until that script exists, these commands work today. They run from the repo root.
+To run the pieces by hand instead, use these commands. They run from the repo root.
 
 Device side (simulated sensors, no Pi needed):
 
@@ -49,3 +49,23 @@ cd web && pnpm dev                       # start the dashboard on localhost
 ```
 
 The `pnpm db:*` scripts are in the root `package.json`. `pnpm dev` is in `web/package.json`.
+
+### Seeded events: attach clips and sensor traces
+
+`supabase/seed.sql` creates about a dozen historical events with reports, but it cannot create files.
+Until you attach them, their pages show "No clip" and "Sensor trace not available". This includes the
+backup event for the pitch (spec section 7) and the event with the AI reclassification suggestion
+(ARG-2026-0009).
+
+```bash
+pnpm demo:seed-media                     # from the repo root; needs local Supabase running and ffmpeg
+pnpm demo:seed-media <event-id> ...      # or only the events you name
+```
+
+- It gives every seeded event that has media rows a 30 s test clip and a sensor trace. Each trace is built from
+  that event's own numbers (type, peak g, closing rate, time to contact, range, sensor, free-fall time,
+  drop height, environment), uses the 2 rear sensors R2 and R3, and the same detection names the device writes.
+- It is safe to run again. It overwrites the same files and media rows.
+- `./scripts/demo-e2e.sh --reset` runs it for you after the database reset. After a plain
+  `pnpm db:reset`, run it yourself.
+- Credentials come from `web/.env.local` if present, otherwise from `supabase status`.

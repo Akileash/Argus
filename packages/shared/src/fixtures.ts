@@ -14,7 +14,7 @@ type MetricsPatch = Partial<ArgusEvent["metrics"]>;
 const METRICS: Record<EventType, MetricsPatch> = {
   struck_by_near_miss: { peak_g: null, closing_rate_mps: 4.2, ttc_s: 0.8, range_m: 3.4, sensor_id: "R2", hat_on: true },
   struck_by_contact: { peak_g: 9.5, peak_g_saturated: false, closing_rate_mps: 3.1, ttc_s: 0, range_m: 0.1, sensor_id: "R3", hat_on: true },
-  head_impact: { peak_g: 16, peak_g_saturated: true, closing_rate_mps: null, ttc_s: null, range_m: null, sensor_id: "TOP", hat_on: true },
+  head_impact: { peak_g: 16, peak_g_saturated: true, closing_rate_mps: null, ttc_s: null, range_m: null, sensor_id: null, hat_on: true },
   fall: { peak_g: 12.4, peak_g_saturated: false, free_fall_ms: 450, drop_height_m: 0.99, hat_on: true },
   hat_knocked_off: { peak_g: 7.2, peak_g_saturated: false, hat_on: false },
   hat_removed: { hat_on: false },
@@ -60,18 +60,20 @@ export function makeTrace(type: EventType = "struck_by_near_miss", eventId: stri
   const m = ev.metrics;
   const sid = m.sensor_id ?? null;
 
+  // Detection names and fields mirror what device/argus/events/trace.py really writes.
   const detections: SensorTrace["detections"] = [];
   if (type === "struck_by_near_miss" || type === "struck_by_contact") {
-    detections.push({ t: -0.9, type: "struck_by_warning", sensor_id: sid, closing_mps: m.closing_rate_mps, ttc_s: type === "struck_by_near_miss" ? 0.8 : 0.9, range_m: type === "struck_by_near_miss" ? 3.4 : 2.8 });
+    for (const [i, tt] of [-0.9, -0.84, -0.78, -0.72].entries()) {
+      detections.push({ t: tt, type: "struck_by_warning", sensor_id: sid, closing_rate_mps: m.closing_rate_mps, ttc_s: Math.round((0.9 - i * 0.06) * 100) / 100, range_m: Math.round((3.4 - i * 0.25) * 100) / 100 });
+    }
+    detections.push({ t: 0, type: type === "struck_by_near_miss" ? "struck_by_near_miss" : "struck_by_contact", sensor_id: sid, closing_rate_mps: m.closing_rate_mps, ttc_s: m.ttc_s, range_m: m.range_m });
   }
-  if (type === "struck_by_contact" || type === "head_impact") detections.push({ t: 0, type: "head_impact", peak_g: m.peak_g, saturated: m.peak_g_saturated ?? false });
-  if (type === "fall") {
-    detections.push({ t: -0.45, type: "free_fall", duration_ms: m.free_fall_ms });
-    detections.push({ t: 0, type: "head_impact", peak_g: m.peak_g, saturated: false });
+  if (type === "struck_by_contact" || type === "head_impact") {
+    detections.push({ t: 0, type: "head_impact", sensor_id: null, peak_g: m.peak_g, ...(m.peak_g_saturated ? { peak_g_saturated: true } : {}) });
   }
-  if (type === "hat_knocked_off") detections.push({ t: 0, type: "head_impact", peak_g: m.peak_g, saturated: false }, { t: 0.2, type: "hat_off" });
-  if (type === "hat_removed") detections.push({ t: 0, type: "hat_off" });
-  if (type === "struck_by_near_miss") detections.push({ t: 0, type: "trigger", reason: "struck_by_near_miss" });
+  if (type === "fall") detections.push({ t: 0, type: "fall", sensor_id: null, peak_g: m.peak_g, free_fall_ms: m.free_fall_ms, drop_height_m: m.drop_height_m });
+  if (type === "hat_knocked_off") detections.push({ t: 0, type: "hat_knocked_off", sensor_id: null, peak_g: m.peak_g });
+  if (type === "hat_removed") detections.push({ t: 0, type: "hat_removed", sensor_id: null });
 
   const ranges: SensorTrace["ranges"] = {};
   if (sid && sid !== "TOP") {
@@ -92,7 +94,7 @@ export function makeTrace(type: EventType = "struck_by_near_miss", eventId: stri
     ranges,
     tof: { t, range_mm: t.map(() => 62) },
     hat_on: type === "hat_knocked_off" ? [{ t: -20, on: true }, { t: 0.2, on: false }] : type === "hat_removed" ? [{ t: -20, on: true }, { t: 0, on: false }] : [{ t: -20, on: true }],
-    haptics: type === "struck_by_near_miss" || type === "struck_by_contact" ? [{ t: -0.88, motor: "back", pattern: "pulse_4hz", duration_s: 0.8 }] : [],
+    haptics: type === "struck_by_near_miss" || type === "struck_by_contact" ? [{ t: -0.88, motor: "back", pattern: "pulse_4hz", duration_s: 0.8 }] : type === "hat_removed" || type === "module_fallback" ? [] : [{ t: 0.1, motor: "both", pattern: "ack_1500ms", duration_s: 1.5 }],
     detections,
     env: { co2_ppm: 612, temp_c: 21.4, rh_pct: 38 },
   };

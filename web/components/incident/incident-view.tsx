@@ -224,7 +224,9 @@ export function IncidentView({ data, role, fullName }: { data: IncidentData; rol
               {event.device_class === "ppe_log"
                 ? "PPE log entries record that the hat was removed. They have no clip and no report."
                 : event.device_class === "system"
-                  ? "System events do not produce a report."
+                  ? event.fallbacks_active.length > 0
+                  ? `Module fallback: ${event.fallbacks_active.join(", ")} switched to its backup implementation. System events have no clip and no report.`
+                  : "System events do not produce a report."
                   : "No report has been generated for this event."}
             </div>
           )}

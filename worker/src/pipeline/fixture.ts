@@ -1,7 +1,7 @@
 import type { SensorTrace, EventType } from "@argus/shared";
 import type { LlmFields } from "../llm-schema";
 import type { EventContext } from "../store/types";
-import { environmentText, fmtOffset, keySensorValues, sensorTimeline } from "./summary";
+import { environmentText, fmtOffset, fmtPeakG, keySensorValues, sensorTimeline } from "./summary";
 
 type Hazard = LlmFields["hazard"];
 type Action = LlmFields["corrective_actions"][number];
@@ -122,7 +122,7 @@ function riskFor(ctx: EventContext): { s: number; l: number; sj: string; lj: str
       return {
         s: m.peak_g_saturated ? 5 : 4,
         l: 4,
-        sj: m.peak_g_saturated ? "The impact reached the sensor limit (at least 16 g), so the true force may have been higher; a serious head injury is credible." : `A head impact of ${f(m.peak_g)} g can cause a concussion or a more serious injury.`,
+        sj: m.peak_g_saturated ? "The impact reached the sensor limit (\u2265 16 g, saturated), so the true force may have been higher; a serious head injury is credible." : `A head impact of ${f(m.peak_g)} g can cause a concussion or a more serious injury.`,
         lj: "The impact occurred; similar exposure exists for others working in the same area.",
       };
     case "fall":
@@ -142,20 +142,20 @@ function summaryFor(ctx: EventContext): string {
     case "struck_by_near_miss":
       return `The hat's rear sensor ${m.sensor_id ?? ""} detected an object closing on ${who} at ${f(m.closing_rate_mps)} m/s with about ${f(m.ttc_s)} s to contact, and a haptic warning fired. No impact was recorded, so the device classed this as a near miss.`.replace("sensor  ", "sensor ");
     case "struck_by_contact":
-      return `An object approached ${who} from behind at about ${f(m.closing_rate_mps)} m/s and an impact of ${f(m.peak_g)} g followed. The device classed this as an incident because contact occurred.`;
+      return `An object approached ${who} from behind at about ${f(m.closing_rate_mps)} m/s and an impact (${fmtPeakG(m.peak_g, m.peak_g_saturated)}) followed. The device classed this as an incident because contact occurred.`;
     case "head_impact":
-      return `${who}'s hard hat registered a head impact${m.peak_g_saturated ? " at or above the 16 g sensor limit" : ` of ${f(m.peak_g)} g`}. The device classed this as an incident; the source of the impact is not identified by the sensors alone.`;
+      return `${who}'s hard hat registered a head impact of ${fmtPeakG(m.peak_g, m.peak_g_saturated)}${m.peak_g_saturated ? ", the sensor limit" : ""}. The device classed this as an incident; the source of the impact is not identified by the sensors alone.`;
     case "fall":
-      return `${who}'s hard hat recorded a free fall of ${f(m.free_fall_ms, 0)} ms (an estimated ${f(m.drop_height_m, 2)} m) followed by an impact of ${f(m.peak_g)} g. The device classed this as an incident.`;
+      return `${who}'s hard hat recorded a free fall of ${f(m.free_fall_ms, 0)} ms (an estimated ${f(m.drop_height_m, 2)} m) followed by an impact of ${fmtPeakG(m.peak_g, m.peak_g_saturated)}. The device classed this as an incident.`;
     case "hat_knocked_off":
-      return `${who}'s hard hat registered an impact of ${f(m.peak_g)} g and then left the head. The device classed this as an incident.`;
+      return `${who}'s hard hat registered an impact of ${fmtPeakG(m.peak_g, m.peak_g_saturated)} and then left the head. The device classed this as an incident.`;
     default:
       return `${who}'s hard hat was taken off during the shift. This is logged as a PPE record; no impact was detected.`;
   }
 }
 
 /** Deterministic, schema-valid analysis fields built from the event and trace. No network, no LLM. */
-export function buildFixtureDraft(ctx: EventContext, trace: SensorTrace | null): LlmFields {
+export function buildFixtureDraft(ctx: EventContext, trace: SensorTrace | null, opts: { videoMissing?: boolean } = {}): LlmFields {
   const ev = ctx.event;
   const tpl = template(ev.type, ctx);
   const r = riskFor(ctx);
@@ -171,7 +171,7 @@ export function buildFixtureDraft(ctx: EventContext, trace: SensorTrace | null):
     sequence_of_events: sensorTimeline(ctx, trace).map((t) => ({ offset_s: t.offset_s, description: t.text, source: "sensor" as const })),
     evidence: {
       clip_refs: clipSeen
-        ? [{ offset_s: 0, observation: `Review the front-camera clip around t0 (${fmtOffset(0)}); video was not analyzed in fixture mode.` }]
+        ? [{ offset_s: 0, observation: `Review the front-camera clip around t0 (${fmtOffset(0)}); this draft was written from the sensor data and did not include video analysis.` }]
         : [],
       key_sensor_values: keySensorValues(ctx),
       environment: environmentText(ctx),
@@ -187,7 +187,7 @@ export function buildFixtureDraft(ctx: EventContext, trace: SensorTrace | null):
     causes: { immediate: tpl.immediate, root_five_whys: tpl.whys },
     corrective_actions: tpl.actions,
     regulatory_note: regulatory,
-    confidence_and_gaps: `Fixture mode: this draft is built from the sensor data only and the video was not analyzed, so visual causes, the activity being performed and nearby people are unknown. ${ev.metrics.peak_g_saturated ? "The peak acceleration was clipped at the sensor limit. " : ""}Location on site is not determined.`,
+    confidence_and_gaps: `This draft was prepared from the sensor data alone; ${opts.videoMissing ? "no video clip was received for this event, so" : "the video clip was not reviewed, so"} visual causes, the activity being performed and any nearby people are not known and should be confirmed by the investigator. ${ev.metrics.peak_g_saturated ? "The peak acceleration reached the sensor limit (\u2265 16 g, saturated), so the true peak is unknown. " : ""}Location on site is not determined.`,
     classification_review: { suggested_class: null, reason: null },
   };
 }
