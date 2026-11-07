@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,12 @@ export function RegisterDeviceForm({ orgId, supabaseUrl }: { orgId: string; supa
   const [copied, setCopied] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
   const [origin, setOrigin] = useState("");
-  useEffect(() => setOrigin(window.location.origin), []);
+  // Uncontrolled input: text typed before the page finishes loading must survive hydration.
+  const serialRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    setOrigin(window.location.origin);
+    if (serialRef.current?.value) setSerial(serialRef.current.value);
+  }, []);
   const warnings = pairingWarnings(origin, supabaseUrl);
 
   async function onSubmit(e: React.FormEvent) {
@@ -35,13 +40,13 @@ export function RegisterDeviceForm({ orgId, supabaseUrl }: { orgId: string; supa
       const res = await fetch("/api/devices/register", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial: serial.trim(), org_id: orgId, rotate }),
+        body: JSON.stringify({ serial: (serialRef.current?.value ?? serial).trim(), org_id: orgId, rotate }),
       });
       const json = await res.json();
       if (!res.ok) {
         setError(json?.error?.message ?? "Registration failed");
       } else {
-        setResult({ ...json, serial: serial.trim() });
+        setResult({ ...json, serial: (serialRef.current?.value ?? serial).trim() });
         router.refresh();
       }
     } catch {
@@ -130,7 +135,7 @@ export function RegisterDeviceForm({ orgId, supabaseUrl }: { orgId: string; supa
     <form onSubmit={onSubmit} className="space-y-3">
       <div>
         <Label htmlFor="serial">Serial</Label>
-        <Input id="serial" value={serial} onChange={(e) => setSerial(e.target.value)} placeholder="ARG-0001" required className="num" />
+        <Input id="serial" ref={serialRef} defaultValue="" onChange={(e) => setSerial(e.target.value)} placeholder="ARG-0001" required className="num" />
       </div>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={rotate} onChange={(e) => setRotate(e.target.checked)} />
@@ -141,7 +146,7 @@ export function RegisterDeviceForm({ orgId, supabaseUrl }: { orgId: string; supa
           {error}
         </p>
       )}
-      <Button type="submit" disabled={pending || !serial.trim()}>
+      <Button type="submit" disabled={pending}>
         {pending ? "Registering..." : "Register device"}
       </Button>
     </form>

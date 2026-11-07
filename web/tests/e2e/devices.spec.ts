@@ -77,3 +77,18 @@ test.describe("devices page", () => {
     await expect(page.getByText(/must be reachable from the Pi/i)).toBeVisible();
   });
 });
+
+test("a serial typed while the page is still loading is kept", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel(/email/i).fill("demo@argus.local");
+  await page.getByLabel(/password/i).fill("argus-demo-2026");
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await expect(page.getByTestId("kpi-row")).toBeVisible();
+  await page.goto("/devices", { waitUntil: "commit" });
+  const serial = `ARG-H${Date.now() % 100000}`;
+  await page.getByLabel("Serial").fill(serial); // as early as the field exists, before hydration
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByLabel("Serial")).toHaveValue(serial);
+  await page.getByRole("button", { name: /register device/i }).click();
+  await expect(page.getByTestId("pair-command")).toBeVisible();
+});
