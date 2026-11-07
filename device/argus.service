@@ -1,0 +1,26 @@
+# Argus device runtime (systemd unit).
+# Template: install.sh replaces __DEVICE_DIR__ (absolute path of the device/ folder
+# in the repo) and __ARGUS_USER__ (the user who ran install.sh).
+# Do not edit the installed copy in /etc/systemd/system. Re-run install.sh instead.
+
+[Unit]
+Description=Argus smart hard hat device runtime
+Wants=network-online.target
+After=network-online.target
+# Never give up restarting, even if the device crash-loops during boot.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=__ARGUS_USER__
+WorkingDirectory=__DEVICE_DIR__
+Environment=PYTHONUNBUFFERED=1
+ExecStart=__DEVICE_DIR__/.venv/bin/argus-cli run --config /etc/argus/config.yaml
+Restart=always
+RestartSec=2
+# Sensor timing (HC-SR04 echo, IMU FIFO) needs a higher scheduling priority.
+Nice=-5
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
