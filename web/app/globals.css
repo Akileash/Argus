@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Argus design tokens: "industrial safety, light". See web/DESIGN.md.
+ * Raw tokens are CSS variables on :root; @theme inline maps them to Tailwind utilities
+ * (bg-base, bg-surface, text-ink, text-muted, border-line, bg-accent, text-accent-text, ...).
+ */
+:root {
+  /* surfaces */
+  --base: #f7f6f2;
+  --surface: #ffffff;
+  --surface-2: #efede6;
+  --line: #dcd9cc;
+  --line-strong: #bdb9a8;
+
+  /* ink */
+  --ink: #1b1b18;
+  --muted: #5c5a52; /* 6.4:1 on --base */
+  --faint: #8a8778; /* decorative / disabled only */
+
+  /* safety orange. --accent is a FILL (with --accent-ink text, 6.4:1).
+     Use --accent-text for orange text on light surfaces (5.0:1 on --base). */
+  --accent: #ff6b00;
+  --accent-hover: #e55f00;
+  --accent-ink: #1b1b18;
+  --accent-text: #b84700;
+  --accent-soft: #ffe9d9;
+
+  --ring: #ff6b00;
+  --danger: #b42318;
+
+  /* classification chips: bg / fg / border (all fg on bg >= 4.5:1) */
+  --near-miss-bg: #fff3c4;
+  --near-miss-fg: #6b4e00;
+  --near-miss-line: #e8c547;
+  --incident-bg: #fde3e1;
+  --incident-fg: #9b1c12;
+  --incident-line: #ef9a93;
+  --ppe-bg: #dfeaf7;
+  --ppe-fg: #1d4a7a;
+  --ppe-line: #9fbfe3;
+  --system-bg: #e9e7df;
+  --system-fg: #4a483f;
+  --system-line: #c9c5b5;
+
+  /* report / event status chips */
+  --status-draft-bg: #fff3c4;
+  --status-draft-fg: #6b4e00;
+  --status-signed-bg: #dcf2e0;
+  --status-signed-fg: #14532d;
+  --status-progress-bg: #dfeaf7;
+  --status-progress-fg: #1d4a7a;
+  --status-failed-bg: #fde3e1;
+  --status-failed-fg: #9b1c12;
+
+  /* risk matrix 1-25 bands (likelihood x severity): bg / fg */
+  --risk-1-bg: #cfeed6; /* 1-4   low */
+  --risk-1-fg: #14532d;
+  --risk-2-bg: #e4f0b5; /* 5-9   moderate-low */
+  --risk-2-fg: #3b4a05;
+  --risk-3-bg: #ffe08a; /* 10-14 moderate */
+  --risk-3-fg: #5c4100;
+  --risk-4-bg: #ffb877; /* 15-19 high */
+  --risk-4-fg: #5a2500;
+  --risk-5-bg: #e5483b; /* 20-25 extreme */
+  --risk-5-fg: #ffffff;
+
+  --radius: 0.375rem;
+}
+
+@theme inline {
+  --color-base: var(--base);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-ring: var(--ring);
+
+  --color-near-miss-bg: var(--near-miss-bg);
+  --color-near-miss-fg: var(--near-miss-fg);
+  --color-near-miss-line: var(--near-miss-line);
+  --color-incident-bg: var(--incident-bg);
+  --color-incident-fg: var(--incident-fg);
+  --color-incident-line: var(--incident-line);
+  --color-ppe-bg: var(--ppe-bg);
+  --color-ppe-fg: var(--ppe-fg);
+  --color-ppe-line: var(--ppe-line);
+  --color-system-bg: var(--system-bg);
+  --color-system-fg: var(--system-fg);
+  --color-system-line: var(--system-line);
+
+  --color-status-draft-bg: var(--status-draft-bg);
+  --color-status-draft-fg: var(--status-draft-fg);
+  --color-status-signed-bg: var(--status-signed-bg);
+  --color-status-signed-fg: var(--status-signed-fg);
+  --color-status-progress-bg: var(--status-progress-bg);
+  --color-status-progress-fg: var(--status-progress-fg);
+  --color-status-failed-bg: var(--status-failed-bg);
+  --color-status-failed-fg: var(--status-failed-fg);
+
+  --color-risk-1-bg: var(--risk-1-bg);
+  --color-risk-1-fg: var(--risk-1-fg);
+  --color-risk-2-bg: var(--risk-2-bg);
+  --color-risk-2-fg: var(--risk-2-fg);
+  --color-risk-3-bg: var(--risk-3-bg);
+  --color-risk-3-fg: var(--risk-3-fg);
+  --color-risk-4-bg: var(--risk-4-bg);
+  --color-risk-4-fg: var(--risk-4-fg);
+  --color-risk-5-bg: var(--risk-5-bg);
+  --color-risk-5-fg: var(--risk-5-fg);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+  html {
+    font-size: 15px; /* dense but projector-legible */
+  }
+  body {
+    background: var(--base);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Monospaced, tabular numerals for every metric (g, m/s, s, counts, IDs). */
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  /* Small uppercase field label used in dense forms. */
+  .field-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}
+
+@media print {
+  html {
+    font-size: 12px;
+  }
+  body {
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
