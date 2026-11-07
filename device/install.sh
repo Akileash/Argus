@@ -283,7 +283,7 @@ start_or_explain() {
     info "device is not paired yet, so the service was NOT started now."
     info "It IS enabled: after any reboot it starts by itself and queues events locally until paired."
     info "Pair the device (works while the service runs; the uploader picks the token up within ~10 s):"
-    info "  cd ${DEVICE_DIR} && .venv/bin/argus-cli pair"
+    info "  cd ${DEVICE_DIR} && .venv/bin/argus-cli pair --config /etc/argus/config.yaml"
     info "Start it now:  sudo systemctl start ${SERVICE_NAME}"
   fi
 }
@@ -308,9 +308,9 @@ Checklist:
   [ ] Hardware bus scan:    i2cdetect -y 1
         expect 0x29 (VL53L0X), 0x62 (SCD41), 0x68 (MPU-6050)
   [ ] Camera detected:      rpicam-hello --list-cameras   (libcamera-hello on older images)
-  [ ] IMU test:             ${DEVICE_DIR}/.venv/bin/argus-cli test imu
-  [ ] Haptics test:         ${DEVICE_DIR}/.venv/bin/argus-cli buzz both
-  [ ] Device paired:        ${DEVICE_DIR}/.venv/bin/argus-cli pair   (if not done)
+  [ ] IMU test:             ${DEVICE_DIR}/.venv/bin/argus-cli test imu --config /etc/argus/config.yaml
+  [ ] Haptics test:         ${DEVICE_DIR}/.venv/bin/argus-cli buzz both --config /etc/argus/config.yaml
+  [ ] Device paired:        ${DEVICE_DIR}/.venv/bin/argus-cli pair --config /etc/argus/config.yaml   (if not done)
   [ ] Service running:      systemctl status ${SERVICE_NAME}
   [ ] Live logs:            journalctl -u ${SERVICE_NAME} -f
 

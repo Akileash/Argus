@@ -41,7 +41,7 @@ thresholds:          # names = what the detectors read (tests/unit/test_config_k
     ego_compensation: true
     ego_discount_only: true
     approach_gap_s: 1.0
-    impact_g: 6.0
+    impact_g: 6.0   # same physical threshold as fall_impact.impact_g below: keep them equal unless deliberately tuned apart
     contact_window_s: 1.5
     saturation_g: 15.9
     haptic_hold_s: 0.3
@@ -61,7 +61,7 @@ thresholds:          # names = what the detectors read (tests/unit/test_config_k
     calib_gyro_motion_dps: 3.0
     calib_accel_motion_g: 0.05
   fall_impact:   # spec §4.2
-    impact_g: 6.0
+    impact_g: 6.0   # must match struck_by.impact_g above unless deliberately tuned apart
     saturation_g: 15.9
     free_fall_g: 0.35
     free_fall_min_ms: 200.0

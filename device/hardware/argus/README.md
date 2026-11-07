@@ -1,7 +1,7 @@
 # Argus hardware drivers (impl `argus`)
 
 Each module lives at `hardware/argus/<module>/__init__.py` and exposes `create(ctx)`. Hardware libraries
-(`smbus2`, `lgpio`, `picamera2`, `adafruit-*`) are imported lazily in `start()`; install with `uv sync --extra pi`.
+(`smbus2`, `lgpio`, `picamera2`, `adafruit-*`) are imported lazily in `start()`; install with `uv sync --locked --extra pi`.
 `start()` never raises: an init failure bumps `error_count`, sets `health().ok = False`, and the supervisor's
 staleness check triggers the fallback impl. Each driver runs its own thread; `read()` only drains a queue.
 
@@ -74,19 +74,21 @@ libraries; it has not been reproduced on a Pi.
 
 ## Bench bring-up checklist (on the Pi)
 
-1. `sudo raspi-config nonint do_i2c 0`; `uv sync --extra pi`; `sudo apt install ffmpeg i2c-tools`.
+Run every `argus-cli` command below with `--config /etc/argus/config.yaml`, the file the service reads. Without it the CLI reads the repo's mock config and the tests run against mocks. Stop the service first (`sudo systemctl stop argus`) because the sensors are exclusive.
+
+1. `sudo raspi-config nonint do_i2c 0`; `uv sync --locked --extra pi`; `sudo apt install ffmpeg i2c-tools`.
 2. `i2cdetect -y 1` -> expect `0x29` (VL53L0X), `0x62` (SCD41), `0x68` (MPU-6050, not 0x69).
-3. `argus-cli test imu`: accel z ~ +1 g when flat (hat frame z up), rate >= 800 Hz for this driver (expect ~1000; the test fails below that), no FIFO overflows
+3. `argus-cli test imu --config /etc/argus/config.yaml`: accel z ~ +1 g when flat (hat frame z up), rate >= 800 Hz for this driver (expect ~1000; the test fails below that), no FIFO overflows
    (`error_count` must not grow; the test fails if it does). Needs the 400 kHz I2C baud rate. Tilt/tap: check axis signs; set `axis_map` if x/y/z are wrong. Shake hard: no FIFO overflow notes.
-4. `argus-cli test range`: for each sensor hold a flat target at 0.5 / 1.0 / 2.0 m; error should be within +-1 cm;
+4. `argus-cli test range --config /etc/argus/config.yaml`: for each sensor hold a flat target at 0.5 / 1.0 / 2.0 m; error should be within +-1 cm;
    R2 and R3 both report every ~60 ms; unplugged echo -> `None`. If jitter > +-1 cm,
    switch `range` to the `team` impl or the Arduino fallback (spec §2.4). Check ECHO divider voltage (<= 3.3 V) first.
-5. `argus-cli test hat_on`: hat on head -> `ok` ~50-80 mm; off head -> `out_of_range`.
-6. `argus-cli test env`: first sample after ~5 s, CO2 ~ 400-1000 ppm.
-7. `argus-cli buzz top|back|both`: motors spin at the right pins; check with a scope/LED that GPIO12/13 show 1 kHz PWM;
+5. `argus-cli test hat_on --config /etc/argus/config.yaml`: hat on head -> `ok` ~50-80 mm; off head -> `out_of_range`.
+6. `argus-cli test env --config /etc/argus/config.yaml`: first sample after ~5 s, CO2 ~ 400-1000 ppm.
+7. `argus-cli buzz top|back|both --config /etc/argus/config.yaml`: motors spin at the right pins; check with a scope/LED that GPIO12/13 show 1 kHz PWM;
    if the motors stall at low intensity raise `min_duty`.
-8. `argus-cli test camera`: 720p30 recording, then `save_clip` of the last 10 s: `ffprobe clip.mp4` shows h264
+8. `argus-cli test camera --config /etc/argus/config.yaml`: 720p30 recording, then `save_clip` of the last 10 s: `ffprobe clip.mp4` shows h264
    1280x720 ~30 fps and a duration ~ requested. Save two clips back to back
-   (e.g. `argus-cli trigger fall` twice, 15 s apart) and check both are full length and play from the start. Confirm the sensor mode in picamera2
+   (e.g. `argus-cli trigger fall --config /etc/argus/config.yaml` twice, 15 s apart) and check both are full length and play from the start. Confirm the sensor mode in picamera2
    (`cam.camera_configuration()['sensor']`) is 1640x1232.
 9. Power: run all modules together for 10 min, watch `vcgencmd get_throttled` (expect 0x0) with motors firing.

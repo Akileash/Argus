@@ -8,7 +8,7 @@ Status: **not configured yet.** Until `mapping.yaml` has a `python`, `command` o
 1. Copy your script into `vendor/`. Do not change it.
 2. `cd device && uv run argus-cli team init haptics` writes a starter `mapping.yaml` (everything commented out).
 3. Uncomment ONE way of driving the motors (below).
-4. On the Pi: `uv run pytest tests/contract --module haptics --impl team`, then `uv run argus-cli buzz both`.
+4. On the Pi: `uv run pytest tests/contract --module haptics --impl team`, then `uv run argus-cli buzz both --impl team --config /etc/argus/config.yaml` (on a laptop, drop `--config`).
 5. Turn it on in `device/config.local.yaml` (gitignored): `modules: {haptics: {impl: team, fallback: mock}}`,
    then `uv run argus-cli reload haptics`.
 6. Send the integrator the hand-off template below, then open a pull request that touches only

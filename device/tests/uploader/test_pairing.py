@@ -91,3 +91,50 @@ def test_cli_upload_status(tmp_path):
     r = CliRunner().invoke(cli.app, ["upload", "--status", "--config", str(_cfg(tmp_path)),
                                      "--queue-dir", str(tmp_path / "nope")])
     assert r.exit_code == 0 and "queue_depth=0" in r.output and "paired=no" in r.output
+
+
+def test_new_local_config_is_0600_and_existing_mode_kept(tmp_path):
+    import os
+    import stat
+
+    new = tmp_path / "config.local.yaml"
+    pairing.write_pairing(new, "http://x", "tok", None)
+    assert stat.S_IMODE(os.stat(new).st_mode) == 0o600
+    old = tmp_path / "old.yaml"
+    old.write_text("modules: {}\n")
+    os.chmod(old, 0o640)
+    pairing.write_pairing(old, "http://x", "tok", None)
+    assert stat.S_IMODE(os.stat(old).st_mode) == 0o640
+    os.chmod(old, 0o600)
+    pairing.write_pairing(old, "http://x", "tok2", None)
+    assert stat.S_IMODE(os.stat(old).st_mode) == 0o600
+
+
+def test_clock_warning_thresholds():
+    me = {"server_time": "2026-01-01T00:00:00Z"}
+    base = 1767225600.0  # 2026-01-01T00:00:00Z
+    assert pairing.clock_warning(me, base + 30) is None
+    w = pairing.clock_warning(me, base + 3600)
+    assert w and "ahead of" in w and "timedatectl" in w
+    assert "behind" in pairing.clock_warning(me, base - 600)
+    assert pairing.clock_warning({}, base) is None
+
+
+def test_cli_pair_warns_on_skewed_clock(tmp_path, monkeypatch):
+    p = _cfg(tmp_path)
+    monkeypatch.setattr(pairing, "fetch_me", lambda *a, **k: {**ME, "server_time": "2001-01-01T00:00:00Z"})
+    r = CliRunner().invoke(cli.app, ["pair", "--url", "http://x", "--token", "t", "--config", str(p)])
+    assert r.exit_code == 0 and "device clock" in r.output and "timedatectl" in r.output
+    r = CliRunner().invoke(cli.app, ["pair", "--check", "--config", str(p)])
+    assert r.exit_code == 0 and "device clock" in r.output
+
+
+def test_uploader_warns_once_on_skewed_clock(tmp_path, caplog):
+    from argus.uploader import BackendSettings, Uploader
+
+    tr = httpx.MockTransport(lambda r: httpx.Response(200, json={**ME, "server_time": "2001-01-01T00:00:00Z"}))
+    u = Uploader(tmp_path, lambda: BackendSettings("http://x", "tok"), transport=tr)
+    with caplog.at_level("WARNING"):
+        u._check_clock()
+        u._check_clock()
+    assert sum("device clock" in r.message for r in caplog.records) == 1
