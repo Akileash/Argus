@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Argus Sensor Layout</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; the decision first, then the evidence per team concern. */
+:root{--bg:#f3f3ef;--panel:#ffffff;--fg:#1d2024;--muted:#5b6066;--line:#d5d6d0;--accent:#b45309;--accent-soft:#fdecc8;--zone:#e6e6df;--beam:#f59e0b;--good:#166534;--good-bg:#dcf2e3;--bad:#991b1b;--bad-bg:#f9e0e0;--warn:#854d0e;--warn-bg:#fbf0c9;
+--display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181b;--panel:#1f2226;--fg:#eceded;--muted:#a3a8ad;--line:#383c41;--accent:#fbbf24;--accent-soft:#3a2e12;--zone:#2c3035;--beam:#d98a0b;--good:#86efac;--good-bg:#17331f;--bad:#fca5a5;--bad-bg:#3b1d1d;--warn:#fde68a;--warn-bg:#39300f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#16181b;--panel:#1f2226;--fg:#eceded;--muted:#a3a8ad;--line:#383c41;--accent:#fbbf24;--accent-soft:#3a2e12;--zone:#2c3035;--beam:#d98a0b;--good:#86efac;--good-bg:#17331f;--bad:#fca5a5;--bad-bg:#3b1d1d;--warn:#fde68a;--warn-bg:#39300f;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.55 var(--body)}
+main{max-width:940px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:40px}
+section,header{display:grid;gap:14px;min-width:0}
+h1,h2{font-family:var(--display);font-weight:700;line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.2rem)} h2{font-size:1.75rem;padding-top:8px;border-top:3px solid var(--fg)}
+h3{font:600 1rem var(--body);margin:6px 0 0}
+p{margin:0;max-width:68ch} ul,ol{margin:0;padding-left:20px;max-width:68ch;display:grid;gap:6px}
+.eyebrow{font:500 .75rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;max-width:62ch}
+.verdict{background:var(--accent-soft);border-left:6px solid var(--accent);padding:18px 20px;display:grid;gap:10px}
+.verdict strong{font-family:var(--display);font-size:1.6rem;line-height:1.15;font-weight:700}
+.tw{overflow-x:auto;background:var(--panel);border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hi td{background:var(--accent-soft);font-weight:600}
+.chip{display:inline-block;font:500 .72rem var(--mono);padding:1px 7px;white-space:nowrap}
+.good{background:var(--good-bg);color:var(--good)} .bad{background:var(--bad-bg);color:var(--bad)} .warn{background:var(--warn-bg);color:var(--warn)}
+.layouts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.layout{margin:0;background:var(--panel);border:1px solid var(--line);padding:8px;display:grid;gap:4px}
+.layout.win{border:2px solid var(--accent)}
+.layout figcaption{font-size:.82rem;line-height:1.3} .layout figcaption b{font-family:var(--mono);margin-right:6px}
+.zone{fill:var(--zone)} .beam{fill:var(--beam);fill-opacity:.85} .head{fill:var(--panel);stroke:var(--fg);stroke-width:2} .top{fill:var(--bad)} .front{font:10px var(--mono);fill:var(--muted)}
+.note{font-size:.88rem;color:var(--muted);max-width:72ch}
+a{color:var(--accent)} code{font:.88em var(--mono)}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">Argus · team design decision · sensors, wiring, power, mounting</div>
+<h1>How many ultrasonic sensors should the hat use?</h1>
+<p class="lede">We compared 7 layouts against your concerns about coverage, delay, GPIO, loose pins, power, voltage dividers and mounting. We ran the real struck-by detector on simulated approaches to measure coverage and warning time.</p>
+<div class="verdict">
+<strong>Build 4 rear sensors and remove the top one. Fewer than 4 only if the bench test earns it.</strong>
+<p>The top sensor gave no warning for dropped objects in the 5-sensor setup. Removing it makes rear warnings faster, and frees 2 pins and 1 divider. A wider measured beam could cut the rear count to 3 or 2 with the same coverage, so run the 30-minute beam test before the CAD team finalizes the mount.</p>
+</div>
+</header>
+
+<section>
+<h2>Your questions, answered</h2>
+<div class="tw"><table>
+<tr><th>Concern</th><th>Answer</th></tr>
+<tr><td>Is the top sensor needed?</td><td><b>No.</b> A dropped object falls too fast for it to help. But "the hat protects us" isn't the reason to drop it: large objects can still injure.</td></tr>
+<tr><td>Same coverage with fewer than 5?</td><td><b>Yes, 4 keeps all the rear coverage.</b> 3 or 2 only match it if your sensors' real beam is about 20° or 30° wide. The datasheet says under 15°.</td></tr>
+<tr><td>Does fewer mean less delay?</td><td><b>Yes.</b> Each sensor removed takes 30 ms off every sweep. The delay comes from waiting for echoes in turn, not from processing.</td></tr>
+<tr><td>Enough GPIO pins?</td><td><b>Yes, this isn't a real limit.</b> The 5-sensor design uses 16 of 26 pins. The recommended one uses 14.</td></tr>
+<tr><td>Loose pins?</td><td><b>The real risk.</b> Fix it with a soldered hub board and no jumper wires on the Pi header.</td></tr>
+<tr><td>Enough power?</td><td><b>Yes.</b> All the sensors together draw about 75 mA of a roughly 1.9 A worst case, on a 3 A supply.</td></tr>
+<tr><td>A divider for every sensor?</td><td><b>Yes, one per echo line</b>, but they can all sit on one small board at the Pi rather than on the hat.</td></tr>
+<tr><td>Where do they mount?</td><td><b>One printed curved pod</b> on the back of the shell, with boards standing vertically. Nothing on the crown.</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>The layouts</h2>
+<p>Top-down view with the front of the hat at the top. Orange shows each sensor's datasheet 15° beam. Grey shows the ±30° priority zone behind the head. The red dot marks the top sensor.</p>
+<div class="layouts"><figure class="layout out"><svg viewBox="0 0 190 170" role="img" aria-label="A: top-down view of beams"><path class="zone" d="M95,34L154.0,136.2A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L64.5,148.0A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L95.0,152.0A118,118 0 0 1 64.5,148.0Z"/><path class="beam" d="M95,34L125.5,148.0A118,118 0 0 1 95.0,152.0Z"/><path class="beam" d="M95,34L154.0,136.2A118,118 0 0 1 125.5,148.0Z"/><circle class="head" cx="95" cy="34" r="14"/><circle class="top" cx="95" cy="34" r="5"/><text class="front" x="95" y="13" text-anchor="middle">front</text></svg><figcaption><b>A</b>4 rear + top (current)</figcaption></figure><figure class="layout win"><svg viewBox="0 0 190 170" role="img" aria-label="B: top-down view of beams"><path class="zone" d="M95,34L154.0,136.2A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L64.5,148.0A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L95.0,152.0A118,118 0 0 1 64.5,148.0Z"/><path class="beam" d="M95,34L125.5,148.0A118,118 0 0 1 95.0,152.0Z"/><path class="beam" d="M95,34L154.0,136.2A118,118 0 0 1 125.5,148.0Z"/><circle class="head" cx="95" cy="34" r="14"/><text class="front" x="95" y="13" text-anchor="middle">front</text></svg><figcaption><b>B</b>4 rear, no top</figcaption></figure><figure class="layout out"><svg viewBox="0 0 190 170" role="img" aria-label="C: top-down view of beams"><path class="zone" d="M95,34L154.0,136.2A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L69.5,149.2A118,118 0 0 1 40.5,138.7Z"/><path class="beam" d="M95,34L110.4,151.0A118,118 0 0 1 79.6,151.0Z"/><path class="beam" d="M95,34L149.5,138.7A118,118 0 0 1 120.5,149.2Z"/><circle class="head" cx="95" cy="34" r="14"/><circle class="top" cx="95" cy="34" r="5"/><text class="front" x="95" y="13" text-anchor="middle">front</text></svg><figcaption><b>C</b>3 rear, gaps + top</figcaption></figure><figure class="layout cond"><svg viewBox="0 0 190 170" role="img" aria-label="D: top-down view of beams"><path class="zone" d="M95,34L154.0,136.2A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L69.5,149.2A118,118 0 0 1 40.5,138.7Z"/><path class="beam" d="M95,34L110.4,151.0A118,118 0 0 1 79.6,151.0Z"/><path class="beam" d="M95,34L149.5,138.7A118,118 0 0 1 120.5,149.2Z"/><circle class="head" cx="95" cy="34" r="14"/><text class="front" x="95" y="13" text-anchor="middle">front</text></svg><figcaption><b>D</b>3 rear, gaps</figcaption></figure><figure class="layout run"><svg viewBox="0 0 190 170" role="img" aria-label="E: top-down view of beams"><path class="zone" d="M95,34L154.0,136.2A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L79.6,151.0A118,118 0 0 1 49.8,143.0Z"/><path class="beam" d="M95,34L110.4,151.0A118,118 0 0 1 79.6,151.0Z"/><path class="beam" d="M95,34L140.2,143.0A118,118 0 0 1 110.4,151.0Z"/><circle class="head" cx="95" cy="34" r="14"/><text class="front" x="95" y="13" text-anchor="middle">front</text></svg><figcaption><b>E</b>3 rear, no gaps</figcaption></figure><figure class="layout out"><svg viewBox="0 0 190 170" role="img" aria-label="F: top-down view of beams"><path class="zone" d="M95,34L154.0,136.2A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L95.0,152.0A118,118 0 0 1 64.5,148.0Z"/><path class="beam" d="M95,34L125.5,148.0A118,118 0 0 1 95.0,152.0Z"/><circle class="head" cx="95" cy="34" r="14"/><text class="front" x="95" y="13" text-anchor="middle">front</text></svg><figcaption><b>F</b>2 rear, close</figcaption></figure><figure class="layout cond"><svg viewBox="0 0 190 170" role="img" aria-label="G: top-down view of beams"><path class="zone" d="M95,34L154.0,136.2A118,118 0 0 1 36.0,136.2Z"/><path class="beam" d="M95,34L79.6,151.0A118,118 0 0 1 49.8,143.0Z"/><path class="beam" d="M95,34L140.2,143.0A118,118 0 0 1 110.4,151.0Z"/><circle class="head" cx="95" cy="34" r="14"/><text class="front" x="95" y="13" text-anchor="middle">front</text></svg><figcaption><b>G</b>2 rear, apart</figcaption></figure></div>
+</section>
+
+<section>
+<h2>Decision matrix</h2>
+<p>A layout must first pass a gate: <b>no gap for a thin object within ±22.5° behind the head</b>, using the datasheet beam. Scores run 1 (worst) to 5 (best), and the total is out of 500.</p>
+<div class="tw"><table>
+<tr><th>Criterion (weight)</th><th class="n">A<br>4+top</th><th class="n">B<br>4 rear</th><th class="n">C<br>3 gaps+top</th><th class="n">D<br>3 gaps</th><th class="n">E<br>3 no gaps</th><th class="n">F<br>2 close</th><th class="n">G<br>2 apart</th></tr>
+<tr><td>Passes the gate</td><td class="n"><span class="chip good">yes</span></td><td class="n"><span class="chip good">yes</span></td><td class="n"><span class="chip bad">gaps</span></td><td class="n"><span class="chip bad">gaps</span></td><td class="n"><span class="chip good">yes</span></td><td class="n"><span class="chip bad">±15° only</span></td><td class="n"><span class="chip bad">blind behind</span></td></tr>
+<tr><td>Rear coverage, thin pipe (35)</td><td class="n">5</td><td class="n">5</td><td class="n">2</td><td class="n">3</td><td class="n">2</td><td class="n">1</td><td class="n">1</td></tr>
+<tr><td>Warning time / delay (20)</td><td class="n">2</td><td class="n">3</td><td class="n">3</td><td class="n">4</td><td class="n">4</td><td class="n">5</td><td class="n">5</td></tr>
+<tr><td>Wiring and loose-pin risk (15)</td><td class="n">1</td><td class="n">3</td><td class="n">2</td><td class="n">4</td><td class="n">4</td><td class="n">5</td><td class="n">5</td></tr>
+<tr><td>CAD and mounting (15)</td><td class="n">1</td><td class="n">3</td><td class="n">2</td><td class="n">4</td><td class="n">4</td><td class="n">5</td><td class="n">5</td></tr>
+<tr><td>Overhead warning (5)</td><td class="n">2</td><td class="n">1</td><td class="n">2</td><td class="n">1</td><td class="n">1</td><td class="n">1</td><td class="n">1</td></tr>
+<tr><td>GPIO pins (5)</td><td class="n">3</td><td class="n">4</td><td class="n">4</td><td class="n">5</td><td class="n">5</td><td class="n">5</td><td class="n">5</td></tr>
+<tr><td>Power (5)</td><td class="n">4</td><td class="n">4</td><td class="n">4</td><td class="n">5</td><td class="n">5</td><td class="n">5</td><td class="n">5</td></tr>
+<tr class="hi"><td>Total out of 500</td><td class="n">290</td><td class="n">370 ✓</td><td class="n">240</td><td class="n">360</td><td class="n">325</td><td class="n">340</td><td class="n">340</td></tr>
+</table></div>
+<p class="note">False alarms aren't scored because they didn't separate the layouts. Walking backward into a wall at 1.0–1.4 m/s gave 0 of 20 false alarms on the layouts we tested (A, B, D, E). At 1.6 m/s all of them false-alarmed, 18–20 of 20 runs, so that limit comes from the detector, not the sensor count. The weights and the wiring, CAD, GPIO and power scores are our judgment; the coverage and delay scores come from the results below.</p>
+<h3>Does the answer change if you weight things differently?</h3>
+<div class="tw"><table>
+<tr><th>Scenario</th><th class="n">A</th><th class="n">B</th><th class="n">E</th><th>Best layout that passes the gate</th></tr>
+<tr><td>Base weights</td><td class="n">290</td><td class="n">370</td><td class="n">325</td><td>B</td></tr>
+<tr><td>Overhead weighted 23, taking your statistic at face value</td><td class="n">273</td><td class="n">319</td><td class="n">282</td><td>B</td></tr>
+<tr><td>Coverage 47 and overhead 23, both figures at face value</td><td class="n">334</td><td class="n">353</td><td class="n">242</td><td>B</td></tr>
+<tr><td>Delay weighted 35</td><td class="n">273</td><td class="n">357</td><td class="n">339</td><td>B</td></tr>
+<tr><td>Wiring and CAD weighted 25 each</td><td class="n">236</td><td class="n">350</td><td class="n">346</td><td>B, barely</td></tr>
+<tr><td>All criteria equal</td><td class="n">257</td><td class="n">329</td><td class="n">357</td><td><b>E</b></td></tr>
+</table></div>
+<p>B is the steady choice. E only wins if coverage counts no more than GPIO or power, which we wouldn't accept for a safety sensor. <b>The 23% wouldn't rescue the top sensor:</b> with overhead weighted 23, it would need to score at least 4 of 5 at overhead warning just to tie B, and it scored 2 at best.</p>
+</section>
+
+<section>
+<h2>Measured coverage and warning time</h2>
+<p>Each cell shows: % of approach angles within ±30° that got any warning, % that got at least 0.25 s of warning, and the median warning time. These runs use the detector's faster setting, <code>min_track_samples: 3</code>, and the datasheet 15° beam.</p>
+<div class="tw"><table>
+<tr><th>Layout</th><th>Sweep</th><th class="n">Pipe 5 cm<br>2.5 m/s</th><th class="n">Pipe 5 cm<br>3 m/s</th><th class="n">Load 30 cm<br>3 m/s</th><th class="n">Load 30 cm<br>4 m/s</th></tr>
+<tr><td>A 4 rear + top</td><td>150 ms</td><td class="n">100 / 100 / 0.43 s</td><td class="n">100 / 54 / 0.27 s</td><td class="n">100 / 85 / 0.35 s</td><td class="n">77 / 15 / 0.09 s</td></tr>
+<tr class="hi"><td>B 4 rear</td><td>120 ms</td><td class="n">100 / 100 / 0.52 s</td><td class="n">100 / 100 / 0.39 s</td><td class="n">100 / 100 / 0.41 s</td><td class="n">100 / 15 / 0.17 s</td></tr>
+<tr><td>C 3 gaps + top</td><td>120 ms</td><td class="n">69 / 69 / 0.52 s</td><td class="n">69 / 69 / 0.39 s</td><td class="n">100 / 100 / 0.35 s</td><td class="n">92 / 0 / 0.14 s</td></tr>
+<tr><td>D 3 gaps</td><td>90 ms</td><td class="n">77 / 69 / 0.61 s</td><td class="n">69 / 69 / 0.48 s</td><td class="n">100 / 100 / 0.47 s</td><td class="n">100 / 31 / 0.17 s</td></tr>
+<tr><td>E 3 no gaps</td><td>90 ms</td><td class="n">69 / 69 / 0.61 s</td><td class="n">69 / 69 / 0.48 s</td><td class="n">85 / 85 / 0.47 s</td><td class="n">85 / 38 / 0.20 s</td></tr>
+<tr><td>F 2 close</td><td>60 ms</td><td class="n">54 / 54 / 0.67 s</td><td class="n">54 / 54 / 0.54 s</td><td class="n">77 / 69 / 0.50 s</td><td class="n">69 / 54 / 0.35 s</td></tr>
+<tr><td>G 2 apart</td><td>60 ms</td><td class="n">46 / 46 / 0.65 s</td><td class="n">46 / 46 / 0.52 s</td><td class="n">100 / 77 / 0.50 s</td><td class="n">92 / 77 / 0.35 s</td></tr>
+</table></div>
+<ul>
+<li><b>Removing the top sensor helps on its own.</b> From A to B, a thin pipe at 3 m/s goes from 54% to 100% of angles getting a useful warning.</li>
+<li><b>Fewer sensors warn sooner but miss more.</b> At 3 m/s, B catches every pipe angle. D warns 0.09 s sooner but misses about 3 in 10.</li>
+<li><b>Nothing here handles fast objects well.</b> At 4 m/s, B gives only about 0.17 s. More range is the fix for that, not fewer sensors.</li>
+</ul>
+<p class="note">Angles were tested every 5° (13 angles in ±30°), so percentages are coarse. D's true uncovered share is about 25%. The 0.25 s "useful" cutoff is a rough planning number. The simulator assumes any object in the beam returns an echo, which flatters thin and soft objects: if a pipe only echoes inside 1.5 m, B at 2.5 m/s drops to a 0.14 s median warning.</p>
+</section>
+
+<section>
+<h2>The top sensor and your statistic</h2>
+<p><b>We couldn't verify the 47% back / 23% top figures.</b> We found no source for them. The nearest lead was an old OSHA-hosted document on head injuries, which we couldn't open; a search summary described it as reporting many blows to the back of the head, but we haven't read it. If someone has the original source, please share it. The decision doesn't depend on these numbers, as the table above shows.</p>
+<p><b>The physics decides it.</b> We dropped a 20 cm object straight onto the hat from each height, with a clean echo every time, which is the best case for this sensor:</p>
+<div class="tw"><table>
+<tr><th class="n">Drop height</th><th class="n">Fall time</th><th class="n">Impact speed</th><th>Warning, A (5 sensors)</th><th>Warning, C (4 sensors), faster setting</th></tr>
+<tr><td class="n">1 m</td><td class="n">0.39 s</td><td class="n">3.8 m/s</td><td>none</td><td>none</td></tr>
+<tr><td class="n">2 m</td><td class="n">0.60 s</td><td class="n">5.9 m/s</td><td>none</td><td>0.18 s</td></tr>
+<tr><td class="n">3 m</td><td class="n">0.75 s</td><td class="n">7.3 m/s</td><td>none</td><td>0.09 s</td></tr>
+<tr><td class="n">5 m</td><td class="n">0.98 s</td><td class="n">9.7 m/s</td><td>none</td><td>none</td></tr>
+<tr><td class="n">10 m</td><td class="n">1.41 s</td><td class="n">13.8 m/s</td><td>none</td><td>none</td></tr>
+</table></div>
+<p>From higher up, the object is already moving fast when it enters the 2.5 m tracking range, and it's gone in a few sweeps. Small objects like bolts may not echo at all. The top sensor can see slower overhead motion, like a load moving down at a steady 3 m/s. That is the one case where it helps.</p>
+<p><b>Dropping it doesn't remove overhead events from the system.</b> The accelerometer still detects the hit, so the clip and report still happen. Only the advance warning goes, and it wasn't working for dropped objects anyway.</p>
+<p><b>A caution for the pitch:</b> don't say "the hard hat handles anything from above." Hard hats are built mainly for top impacts, but heavy objects can still cause serious injury. Say instead that a sensor can't warn in time for a falling object.</p>
+<p class="note">A knock-on effect: the top motor would no longer give direction warnings. Keep it for the fall and impact buzz, or remove it to save another pin.</p>
+</section>
+
+<section>
+<h2>Delay</h2>
+<p>Sound takes time, so sensors have to take turns. Each gets a 30 ms slot, and the detector needs several readings per sensor. On a laptop, the detector code took about 3 µs per sample, so even if a Pi is many times slower, it's tiny next to a 120 ms sweep.</p>
+<div class="tw"><table>
+<tr><th class="n">Sensors</th><th class="n">Sweep</th><th class="n">Time to detect, 4 readings</th><th class="n">Time to detect, 3 readings</th></tr>
+<tr><td class="n">5</td><td class="n">150 ms</td><td class="n">750 ms</td><td class="n">600 ms</td></tr>
+<tr class="hi"><td class="n">4</td><td class="n">120 ms</td><td class="n">600 ms</td><td class="n">480 ms</td></tr>
+<tr><td class="n">3</td><td class="n">90 ms</td><td class="n">450 ms</td><td class="n">360 ms</td></tr>
+<tr><td class="n">2</td><td class="n">60 ms</td><td class="n">300 ms</td><td class="n">240 ms</td></tr>
+</table></div>
+<p>Going from 5 sensors with 4 readings to 4 sensors with 3 readings cuts detection from 750 ms to 480 ms. That's a 36% cut with no loss of rear coverage. Both changes are config settings. Using 3 readings added no false alarms in the backward-walk test, but only real recordings can confirm that.</p>
+</section>
+
+<section>
+<h2>Wiring: GPIO, dividers and loose pins</h2>
+<h3>GPIO count</h3>
+<p>The current spec says 18 of 26 pins are in use, which is an error in our earlier count. The fixed pins are I2C (2), motors (2), status LED (1) and IMU interrupt (1), which makes 6. Each sensor adds 2.</p>
+<div class="tw"><table>
+<tr><th class="n">Sensors</th><th class="n">Pins used</th><th class="n">Pins free</th><th class="n">Dividers</th><th class="n">Resistors</th><th class="n">Wires to hat sensors</th></tr>
+<tr><td class="n">5</td><td class="n">16</td><td class="n">10</td><td class="n">5</td><td class="n">10</td><td class="n">20</td></tr>
+<tr class="hi"><td class="n">4</td><td class="n">14</td><td class="n">12</td><td class="n">4</td><td class="n">8</td><td class="n">16</td></tr>
+<tr><td class="n">3</td><td class="n">12</td><td class="n">14</td><td class="n">3</td><td class="n">6</td><td class="n">12</td></tr>
+<tr><td class="n">2</td><td class="n">10</td><td class="n">16</td><td class="n">2</td><td class="n">4</td><td class="n">8</td></tr>
+</table></div>
+<h3>Voltage dividers: can they be combined?</h3>
+<p>Every echo line needs its own level shift, since joining two echo outputs at one divider connects them together. They don't have to sit on the hat, though.</p>
+<div class="tw"><table>
+<tr><th>Option</th><th>Parts for 4 sensors</th><th>Verdict</th></tr>
+<tr><td>Divider at each sensor</td><td>8 resistors spread around the hat</td><td><span class="chip bad">No</span> Bulky, more joints to come loose</td></tr>
+<tr class="hi"><td>All dividers on one hub board at the Pi</td><td>8 resistors you already have, in about a 25 × 15 mm area</td><td><span class="chip good">Use this</span> An unplugged sensor reads a clean "no echo"</td></tr>
+<tr><td>One 74HC4050 chip on the hub</td><td>1 chip, 1 capacitor, 4 pull-down resistors</td><td><span class="chip warn">Backup</span> Buffers the Pi from 5 V and has 6 channels, but must be bought and needs pull-downs so unplugged inputs don't float</td></tr>
+<tr><td>One divider shared through diodes</td><td>1 divider, 4 diodes</td><td><span class="chip bad">No</span> Saves 3 pins you don't need. One stuck sensor blinds all of them, and long "no echo" pulses can overlap</td></tr>
+<tr><td>Shared trigger line</td><td>Saves 3 pins</td><td><span class="chip bad">No</span> All sensors ping together and hear each other's echoes</td></tr>
+</table></div>
+<h3>What happens when something comes loose</h3>
+<div class="tw"><table>
+<tr><th>Failure</th><th>Result</th><th>Prevention</th></tr>
+<tr><td>A 5 V jumper slips onto a GPIO pin</td><td>Can permanently kill the Pi. <b>The worst case.</b></td><td>No loose jumpers on the header. Solder to a proto HAT that plugs on.</td></tr>
+<tr><td>Divider's ground-side resistor comes off</td><td>Pin sees 5 V through 1 kΩ, about 1.4 mA into its protection diode. Out of spec, and it may survive.</td><td>Solder dividers on the hub board.</td></tr>
+<tr><td>Sensor ground comes off but 5 V stays on</td><td>Sensor current looks for a return path through its signal pins and into the Pi.</td><td>Use a single 4-pin connector per sensor. Add 1 kΩ in series on each trigger.</td></tr>
+<tr><td>Signal wire comes off</td><td>Harmless electrically, but that sensor goes silently blind.</td><td>Run <code>argus-cli test range</code> before every session.</td></tr>
+</table></div>
+<p><b>Wiring plan:</b> solder wires directly to each sensor's pins, with heat-shrink and a strain-relief tie at the pod. Run one 4-wire cable to each sensor, and plug it into a polarized JST-XH socket on the hub. XH may not latch firmly, so add a dab of hot glue once it's tested.</p>
+</section>
+
+<section>
+<h2>Power</h2>
+<div class="tw"><table>
+<tr><th>Load</th><th class="n">Worst case</th></tr>
+<tr><td>Pi 4 recording video (planning figure; reviewers measured 575–885 mA without video)</td><td class="n">1200 mA</td></tr>
+<tr><td>Pi Camera (our estimate, not checked)</td><td class="n">250 mA</td></tr>
+<tr><td>SCD41 peak</td><td class="n">175 mA</td></tr>
+<tr><td>2 vibration motors</td><td class="n">160 mA</td></tr>
+<tr><td>L293D logic (our estimate)</td><td class="n">60 mA</td></tr>
+<tr><td>ToF + IMU (our estimate)</td><td class="n">25 mA</td></tr>
+<tr class="hi"><td>Ultrasonics: 4 sensors at 15 mA each</td><td class="n">60 mA</td></tr>
+<tr><td><b>Total, 4 sensors</b></td><td class="n"><b>1930 mA, 64% of 3 A</b></td></tr>
+<tr><td>Total, 5 sensors</td><td class="n">1945 mA, 65% of 3 A</td></tr>
+</table></div>
+<p>Sensor count barely changes power: dropping one saves about 1%. Runtime is roughly 2.4 hours at an average 1.3 A (estimated, not measured).</p>
+<p><b>The power risk to test is noise, not capacity.</b> Motors starting up put spikes on the 5 V rail, which could cause false readings on the same rail. Put a 100 µF capacitor on the sensor power at the hub. Then read all sensors while buzzing the motors, and look for false readings. Check <code>vcgencmd get_throttled</code> as well.</p>
+</section>
+
+<section>
+<h2>For the CAD team</h2>
+<p>An HC-SR04 board is about 45 × 20 × 15 mm. We assumed a shell radius of about 115 mm at the back, so <b>please measure your hat.</b> Spacing along the shell is radius × angle:</p>
+<div class="tw"><table>
+<tr><th>Layout</th><th class="n">Spacing</th><th>Boards flat (45 mm wide)</th><th>Boards vertical (20 mm wide)</th></tr>
+<tr class="hi"><td>4 rear at 15° apart</td><td class="n">30 mm</td><td><span class="chip bad">Collide</span></td><td><span class="chip good">Fits</span>, 10 mm gaps, about 110 mm total</td></tr>
+<tr><td>3 rear at 20° apart</td><td class="n">40 mm</td><td><span class="chip bad">Collide by 5 mm</span></td><td><span class="chip good">Fits</span>, about 100 mm total</td></tr>
+<tr><td>2 rear at 30° apart</td><td class="n">60 mm</td><td><span class="chip good">Fits</span></td><td><span class="chip good">Fits</span></td></tr>
+</table></div>
+<ul>
+<li><b>Print one curved pod holding all sensors.</b> The angles are built into the part, since a ±5° aiming error can open gaps. Mount it on the back of the shell with a 5° upward tilt to clear the shoulders.</li>
+<li><b>Design the pod so the sensor count can change.</b> Finish the angles only after the beam test, or print a second pod.</li>
+<li><b>Nothing on the crown.</b> A rigid bracket there sits in the main strike zone and adds a long cable run.</li>
+<li><b>Don't drill the shell.</b> Modifying a hard hat can void its certification, so check the maker's manual, including on adhesives. Use clips or a strap.</li>
+<li><b>Keep the Pi and battery below the beams</b> so they don't echo. Check that collars and hoods don't either.</li>
+<li><b>Check the head-down posture.</b> Workers often look down, which tips rear beams upward by the same angle. Test whether a person behind is still seen at a 30° nod.</li>
+</ul>
+</section>
+
+<section>
+<h2>Bench tests that settle this</h2>
+<p>These take about half a day and should happen before the pod is finalized.</p>
+<ol>
+<li><b>Beam width.</b> With boards vertical as mounted, step a 5 cm pipe sideways at 0.5, 1, 1.5 and 2 m. Record where detection falls below 80%. <b>About 15° wide: 4 sensors. At least 20°: 3 sensors (D). At least 30°: 2 sensors (G).</b> In simulation, with a 30° beam, G reaches 100% of the zone and scores highest, at 480 of 500.</li>
+<li><b>Real range.</b> Record the farthest reliable distance for a pipe, a board and a person in a hoodie. More range is the biggest gain in warning time.</li>
+<li><b>"No echo" pulse.</b> Put a scope or logic analyzer on echo with nothing in front. The datasheet says about 38 ms, but some clones reportedly hold it for 150–200 ms. That would stop a sensor re-firing on a 120 ms sweep.</li>
+<li><b>Motor noise.</b> Read all sensors while buzzing the motors.</li>
+<li><b>Head-down.</b> Repeat a person approaching from behind at a 30° nod.</li>
+</ol>
+</section>
+
+<section>
+<h2>What's still unproven</h2>
+<ul>
+<li>All coverage and timing numbers come from simulation. None has been tested on real hardware.</li>
+<li>Results use the datasheet beam, and real sensors differ, which is why the beam test matters.</li>
+<li>The false-alarm check covers walking backward only. Real recordings need to cover normal work too.</li>
+<li>Power figures marked as estimates should be confirmed with a USB power meter.</li>
+</ul>
+<p class="note">Reproduce the simulation with <code>scripts/sensor_layout_study.py</code> in the repo.<br>
+Sources: <a href="https://www.osha.gov/etools/construction/struck-by">OSHA struck-by eTool</a> · <a href="https://tdi.texas.gov/tips/safety/helmets.html">Texas Dept. of Insurance on hard hats</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12444922/">Hard hat impacts to a forward-flexed head (2025)</a> · <a href="https://www.cdc.gov/niosh/blogs/2016/brain-injuries-construction.html">NIOSH, brain injuries in construction</a> · <a href="https://embedded.fel.cvut.cz/sites/default/files/kurzy/lpe/ultrasonic_hc-sr04/HCSR04_DS_Cytron.pdf">HC-SR04 manual (Cytron)</a> · <a href="https://community.robotshop.com/forum/t/problems-with-hc-sr04-and-rb-prr-10/25216">RobotShop thread on clone echo pulses</a> · <a href="https://nexperia.com/group/74hc4050">Nexperia 74HC4050</a> · <a href="https://raspberry.tips/en/?p=8794">Pi power measurements</a><br>
+Couldn't be opened (403): <a href="https://downloads.regulations.gov/OSHA-S045-2006-0670-0033/content.pdf">OSHA-hosted head-injury document</a>.</p>
+</section>
+</main>
+</body>
+</html>
