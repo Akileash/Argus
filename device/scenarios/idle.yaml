@@ -1,0 +1,10 @@
+name: idle
+description: Hat on a still wearer for 12 s. Wall 2.2 m behind, ceiling 2.4 m above. No events expected.
+duration_s: 12
+seed: 1
+wearer: { hat_height_m: 1.7 }
+world:
+  planes: [ { axis: x, at: -2.2 }, { axis: z, at: 2.4 } ]
+tof: { keyframes: [[0, 62.0]] }
+expected: []
+allowed_extra: [hat_on]

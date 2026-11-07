@@ -1,0 +1,13 @@
+name: walk_forward
+description: Wearer walks forward at 1.4 m/s (gait bounce). Rear ranges only grow. Must not trigger.
+duration_s: 12
+seed: 2
+wearer:
+  hat_height_m: 1.7
+  vx: [[0, 0], [1.0, 0], [2.0, 1.4], [10.0, 1.4], [11.0, 0]]
+  gait: { start_s: 1.0, end_s: 11.0, freq_hz: 1.9, vx_amp_mps: 0.12, vz_amp_mps: 0.06, pitch_amp_deg: 1.2, gyro_sway_dps: 4 }
+world:
+  planes: [ { axis: x, at: -0.8 }, { axis: z, at: 2.4 } ]
+tof: { keyframes: [[0, 62.0]] }
+expected: []
+allowed_extra: [hat_on]

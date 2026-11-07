@@ -1,0 +1,19 @@
+name: hat_removed_table
+description: >
+  Hat on the head for 5 s, then calmly lifted off (<0.3 g), carried and set on a table (touchdown
+  ~0.3 g). ToF leaves the crown baseline at 5.1 s and goes out of range. No impact, no free fall:
+  expect hat_removed (logged only).
+duration_s: 14
+seed: 7
+wearer:
+  hat_height_m: 1.65
+  vz: [[0, 0], [5.0, 0], [5.3, 0.4], [5.7, 0.4], [6.0, 0], [6.3, -0.8], [7.0, -0.8], [7.3, 0]]
+  vx: [[0, 0], [5.3, 0], [5.7, 0.5], [6.5, 0.5], [7.0, 0]]
+  pitch_deg: [[0, 0], [5.0, 0], [5.6, -15], [7.3, -15], [7.8, 0]]
+world:
+  planes: [ { axis: x, at: -2.5 }, { axis: z, at: 3.0 } ]
+tof: { keyframes: [[0, 62.0], [5.1, 62.0], [5.7, 900.0], [5.71, null]] }
+expected:
+  - { type: hat_removed, t_window_s: [5.0, 8.6],
+      notes: "ToF > baseline+30 mm from 5.12 s; 3 s hold completes at ~8.1 s (onset or completion stamp both accepted)" }
+allowed_extra: [hat_on]

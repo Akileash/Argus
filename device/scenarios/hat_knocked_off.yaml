@@ -1,0 +1,21 @@
+name: hat_knocked_off
+description: >
+  Hat on the head for 5 s, then a 7.5 g sideways blow (head impact), the hat slides off over
+  ~0.6 s (never below 0.5 g, so no free-fall event), lands softly (~5 g, under the 6 g impact
+  threshold) and ToF goes out of range. Impact is within 2 s before hat-off: hat_knocked_off.
+duration_s: 14
+seed: 8
+wearer:
+  hat_height_m: 1.7
+  vz: [[0, 0], [5.1, 0], [5.3, -1.0], [5.7, -1.0]]
+  pitch_deg: [[0, 0], [5.1, 0], [5.7, 80], [14, 80]]
+  impulses:
+    - { t: 5.0, kind: hit, peak_g: 7.5, dur_ms: 12, dir: [0.2, 0.95, 0.2], recoil: true }
+    - { t: 5.7, kind: stop, peak_g: 4.0 }
+world:
+  planes: [ { axis: x, at: -2.5 } ]
+tof: { keyframes: [[0, 62.0], [5.0, 62.0], [5.15, 150.0], [5.16, null]] }
+expected:
+  - { type: head_impact, t_window_s: [4.95, 5.3], notes: "peak ~7.5 g" }
+  - { type: hat_knocked_off, t_window_s: [5.0, 8.6], notes: "impact 0.0-0.2 s before ToF leaves baseline" }
+allowed_extra: [hat_on]

@@ -1,0 +1,18 @@
+name: hat_drop_1m
+description: >
+  The hat (never on a head; ToF sees nothing) is released 1.0 m above the floor: ~452 ms free fall
+  (~0 g, tumbling ~110 deg/s), then a ~13 g landing pulse, then it rests tilted 50 deg on the floor.
+duration_s: 8
+seed: 6
+wearer:
+  hat_height_m: 1.25
+  pitch_deg: [[0, 0], [3.0, 0], [3.4516, 50], [8.0, 50]]
+  free_fall: [ { t: 3.0, height_m: 1.0 } ]
+  impulses: [ { t: 3.4516, kind: stop, peak_g: 13 } ]
+world:
+  planes: [ { axis: x, at: -2.2 } ]
+tof: { keyframes: [[0, null]] }
+expected:
+  - { type: fall, t_window_s: [3.4, 4.6], notes: "free fall 450 ms, drop height ~1.0 m" }
+  - { type: head_impact, t_window_s: [3.4, 3.65], notes: "peak ~14 g (may saturate at 16 g)" }
+allowed_extra: []

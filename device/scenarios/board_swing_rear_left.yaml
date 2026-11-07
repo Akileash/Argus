@@ -1,0 +1,17 @@
+name: board_swing_rear_left
+description: >
+  A board swings in from behind-left, 2.5 m away, closing at 2.5 m/s toward the hat while the
+  wearer stands still. Starts in R1's beam (azimuth 20 deg) and slides toward R2's. Expect one
+  struck_by_near_miss on R1 or R2; the board never touches the hat (no impact).
+duration_s: 6
+seed: 5
+wearer: { hat_height_m: 1.7 }
+world:
+  planes: [ { axis: z, at: 3.2 } ]
+  objects:
+    - { start: [-2.35, 0.86, 0.22], aim: [-0.15, 0.02, 0.012], speed_mps: 2.5, t_start: 2.0 }
+tof: { keyframes: [[0, 62.0]] }
+expected:
+  - { type: struck_by_near_miss, sensors: [R1, R2], t_window_s: [2.4, 3.0],
+      notes: "4-sample track + 2 confirming sweeps after the board enters the beam at 2.0 s" }
+allowed_extra: [struck_by_warning, hat_on]
