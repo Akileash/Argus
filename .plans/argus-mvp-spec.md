@@ -260,6 +260,22 @@ Coverage weight went up from 30 to 40, because coverage is the core function and
 4. Also record the **max reliable range** per target. If the pipe or hoodie fails beyond about 1.5m, cut the trigger range to 1.5m and lower the TTC threshold to about 1.0s (see §4.1).
 5. Run a crosstalk check: fire all 5 sensors in the interleaved order with no targets in front, and confirm there are no phantom readings under 2.5m.
 
+### 3.2a Sensor count review (2026-11-07): PROPOSED, awaiting team sign-off
+
+**Recommendation: layout B, 4 rear sensors and no top sensor, with `min_track_samples: 3`.** The current config stays at 5 sensors until the team agrees. Full matrix and evidence: the "Argus Sensor Layout" page. Reproduce the numbers with `scripts/sensor_layout_study.py`.
+
+- **Top sensor:** in simulated drops from 1–10 m, the 5-sensor layout gave no warning. A 4-sensor layout with the top sensor gave at most 0.18 s. The IMU still logs overhead hits, so clips and reports are kept.
+- **The 47% back / 23% top statistic is unverified.** No source found. B still wins with those figures used as weights.
+- **Totals out of 500:** B 370, D 360 (fails the gate at a 15° beam), F and G 340 (fail the gate), E 325, A 290, C 240.
+- **Delay:** the limit is the sweep (30 ms × sensors) and readings per sensor, not processing. 5 sensors with 4 readings takes 750 ms; 4 sensors with 3 readings takes 480 ms.
+- **Beam test sets the final count:** about 15° wide gives 4 rear, at least 20° gives 3 (D), at least 30° gives 2 (G). Run it with boards vertical, as mounted.
+- **GPIO:** 5 sensors use 16 of 26 pins, not the 18 stated in §3.2. 4 sensors use 14.
+- **Dividers:** one per echo line, all on one soldered hub board at the Pi. Do not share echo or trigger lines. Solder wires at the sensor, use polarized JST-XH at the hub, and no jumpers on the Pi header.
+- **Power:** sensor count changes the total by about 1%. The risk to test is motor noise on the 5 V rail.
+- **CAD:** one printed curved pod with boards vertical (15° spacing is about 30 mm at a 115 mm shell radius; measure the hat). Nothing on the crown. Do not drill the shell.
+
+If adopted: remove `TOP` from the range `order` and `pins` options, set `min_track_samples: 3`, and keep the top motor for the fall/impact buzz only. The detector already works without TOP, as the study ran it that way.
+
 ### 3.3 LLM pipeline
 
 Requirements: **full video clip + sensor data** as input, a report ready **within 5 minutes** of the event, a **$60 total budget** for development and demo, and **no keys yet**.
