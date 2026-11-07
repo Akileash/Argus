@@ -9,6 +9,7 @@ from __future__ import annotations
 import importlib
 import json
 import logging
+import os
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -290,6 +291,93 @@ def scenario(
     if record:
         write_recording(record, all_samples, {"source": f"mock:{name}"})
         typer.echo(f"recording written: {record} ({len(all_samples)} samples)")
+
+
+# ---------------------------------------------------------------- tuning (docs/TUNING.md)
+RecordingsOpt = Annotated[
+    Path | None, typer.Option("--recordings", "-r", help="dir of .jsonl + .labels.json (default: device/recordings)")
+]
+
+
+def _tuning_dataset(recordings: Path | None) -> list[Path]:
+    from argus.tuning.evaluate import DEFAULT_RECORDINGS_DIR, discover
+
+    d = recordings or DEFAULT_RECORDINGS_DIR
+    if not d.is_dir():
+        raise _fail(f"recordings directory not found: {d}")
+    labelled, unlabelled = discover(d)
+    for p in unlabelled:
+        typer.secho(f"skipping {p.name}: no .labels.json sidecar", fg=typer.colors.YELLOW, err=True)
+    if not labelled:
+        raise _fail(f"no labelled recordings in {d} (try `argus-cli export-scenarios --out {d}`)")
+    return labelled
+
+
+@app.command("eval")
+def eval_cmd(
+    recordings: RecordingsOpt = None,
+    config: ConfigOpt = None,
+    tolerance: Annotated[float, typer.Option(help="match window around a labelled time, seconds")] = 0.75,
+    json_out: Annotated[bool, typer.Option("--json", help="print the scorecard as JSON")] = False,
+) -> None:
+    """Score the detectors (thresholds from config.yaml) against labelled recordings."""
+    from argus.tuning.evaluate import evaluate, format_scorecard, load_dataset
+    from argus.tuning.runner import load_thresholds
+
+    paths = _tuning_dataset(recordings)
+    try:
+        th = load_thresholds(config)
+    except ConfigError as e:
+        raise _fail(str(e)) from None
+    sc = evaluate(load_dataset(paths), th, tolerance)
+    typer.echo(json.dumps(sc.to_dict(), indent=2) if json_out else format_scorecard(sc))
+
+
+@app.command()
+def sweep(
+    param: Annotated[list[str], typer.Option("--param", "-p", help="section.key=v1,v2,... (repeatable)")],
+    recordings: RecordingsOpt = None,
+    config: ConfigOpt = None,
+    max_fa_per_hour: Annotated[float, typer.Option(help="false-alarm budget for the objective")] = 1.0,
+    top: Annotated[int, typer.Option(help="rows to print")] = 10,
+    tolerance: float = 0.75,
+    workers: Annotated[int | None, typer.Option(help="processes (default: CPU count for big grids)")] = None,
+    apply: Annotated[bool, typer.Option("--apply", help="write the best values into config.yaml")] = False,
+) -> None:
+    """Grid-search threshold values on labelled recordings; print the best and the YAML to paste."""
+    from argus.config import DEFAULT_CONFIG_PATH
+    from argus.tuning.runner import load_thresholds
+    from argus.tuning.sweep import apply_to_config, format_results, parse_param, yaml_snippet
+    from argus.tuning.sweep import sweep as run_sweep
+
+    paths = _tuning_dataset(recordings)
+    try:
+        params = dict(parse_param(p) for p in param)
+        base = load_thresholds(config)
+        results = run_sweep(paths, base, params, max_fa_per_hour, tolerance, workers)
+    except (ValueError, KeyError, ConfigError) as e:
+        raise _fail(str(e)) from None
+    typer.echo(format_results(results, top, max_fa_per_hour))
+    best = results[0]
+    if not best.feasible:
+        typer.secho(f"warning: no grid point meets FA/h <= {max_fa_per_hour:g}; showing the least bad.",
+                    fg=typer.colors.YELLOW, err=True)
+    typer.echo("\nbest values, paste into config.yaml:\n" + yaml_snippet(best.values))
+    if apply:
+        target = config or Path(os.environ.get("ARGUS_CONFIG") or DEFAULT_CONFIG_PATH)
+        apply_to_config(target, best.values)
+        typer.echo(f"\napplied to {target}")
+
+
+@app.command("export-scenarios")
+def export_scenarios(
+    out: Annotated[Path, typer.Option(help="output directory")] = Path("recordings/scenarios"),
+) -> None:
+    """Write every mock scenario as a .jsonl recording + .labels.json (demo/test data for eval/sweep)."""
+    from argus.tuning.export import export_all
+
+    paths = export_all(out)
+    typer.echo(f"wrote {len(paths)} recordings (+ labels) to {out}")
 
 
 if __name__ == "__main__":  # pragma: no cover
