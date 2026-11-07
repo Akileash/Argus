@@ -11,7 +11,6 @@ export function SignOffDialog({
   onClose,
   onDone,
   reportId,
-  eventId,
   report,
   signerName,
   deviceClass,
@@ -24,7 +23,6 @@ export function SignOffDialog({
   onClose: () => void;
   onDone: () => void;
   reportId: string;
-  eventId: string;
   report: ReportJson;
   signerName: string;
   deviceClass: EventClass;
@@ -55,7 +53,7 @@ export function SignOffDialog({
   const confirm = () =>
     start(async () => {
       setError(null);
-      const res = await signOffReport({ reportId, eventId, report, reclassDecision: decision });
+      const res = await signOffReport({ reportId, report, reclassDecision: decision });
       if (res.ok) onDone();
       else {
         setError(res.error);

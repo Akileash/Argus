@@ -1,6 +1,6 @@
 # Argus — MVP Spec
 
-> Status: updated 2026-11-07. **MVP sensor decision: 2 rear ultrasonic sensors, no top sensor (§3.2a).** Where older sections disagree with §3.2a, §3.2a wins.
+> Status: updated 2026-11-07. **Built and verified on mock hardware; real-hardware bench checks pending.** **MVP sensor decision: 2 rear ultrasonic sensors, no top sensor (§3.2a).** Where older sections disagree with §3.2a, §3.2a wins.
 > Goal: startup MVP plus a live pitch demo. Polished frontend and backend, a working hardware prototype.
 
 ## 1. Product
@@ -27,7 +27,7 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 - Privacy features (face blurring, retention policy). Skipped for the hackathon. Pitch line: "clips are saved only on events, never streamed".
 - Store-and-forward and offline sync. The demo uses venue Wi-Fi.
 - Full-shift battery life. A 2–3h demo runtime is accepted.
-- Live alert feed, trend charts and crew-status screens. **Only the Incident Detail + Report screen is required**, plus a minimal incident list to navigate to it.
+- Trend charts and crew-status screens. Required: Incident Detail + Report, the incident list with the home KPI row, and a live new-event toast (§6.4). No SMS/email.
 - **Advance warning for falling objects and threats from outside about ±15° behind the head.** See §3.2a. The pitch states this limit and shows wider coverage as a roadmap step.
 - Regulatory compliance filing. Reports are an **OHS-style structure, not a compliance document**.
 - **GPS / positioning.** There is no GPS module. The site comes from the device's assignment (worker → crew → site). The exact spot on site is never inferred, from video or anything else: reports always show "Location to be determined", and the manager can fill it in at sign-off.
@@ -42,7 +42,7 @@ Argus is a retrofit kit for a standard hard hat. It works like a dash cam for co
 |---|---|---|
 | Raspberry Pi 4 (1GB) | Main controller | All sensing, buffering and upload |
 | Pi Cam V2.1 (CSI) | **Primary camera**, front-facing | IMX219, hardware H.264. **62.2° H × 48.8° V FOV** (narrow for a dash cam; see §2.6) |
-| USB webcam ×1 (of 2 available) | **Rear camera (stretch, phase 2)** | MJPEG, low res |
+| USB webcam | Not used | Rear camera is out of scope for the MVP (roadmap, §3.1) |
 | HC-SR04 ×2 (of 7) | Struck-by ranging | 2 rear: R2 (7.5° left of straight back) and R3 (7.5° right). 15° beam each, see §3.2a |
 | MPU-6050 (GY-521-style breakout) | Fall/impact, ego-motion, hat-off spike | 6-axis, ±16g / ±2000°/s, I2C 0x68. See §2.6 |
 | Adafruit VL53L0X ToF (#3316) | Hat-on detection | Inside crown, facing down. Adafruit guide: **~50–1200mm** usable range |
@@ -91,7 +91,6 @@ MPU-6050 INT → **GPIO4** (optional hardware motion/impact flag).
 
 ### 2.5 Physical layout
 - **Pi Cam:** front brim, slight downward tilt (about 10°) so it sees hands and work.
-- **Rear USB webcam (phase 2):** back of the shell, facing rearward.
 - **HC-SR04 R2 and R3:** side by side in one printed shallow V-shaped bracket on the back of the shell, boards flat, aimed 7.5° left and right of straight back (15° between them), tilted about 5° up so the beams clear the shoulders. Nothing goes on the crown. Do not drill the shell; use clips or a strap and check the hat maker's manual, including on adhesives.
 - **VL53L0X:** inside the crown, facing down toward the head. **Mount it so the on-head distance is at least 50–80mm.** Adafruit's guide gives about 50mm as the near limit, although the product title says "~30mm". Design to the conservative figure. Crown clearance in a hard hat is only about 25–35mm, so **recess the sensor into a printed pocket in the shell** or aim it at an angle across the crown to lengthen the path. It must not be obstructed by the suspension straps.
 - **Motors:** the top motor against the crown pad, the back motor against the nape strap. Both need skin or pad contact.
@@ -151,12 +150,11 @@ This is acceptable because the SCD41 is context only.
 | Load | Current |
 |---|---|
 | Pi 4 (load, encoding) | ~1.0–1.3A |
-| USB webcam (phase 2) | ~0.25A |
 | 2 motors | ~0.16A |
 | 2 HC-SR04 | ~0.03A |
 | L293D logic | ~0.06A |
 | SCD41 peak | ~0.18A |
-| **Total** | **~1.65–1.95A** |
+| **Total** | **~1.45–1.75A** |
 
 That is within the 3A supply. Runtime is about 18.5Wh × ~85% ÷ ~5–6W ≈ **2.5–3h**, which is enough for the demo.
 
@@ -186,11 +184,10 @@ Key facts:
 | Build/demo risk (15) | 5 | 4 | 3 | 1 |
 | **Weighted** | **4.05** | **2.90** | **4.20** | **2.60** |
 
-**Decision: C, built in two phases.**
-1. **Phase 1 (must work):** Pi Cam front, 1280×720 @ 30fps, H.264, `picamera2` `CircularOutput`, **from the full-FOV 1640×1232 binned sensor mode** (§2.6). This alone is a complete demo.
-2. **Phase 2 (stretch):** rear USB webcam at 640×480 @ 15fps, MJPEG ring buffer, no decode on the Pi. If CPU goes over about 70% or frames drop, disable it with a config flag.
-3. **Three cameras: no.** A side or second-rear view adds little over C, and it costs RAM, USB power draw and battery.
-4. Every frame from every camera is timestamped with `CLOCK_MONOTONIC`, on the same clock as the sensors.
+**Decision for the MVP: A (Pi Cam front only). C (front + low-res rear USB) is roadmap, not built.**
+1. Pi Cam front, 1280×720 @ 30fps, H.264, picamera2 `H264Encoder` feeding Argus's own time-bounded ring (`hardware/argus/camera`), **from the full-FOV 1640×1232 binned sensor mode** (§2.6). This is a complete demo.
+2. **Three cameras: no.** A side or second-rear view adds little over C, and it costs RAM, USB power draw and battery.
+3. Every frame from every camera is timestamped with `CLOCK_MONOTONIC`, on the same clock as the sensors.
 
 ### 3.2 Ultrasonic layout
 
@@ -295,7 +292,7 @@ Coverage weight went up from 30 to 40, because coverage is the core function and
 - Solder wires at the sensor with strain relief, use a polarized connector at the hub, and put no loose jumpers on the Pi header. A 5V jumper touching a GPIO pin can kill the Pi.
 - Add a 100µF capacitor on the sensor 5V line at the hub.
 
-**Power:** not a constraint. Worst case is about 1.65–1.95A on the 3A supply. The risk to test is motor noise on the 5V line causing false readings.
+**Power:** not a constraint. Worst case is about 1.45–1.75A on the 3A supply. The risk to test is motor noise on the 5V line causing false readings.
 
 **Pitch line:** "This prototype covers the danger zone straight behind you. The production version adds sensors to widen it. The detection approach is the same."
 
@@ -335,7 +332,7 @@ Key facts (⚠️ re-check prices on the provider pricing pages when signing up.
 
 **Decision: build A first, then upgrade to F (hybrid).** A scores highest overall, because it is the simplest and cheapest. F scores slightly lower (4.35) because it has two calls and more latency, but it wins on **report quality**, which is what the safety manager and the pitch audience judge. Since F's stage 1 *is* A, choosing F costs nothing: A is the working fallback at every point.
 
-- **Stage 1 — Gemini Flash (vision):** input is the front clip (plus the rear clip in phase 2) and a compact sensor summary. Output is a strict JSON **observation timeline**: timestamped visual facts (what objects are visible, who is nearby, what the worker is doing, PPE visible, environment conditions), with no conclusions. Built first. If stage 2 fails, a Gemini-written report can be generated from the same call with a second prompt.
+- **Stage 1 — Gemini Flash (vision):** input is the front clip and a compact sensor summary. Output is a strict JSON **observation timeline**: timestamped visual facts (what objects are visible, who is nearby, what the worker is doing, PPE visible, environment conditions), with no conclusions. Built first. If stage 2 fails, a Gemini-written report can be generated from the same call with a second prompt.
 - **Stage 2 — Claude Opus 5.5 (reasoning/report):** input is the observation timeline, the full sensor trace summary (peak g, closing rate, time to contact, which sensor, hat-on state, SCD41 values), and the worker/site context. Output is the **report JSON schema** (§6.3) via structured outputs. Effort `high`, adaptive thinking.
 - **Why hybrid:** Gemini is the only option that actually watches the video. Claude is the stronger writer/reasoner for root cause and hierarchy-of-controls analysis, which is what a safety manager judges. Splitting the stages also keeps visual facts separate from inference, which reduces hallucinated causes.
 - **Cost estimate per event:** Gemini about 9–18k input tokens + 2k output ≈ $0.03–0.05. Claude about 8k input + about 4k output (incl. thinking) ≈ $0.11. **Total ≈ $0.15–0.20 per event, so $60 covers about 300+ events.** Set hard spend limits in both consoles (e.g. $25 each) and use 10s test clips during development.
@@ -357,9 +354,9 @@ Scores 1–5 (5 = best); totals are weighted, max 500.
 
 **Decision: D.**
 - **Device class (deterministic, set on the Pi):**
-  - `head_impact` ≥ threshold, `fall`, or `hat_knocked_off` → **Incident**;
-  - `struck_by_warning` with no impact within ±2s → **Near miss**;
-  - `hat_removed` → **PPE log** (no clip, no report).
+  - `struck_by_contact`, `head_impact` ≥ threshold, `fall`, `hat_knocked_off` → **Incident**;
+  - `struck_by_near_miss` (warning with no IMU impact within 1.5 s, §4.1) → **Near miss**;
+  - `hat_removed` → **PPE log** (no clip, no report); `module_fallback` → **System** (no report).
 - **LLM:** may return `suggested_class` + `reclass_reason` (e.g. "video shows the board contacting the hat"). This is advisory only; it never changes the class itself.
 - **Manager:** at sign-off, accepts or rejects the suggestion. `final_class` is what appears on the signed report. All three values are stored.
 - B was rejected because a classifier that can hallucinate is hard to defend to judges or regulators.
@@ -368,11 +365,11 @@ Scores 1–5 (5 = best); totals are weighted, max 500.
 
 ## 4. Detection algorithms (Pi)
 
-All sensor samples go into per-sensor ring buffers (about 40s) timestamped with `CLOCK_MONOTONIC`.
+All sensor samples go into per-sensor ring buffers (about 35s: `bus.history_s`, camera ring 35 s) timestamped with `CLOCK_MONOTONIC`.
 
 | Stream | Rate |
 |---|---|
-| IMU accel + gyro | 100 Hz |
+| IMU accel + gyro | 1 kHz FIFO (≥ 400 Hz); 100 Hz in the sensor trace |
 | HC-SR04 ×2 | about 16.7 Hz each (60ms sweep) |
 | VL53L0X | 10 Hz |
 | SCD41 | 0.2 Hz |
@@ -449,7 +446,7 @@ All thresholds live in `config.yaml` and are tunable. Log every candidate trigge
 
 ## 5. Pi software: modular, hot-swappable architecture
 
-> **Working agreement (2026-11-06):** the hardware team is testing each sensor individually *right now*, with their own standalone scripts. Claude writes the full Pi stack (drivers, detection, haptics, camera, upload) **as swappable modules**. Every hardware-facing module has at least two interchangeable implementations: **`argus`** (Claude's) and **`team`** (the hardware team's tested code, wrapped in a thin adapter). If Claude's version misbehaves on real hardware, switching to the team's is a one-line config change. **No code is written until the spec is approved.** Code comes next.
+> **Working agreement (2026-11-06):** the hardware team is testing each sensor individually *right now*, with their own standalone scripts. Claude writes the full Pi stack (drivers, detection, haptics, camera, upload) **as swappable modules**. Every hardware-facing module has at least two interchangeable implementations: **`argus`** (Claude's) and **`team`** (the hardware team's tested code, wrapped in a thin adapter). If Claude's version misbehaves on real hardware, switching to the team's is a one-line config change.
 
 ### 5.1 Layers
 
@@ -472,7 +469,7 @@ All thresholds live in `config.yaml` and are tunable. Log every candidate trigge
 ```
 
 - **Only L0 touches hardware.** L1–L4 never import GPIO, I2C or camera libraries. That makes L1–L4 fully testable on a laptop.
-- **L2 detectors are pure functions of samples.** Each one is a class with `update(sample) -> list[Event]` and no I/O. They can be replaced individually too (`detectors.struck_by.impl: argus | team`) if the team prefers their own math.
+- **L2 detectors are pure functions of samples.** Each is a class with `on_imu/on_range/on_tof/on_env(sample, state) -> list[Detection]`, no I/O. Detectors are not swappable: `detectors.<name>.impl` accepts only `argus`; tune via `thresholds:`.
 - **Data flows one way:** L0 → bus → L2 → L3 → L4. Haptic commands go L3 → L0 `HapticDriver`.
 
 ### 5.2 Module contracts (the "plug shape")
@@ -499,11 +496,11 @@ Every L0 implementation must satisfy one of these interfaces (Python `Protocol`s
 | Impl | What it is | Used for |
 |---|---|---|
 | `argus` | Claude's driver, written to the datasheet details in §2.6 (e.g. the MPU-6050 FIFO driver at ±16g / 1kHz, the interleaved HC-SR04 sweep) | Default once it passes the bench checks |
-| `team` | The hardware team's standalone test script, **pasted mostly unchanged** into `hardware/team/<module>/`, plus a thin `adapter.py` that converts its output to the contract (units, timestamps, IDs) | Known-good fallback, already proven on the bench |
+| `team` | The hardware team's standalone script, **copied unchanged** into `hardware/team/<module>/vendor/`, plus a `mapping.yaml` (`argus-cli team init`, checked with `argus-cli team check`); see `docs/TEAM-HANDOFF.md` | Known-good fallback, already proven on the bench |
 | `mock` | Synthetic data from scenario scripts (§5.6) | Developing L1–L4, the backend and the dashboard with no hardware |
 | `replay` | Plays back recorded real sensor logs (`.jsonl`) at real or accelerated speed | Tuning detectors, regression tests, demo rehearsal |
 
-Selected per module in `config.yaml`:
+Selected per module in `/etc/argus/config.yaml` on the Pi (`device/config.yaml` + `config.local.yaml` on a laptop):
 
 ```yaml
 modules:
@@ -521,31 +518,22 @@ detectors:
 
 ### 5.4 How "hot-swap" works
 
-1. **Planned swap (config):** edit `config.yaml` and run `argus-cli reload <module>`. The supervisor stops that one module, loads the other impl and restarts it, in **under 2s**. The other modules and the ring buffers keep running.
+1. **Planned swap (config):** edit `/etc/argus/config.yaml` on the Pi (`device/config.yaml` + `config.local.yaml` on a laptop) and run `argus-cli reload <module>`. The supervisor stops that one module, loads the other impl and restarts it, in **under 2s**. The other modules and the ring buffers keep running.
 2. **Automatic fallback (runtime):** if a module's `health()` reports not-ok, or no samples for **500ms** (IMU/range) or **3s** (ToF), the supervisor switches to its `fallback` impl. It logs a `module_fallback` event, which is also uploaded so the dashboard shows it. Haptics fallback is critical, so it's checked every 1s with a zero-intensity self-test.
 3. **Shadow mode (A/B on real hardware):** `argus-cli shadow imu` runs `argus` and `team` **on the same sensor**, if the bus allows it (or in alternating windows if not), and writes both streams to a diff log. Use it to prove Claude's driver matches the team's before switching the default. Shadowing isn't possible for exclusive-access devices like the camera or haptics. Those use A/B bench runs instead.
 
-### 5.5 Integration path: when the team pastes their code
+### 5.5 Integration path: teammates plug in their own scripts
 
-Paste each tested script into chat with this **hand-off template**:
+Each teammate plugs in their tested script themselves (full steps in `docs/TEAM-HANDOFF.md`):
 
-```
-Module: (imu | range | hat_on | env | haptics | camera)
-Wiring: pins / I2C address / power used
-Libraries + versions: (pip freeze excerpt)
-What it outputs: example output lines (10–20 lines of real data)
-Units + rate: e.g. "distance in cm, ~10 readings/s"
-Known quirks: e.g. "sensor 3 reads 0 sometimes", "needs 2s warmup"
-```
+1. Copy the script unchanged into `hardware/team/<module>/vendor/` and fill in `mapping.yaml` (`argus-cli team init`).
+2. Run `argus-cli team check <module>`.
+3. Run the contract tests (§5.6) against the module, with the hardware attached.
+4. Send the hand-off message (template in `docs/TEAM-HANDOFF.md`).
 
-What Claude then does, per module:
-1. Copy the script into `hardware/team/<module>/` **without rewriting its hardware logic.**
-2. Write `adapter.py`: it calls the team code (thread or subprocess), converts units, adds `monotonic_ns` timestamps and maps IDs to the contract.
-3. Run the **contract test suite** (§5.6) against the adapter, with the hardware attached.
-4. If Claude's `argus` impl exists, cross-check the **wiring and constants** in both. Disagreements (pins, I2C settings, scale factors) are flagged, because the team's bench-proven values win.
-5. Set it as `impl` or `fallback` per the team's choice.
+The integrator then cross-checks wiring and constants against the `argus` impl (disagreements on pins, I2C settings or scale factors are flagged, because the team's bench-proven values win) and sets `impl`/`fallback` per module.
 
-If a team script is a blocking `while True: print(...)` loop, the adapter runs it as a **subprocess and parses its stdout**. Zero changes to their code are needed.
+A blocking `while True: print(...)` team script runs as a subprocess whose stdout is parsed, with zero changes to their code.
 
 ### 5.6 Testing without (and with) hardware
 
@@ -574,20 +562,20 @@ device/
     uploader.py         # L4
   hardware/
     argus/<module>/     # Claude's drivers
-    team/<module>/      # team's pasted scripts + adapter.py
+    team/<module>/      # team's vendored scripts + mapping.yaml
     mock/<module>/      # scenario-driven fakes
     replay/             # log player
   scenarios/            # mock scenario definitions (YAML)
   recordings/           # real sensor logs (.jsonl), gitignored except the curated test set
-  tests/contract/  tests/detectors/  tests/e2e/
-  cli.py                # argus-cli: run, reload, shadow, test, record, replay, trigger, buzz
+  tests/{contract,detectors,e2e,events,team,tuning,unit,uploader}/
+  cli.py                # argus-cli: run, reload, test, buzz, shadow, replay, scenario, pair, upload, eval, sweep, export-scenarios, record, trigger, team init|check
   config.yaml
 ```
 
 ### 5.8 Runtime details (unchanged from earlier decisions)
 
-- **Language:** Python 3.11, Raspberry Pi OS Bookworm (64-bit Lite). One systemd service runs `supervisor.py`, and modules run as threads.
-- **Libraries (argus impls):** `picamera2`, `lgpio`/`gpiozero` (or `pigpio` for better echo timing), `smbus2` with a custom MPU-6050 FIFO driver, `adafruit-circuitpython-*` (VL53L0X, SCD4x), `ahrs` or a hand-rolled Madgwick filter, `numpy`, `httpx`.
+- **Language:** Python 3.11, Raspberry Pi OS Bookworm (64-bit Lite). The systemd service runs `argus-cli run --config /etc/argus/config.yaml` (argus.service), and modules run as threads.
+- **Libraries (argus impls):** `picamera2`; `lgpio` (HC-SR04 pulses and edge timestamps, motor software PWM); `smbus2` with a custom MPU-6050 FIFO driver; adafruit VL53L0X/SCD4x; a hand-rolled Madgwick filter; `numpy`; `httpx`.
 - **Memory budget (1GB):** video ring buffers about 35MB, sensor buffers under 10MB, Python about 150MB. No desktop.
 - **Device auth:** a long-lived device token, exchanged for short-lived signed upload URLs.
 - **Demo tooling:**
@@ -602,9 +590,9 @@ device/
 ### 6.1 Stack (recommended)
 - **Next.js (App Router, TypeScript)** for the dashboard and API routes, deployed on **Vercel**.
 - **Supabase** for Postgres, Storage (clips, sensor traces) and Realtime (the incident list updates live during the pitch).
-- **Report worker:** a Node worker (or Supabase Edge Function) triggered by a DB insert or queue. LLM calls can take more than 60s, so set long function timeouts. If the platform limits bite, run the worker as a small long-running process on a team laptop during the demo.
+- **Report worker:** a long-running Node worker (`worker/`) polling `events.status='uploaded'`, run on the team laptop. LLM calls can take more than 60s, which is why it is not a serverless function.
 - **SDKs:** Google Gen AI SDK for Gemini, `@anthropic-ai/sdk` for Claude. Use structured outputs for the report JSON. Enable server-side refusal fallbacks (`fallbacks: "default"`) on the Opus call.
-- **Video:** the backend transcodes the rear MJPEG `.avi` to MP4 (ffmpeg) for browser playback. The front clip is already MP4.
+- **Video:** the front clip is already MP4 on the Pi; no server-side transcode.
 
 Why this stack: the team knows TypeScript/React, it gets to a polished UI fastest, and Realtime with Storage comes free with it. The Pi side stays Python.
 
@@ -620,12 +608,16 @@ device_assignments(id, device_id, worker_id, starts_at, ends_at) -- hat ↔ work
 events(id, device_id, worker_id, site_id, type, severity, t0, detected_at,
        device_class, llm_suggested_class, llm_reclass_reason, final_class,   -- §3.4
        peak_g, closing_rate_mps, ttc_s, sensor_id, hat_on,
-       co2_ppm, temp_c, rh_pct, status)          -- status: uploading|analyzing|ready|failed
-media(id, event_id, kind, storage_path, duration_s, camera)   -- kind: clip|sensor_trace|thumbnail
+       co2_ppm, temp_c, rh_pct, status)          -- status: received|uploading|uploaded|analyzing|ready|failed
+media(id, event_id, kind, storage_path, duration_s, camera)   -- kind: clip|sensor_trace
 analyses(id, event_id, stage, model, input_tokens, output_tokens, cost_usd, latency_ms, output_json)
 reports(id, event_id, llm_draft_json, report_json, edited, status, signed_off_by, signed_off_at)
        -- llm_draft_json is immutable; report_json is the manager-edited copy; status: draft|signed
        -- signed = locked. No corrective-action tracking table (decided: actions stay as text in the report)
+report_edits(report_id, edited_by, field_path, old_value, new_value)   -- audit rows written by a trigger on report_json edits
+       -- sign_off_report(p_report_id, p_reclass_decision): SECURITY DEFINER RPC, the only way to sign. Manager of the report's org only;
+       --   signer from the caller's profile, event derived from the report; sets sign_off, status and events.final_class atomically.
+       --   events.final_class is locked once the report is signed
 ```
 
 - `worker_id` on an event comes from the `device_assignments` row active at `t0`, so reports name the worker.
@@ -666,7 +658,7 @@ Layout (desktop first; it must still render on a tablet):
   - worker, crew, site, date/time
   - "Export PDF" button and "Sign off" button
 - **Left column (evidence):**
-  - **Video player** (front/rear tabs) with event markers on the scrubber (t0 = trigger).
+  - **Video player** (front camera only) with event markers on the scrubber (t0 = trigger).
   - **Sensor chart synced to the video playhead.** Panels: |a| (g), per-sensor range and closing rate, hat-on band. Scrubbing either the video or the chart moves both.
   - Environmental readings strip (CO₂, temp, RH).
 - **Right column (report):** the §6.3 sections as editable form fields. AI-generated text is visually marked until a human edits or accepts it. Edited fields show "edited by manager" (the original is viewable). Corrective actions are a plain text list.
@@ -683,10 +675,9 @@ Layout (desktop first; it must still render on a tablet):
 Target: trigger an event at the start of the pitch and present the finished report by the end (about 5 min).
 
 1. **Pre-flight (T−30 min):**
-   - Pi on venue Wi-Fi (assumed reliable; no hotspot fallback, decided).
-   - Boot the hat resting on the table for calibration (§4.3), then put it on.
-   - `i2cdetect` shows all devices.
-   - Camera preview OK; haptics test (`argus-cli buzz both`).
+   - Pi on venue Wi-Fi (assumed reliable; no hotspot fallback, decided); `timedatectl` shows the clock synchronized.
+   - With the service stopped: `i2cdetect -y 1`, `rpicam-hello --list-cameras`, `.venv/bin/argus-cli buzz both --config /etc/argus/config.yaml`.
+   - Then `sudo systemctl start argus` with the hat resting on the table (calibration, §4.3), then put it on.
    - Dashboard open on the incident list.
 2. **Live struck-by:** a teammate swings the tested demo object (§3.2a) toward the wearer from straight behind, staying inside the ±15° zone. Mark the spot on the floor and rehearse it. The back motor buzzes and the event appears on the dashboard as "uploading".
 3. **Drop / impact:** drop the hat about 1m onto a mat → one `fall` event, with the peak g on it.
@@ -711,7 +702,7 @@ Two tracks run **in parallel** and meet at step 5.
   - VL53L0X bench test at 30/50/80mm → design the recessed mount;
   - L293D + motors buzz from Pi PWM. **Decide the Arduino fallback here**;
   - **bench checks in §3.2a**, then 2× HC-SR04 sweep with dividers on the hub board.
-- H2. Paste each working script using the hand-off template (§5.5). Claude wraps it as a `team` impl.
+- H2. Plug each working script in as a `team` impl with a mapping file (`docs/TEAM-HANDOFF.md`).
 - H3. Record real sessions (`argus-cli record`) for replay tests: walking backward, standing up, board swings, drops.
 
 **Track S: Claude (software, starting once this spec is approved):**
@@ -724,7 +715,7 @@ Two tracks run **in parallel** and meet at step 5.
 7. Incident detail UI: video + synced chart + report form.
 8. LLM stage 2 (Claude Opus 5.5) with the full report schema.
 9. Ego-motion tuning + false-positive tuning: record labelled trials, run `argus-cli sweep` (§5.6), lock thresholds in `config.yaml`, keep replay regression green.
-10. Rear USB camera (phase 2), PDF export, polish.
+10. PDF export (print route), polish.
 11. Demo rehearsal ×3 with the runbook (§7), including one run with a forced module fallback.
 
 ---

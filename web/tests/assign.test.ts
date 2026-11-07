@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { assignWorker } from "@/lib/api/assign";
-import { isLoopbackUrl, pairCommand } from "@/lib/pairing";
+import { isLoopbackUrl, pairCommand, pairingWarnings } from "@/lib/pairing";
 import { FakeDb } from "./helpers/fake-db";
 
 function setup() {
@@ -90,5 +90,12 @@ describe("pairing command", () => {
     expect(isLoopbackUrl("http://127.0.0.1:3400")).toBe(true);
     expect(isLoopbackUrl("http://192.168.1.20:3000")).toBe(false);
     expect(isLoopbackUrl("https://argus.example.com")).toBe(false);
+  });
+
+  it("warns when the Supabase URL is loopback, even if the dashboard address is fine (uploads would fail)", () => {
+    expect(pairingWarnings("http://192.168.1.20:3000", "http://127.0.0.1:54321")).toEqual(["supabase_loopback"]);
+    expect(pairingWarnings("http://localhost:3000", "http://localhost:54321")).toEqual(["dashboard_loopback", "supabase_loopback"]);
+    expect(pairingWarnings("http://192.168.1.20:3000", "http://192.168.1.20:54321")).toEqual([]);
+    expect(pairingWarnings("https://argus.example.com", "https://abc.supabase.co")).toEqual([]);
   });
 });

@@ -243,7 +243,6 @@ export function IncidentView({ data, role, fullName }: { data: IncidentData; rol
             router.refresh();
           }}
           reportId={row.id}
-          eventId={event.id}
           report={report}
           signerName={fullName}
           deviceClass={event.device_class}

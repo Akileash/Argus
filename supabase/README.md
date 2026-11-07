@@ -6,7 +6,7 @@ Postgres schema, RLS, seed and tests for Supabase. Migration: `migrations/202601
 `supabase/tests/run.sh` starts a throwaway Postgres 16 (`brew install postgresql@16`), loads `tests/stubs.sql` (test-only stand-ins for `auth`, `storage`, roles), applies migration and seed, runs `tests/*.test.sql`, then `validate_seed_reports.py` (uses `uv` and the `device` env).
 
 ## Access model
-- Dashboard users: `authenticated` role, scoped by `profiles.org_id` (RLS). Managers can write sites/crews/workers/device_assignments, set `events.final_class`, edit and sign `reports`. Viewers read only.
+- Dashboard users: `authenticated` role, scoped by `profiles.org_id` (RLS). Managers can write sites/crews/workers/device_assignments, edit draft `reports.report_json`, and sign through `sign_off_report(report_id, reclass_decision)` (the only way to set `status`/signer/`events.final_class`; final_class is locked after sign-off). Viewers read only.
 - Everything else (event ingest, media, analyses, report insert, device registration, `devices.token_hash`) is service role only. Devices never touch RLS: the API checks the bearer token (sha256 compared with `devices.token_hash`).
 - `authenticated` cannot read `devices.token_hash` (column grant). Do not `select *` from `devices` in client code; list columns.
 - Storage bucket `event-media` is private; objects at `<org_id>/<event_id>/<filename>`; authenticated users read their own org's folder.

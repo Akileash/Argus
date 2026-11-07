@@ -6,7 +6,7 @@ import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { isLoopbackUrl, pairCommand } from "@/lib/pairing";
+import { pairCommand, pairingWarnings } from "@/lib/pairing";
 
 interface Registered {
   device_id: string;
@@ -14,7 +14,7 @@ interface Registered {
   serial: string;
 }
 
-export function RegisterDeviceForm({ orgId }: { orgId: string }) {
+export function RegisterDeviceForm({ orgId, supabaseUrl }: { orgId: string; supabaseUrl: string }) {
   const router = useRouter();
   const [serial, setSerial] = useState("");
   const [rotate, setRotate] = useState(false);
@@ -25,6 +25,7 @@ export function RegisterDeviceForm({ orgId }: { orgId: string }) {
   const [copiedCmd, setCopiedCmd] = useState(false);
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
+  const warnings = pairingWarnings(origin, supabaseUrl);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -95,9 +96,14 @@ export function RegisterDeviceForm({ orgId }: { orgId: string }) {
             </Button>
           </div>
           <p className="text-xs text-muted">
-            {origin && isLoopbackUrl(origin) ? (
+            {warnings.includes("dashboard_loopback") ? (
               <strong className="text-incident-fg">
                 This dashboard is open at {origin}, which the Pi cannot reach. Open the dashboard at its network address (for example the laptop&apos;s IP) or the hosted URL, then register again.{" "}
+              </strong>
+            ) : null}
+            {warnings.includes("supabase_loopback") ? (
+              <strong className="text-incident-fg" data-testid="supabase-loopback-warning">
+                NEXT_PUBLIC_SUPABASE_URL is {supabaseUrl}, which the Pi cannot reach. Pairing will work but every upload from the hat will fail. Set it to the laptop&apos;s LAN IP (for example http://192.168.1.20:54321) in web/.env.local, restart the dashboard, then pair again.{" "}
               </strong>
             ) : null}
             The dashboard URL must be reachable from the Pi on its network. Afterwards run{" "}

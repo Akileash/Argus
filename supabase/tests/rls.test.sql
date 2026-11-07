@@ -46,8 +46,10 @@ begin
   -- manager can write own org
   insert into public.workers (org_id, full_name) values ('a0000000-0000-4000-8000-000000000001', 'New Hire');
   -- cross-org update touches zero rows
-  update public.events set final_class = 'incident' where id = 'e0000000-0000-4000-8000-0000000000b2';
-  get diagnostics n = row_count; assert n = 0, 'cross-org update affected rows';
+  begin
+    update public.events set final_class = 'incident' where id = 'e0000000-0000-4000-8000-0000000000b2';
+    assert false, 'client final_class write allowed';
+  exception when insufficient_privilege then null; end;
 end $$;
 
 -- as org B manager

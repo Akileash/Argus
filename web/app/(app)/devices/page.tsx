@@ -69,7 +69,7 @@ export default async function DevicesPage() {
           </CardHeader>
           <CardContent>
             {ctx.role === "manager" ? (
-              <RegisterDeviceForm orgId={ctx.orgId} />
+              <RegisterDeviceForm orgId={ctx.orgId} supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""} />
             ) : (
               <p className="text-sm text-muted">Only managers can register devices.</p>
             )}

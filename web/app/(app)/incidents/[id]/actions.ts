@@ -35,61 +35,46 @@ export async function saveReport(reportId: string, report: unknown): Promise<Act
 export type ReclassDecision = "accepted" | "rejected";
 
 /**
- * Sign off: ONE reports UPDATE (status, signed_off_by, signed_off_at, report_json incl. sign_off), then the
- * separate events.final_class UPDATE. The signer name always comes from the caller's profile, never the client.
+ * Sign off: persist the manager's last draft edits to report_json, then call the sign_off_report() RPC, which in ONE
+ * transaction checks the caller is a manager of the report's org, takes the signer name from their profile, derives the
+ * event from the report, validates the reclass decision and writes sign_off, status and events.final_class.
+ * Clients cannot write those columns directly (supabase/migrations/*_sign_off_report.sql).
  */
 export async function signOffReport(input: {
   reportId: string;
-  eventId: string;
   report: unknown;
   reclassDecision: ReclassDecision | null;
 }): Promise<ActionResult<{ signedBy: string; signedAt: string; finalClass: string }>> {
   const v = validateReport(input.report);
   if (!v.ok) return { ok: false, error: v.error };
+  if (input.reclassDecision !== null && input.reclassDecision !== "accepted" && input.reclassDecision !== "rejected") {
+    return { ok: false, error: "Invalid reclassification decision." };
+  }
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { ok: false, error: "Your session expired. Sign in again." };
 
-  const [{ data: profile }, { data: event }] = await Promise.all([
-    supabase.from("profiles").select("full_name, role").eq("user_id", auth.user.id).maybeSingle(),
-    supabase.from("events").select("device_class, llm_suggested_class").eq("id", input.eventId).maybeSingle(),
-  ]);
-  if (!profile || profile.role !== "manager") return { ok: false, error: "Only managers can sign off reports." };
-  if (!event) return { ok: false, error: "Event not found." };
-
-  const suggested = event.llm_suggested_class && event.llm_suggested_class !== event.device_class ? event.llm_suggested_class : null;
-  let decision: "accepted" | "rejected" | "not_applicable" = "not_applicable";
-  let finalClass = event.device_class as string;
-  if (suggested) {
-    if (input.reclassDecision !== "accepted" && input.reclassDecision !== "rejected") {
-      return { ok: false, error: "Accept or reject the AI reclassification before signing." };
-    }
-    decision = input.reclassDecision;
-    if (decision === "accepted") finalClass = suggested;
-  }
-
-  const signedAt = new Date().toISOString();
   const report = normalizeReport(v.report);
-  report.sign_off = {
-    signed_by: profile.full_name,
-    signed_at: signedAt,
-    final_class: finalClass as ReportJson["sign_off"]["final_class"],
-    reclass_decision: decision,
-  };
-
-  const { data, error } = await supabase
+  report.sign_off = { signed_by: null, signed_at: null, final_class: null, reclass_decision: null };
+  const { data: saved, error: saveErr } = await supabase
     .from("reports")
-    .update({ status: "signed", signed_off_by: profile.full_name, signed_off_at: signedAt, report_json: report })
+    .update({ report_json: report })
     .eq("id", input.reportId)
     .eq("status", "draft")
     .select("id");
-  if (error) return isLocked(error) ? { ok: false, error: LOCKED_MSG, locked: true } : { ok: false, error: error.message };
-  if (!data || data.length === 0) return { ok: false, error: LOCKED_MSG, locked: true };
+  if (saveErr) return isLocked(saveErr) ? { ok: false, error: LOCKED_MSG, locked: true } : { ok: false, error: saveErr.message };
+  if (!saved || saved.length === 0) return { ok: false, error: LOCKED_MSG, locked: true };
 
-  const { error: evErr } = await supabase.from("events").update({ final_class: finalClass }).eq("id", input.eventId);
-  if (evErr) {
-    return { ok: false, error: `The report was signed, but the final classification could not be saved: ${evErr.message}` };
+  const { data, error } = await supabase.rpc("sign_off_report", {
+    p_report_id: input.reportId,
+    p_reclass_decision: input.reclassDecision,
+  });
+  if (error) {
+    if (isLocked(error)) return { ok: false, error: LOCKED_MSG, locked: true };
+    if (error.code === "42501") return { ok: false, error: "Only managers of this organization can sign off reports." };
+    return { ok: false, error: error.message };
   }
-  return { ok: true, signedBy: profile.full_name, signedAt, finalClass };
+  const r = data as { signed_by: string; signed_at: string; final_class: string };
+  return { ok: true, signedBy: r.signed_by, signedAt: r.signed_at, finalClass: r.final_class };
 }
