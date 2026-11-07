@@ -2,3 +2,6 @@ packages:
   - web
   - worker
   - packages/*
+allowBuilds:
+  esbuild: true
+  protobufjs: true
