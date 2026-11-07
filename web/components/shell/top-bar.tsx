@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { SessionContext } from "@/lib/session";
 import { NavLink } from "./nav-link";
 import { Wordmark } from "./wordmark";
+import { signOut } from "@/app/auth/signout/actions";
 
 export function TopBar({ ctx }: { ctx: SessionContext }) {
   return (
@@ -26,7 +27,7 @@ export function TopBar({ ctx }: { ctx: SessionContext }) {
               <div className="font-medium">{ctx.fullName}</div>
               <div className="text-xs capitalize text-muted">{ctx.role}</div>
             </div>
-            <form action="/auth/signout" method="post">
+            <form action={signOut}>
               <Button type="submit" variant="ghost" size="sm" aria-label="Sign out">
                 <LogOut className="h-4 w-4" /> Sign out
               </Button>

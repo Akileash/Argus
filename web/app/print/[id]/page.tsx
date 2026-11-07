@@ -2,12 +2,14 @@ import { notFound } from "next/navigation";
 import { AutoPrint } from "@/components/incident/auto-print";
 import { PrintReport } from "@/components/incident/print-report";
 import { getIncident } from "@/lib/queries/incident";
+import { getSessionContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Argus report" };
 
-/** Print-styled report: no app chrome. Session-protected by middleware; data is RLS-scoped. */
+/** Print-styled report: no app chrome. Signed-in users only; data is RLS-scoped. */
 export default async function PrintPage({ params }: { params: Promise<{ id: string }> }) {
+  await getSessionContext(); // redirects to /login when signed out
   const { id } = await params;
   const data = await getIncident(id);
   if (!data) notFound();

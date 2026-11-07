@@ -2,8 +2,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Wordmark } from "@/components/shell/wordmark";
 import { isDev } from "@/lib/env";
 import { LoginForm } from "./login-form";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-export default function LoginPage() {
+export const dynamic = "force-dynamic";
+
+export default async function LoginPage() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (data.user) redirect("/");
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="anim-reveal w-full max-w-sm">
