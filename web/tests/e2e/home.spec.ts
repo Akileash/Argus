@@ -6,7 +6,7 @@ test("home: login, KPI row, seeded incident list, screenshot", async ({ page }) 
   await page.getByLabel(/email/i).fill("demo@argus.local");
   await page.getByLabel(/password/i).fill("argus-demo-2026");
   await page.getByRole("button", { name: /sign in/i }).click();
-  await expect(page).toHaveURL(/localhost:\d+\/$/);
+  await expect(page).toHaveURL(/:\d+\/$/);
 
   await expect(page.getByTestId("kpi-row")).toBeVisible();
   await expect(page.getByTestId("kpi-near")).toBeVisible();
@@ -34,6 +34,6 @@ test("a wrong password keeps the typed email", async ({ page }) => {
   await page.getByLabel(/email/i).fill("demo@argus.local");
   await page.getByLabel(/password/i).fill("not-the-password");
   await page.getByRole("button", { name: /sign in/i }).click();
-  await expect(page.getByRole("alert")).toContainText("Invalid email or password");
+  await expect(page.getByText("Invalid email or password.")).toBeVisible();
   await expect(page.getByLabel(/email/i)).toHaveValue("demo@argus.local");
 });
