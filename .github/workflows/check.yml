@@ -1,0 +1,38 @@
+# Runs the same single command a developer runs before pushing: scripts/check.sh
+# (device pytest + ruff, pnpm test + typecheck, shellcheck, SQL tests).
+#
+# NOTE: this repository has no GitHub remote yet, so this workflow has never run on GitHub. It starts
+# working the day the repo is pushed. It needs no secrets: everything runs against throwaway local services.
+name: check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v4 # version comes from "packageManager" in package.json
+
+      - name: System tools (shellcheck, Postgres for the SQL tests, ffmpeg for the camera tests)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck postgresql ffmpeg
+          echo "$(ls -d /usr/lib/postgresql/*/bin | tail -n 1)" >> "$GITHUB_PATH"
+
+      - name: Device dependencies
+        run: cd device && uv sync
+
+      - name: Check
+        run: scripts/check.sh

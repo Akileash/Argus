@@ -9,7 +9,7 @@ from typing import Any
 import httpx
 from ruamel.yaml import YAML
 
-from argus.config import DEFAULT_CONFIG_PATH
+from argus.config import LOCAL_CONFIG_PATH, local_config_path
 
 
 class PairingError(Exception):
@@ -17,7 +17,9 @@ class PairingError(Exception):
 
 
 def resolve_config_path(path: Path | str | None) -> Path:
-    return Path(path or os.environ.get("ARGUS_CONFIG") or DEFAULT_CONFIG_PATH)
+    """Where ``pair`` writes: ``--config``, else ``$ARGUS_CONFIG``, else the gitignored ``config.local.yaml``
+    (a device token must never land in the committed ``config.yaml``)."""
+    return Path(path or os.environ.get("ARGUS_CONFIG") or local_config_path() or LOCAL_CONFIG_PATH)
 
 
 def fetch_me(base_url: str, token: str, *, timeout_s: float = 15.0,

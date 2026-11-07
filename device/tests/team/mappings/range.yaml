@@ -1,0 +1,9 @@
+# Mapping for tests/team/fakes/fake_range.py --style json (cm, 0 = no echo, "back_left"/"back_right")
+command: [python, ../../../tests/team/fakes/fake_range.py, --style, json]
+format: json
+id: sensor
+value: dist_cm
+ids: { back_left: R2, back_right: R3 }
+unit: cm
+no_echo: [0, -1]
+restart: { initial_s: 0.2, max_s: 1 }

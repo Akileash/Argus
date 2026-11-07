@@ -25,7 +25,7 @@ from typing import Any
 import numpy as np
 
 from argus.bus import SampleBus
-from argus.config import ArgusConfig, ModuleCfg, load_config
+from argus.config import ArgusConfig, ConfigError, ModuleCfg, load_config
 from argus.contracts import (
     MODULE_NAMES,
     PROTOCOL_FOR,
@@ -44,6 +44,8 @@ VAR_DIR = Path(__file__).resolve().parents[1] / "var"
 EXCLUSIVE_MODULES = frozenset({"range", "haptics", "camera"})
 HEALTH_EVERY_S = 0.1
 SELFTEST_EVERY_S = 1.0
+
+DEFAULT_CONFIG = "<default>"  # config_path value meaning "device/config.yaml + config.local.yaml", re-read on reload
 
 EventCallback = Callable[[dict[str, Any]], None]
 
@@ -367,12 +369,20 @@ class Supervisor:
         """
         slot = self._slots[name]
         t0 = time.perf_counter()
-        cfg = slot.cfg
-        if impl is None and self.config_path is not None:
-            cfg = load_config(self.config_path).modules[name]
+        old_cfg = cfg = slot.cfg
+        if self.config_path is not None:  # re-read the file(s): new options must reach the new impl (spec §5.5)
+            try:
+                cfg = load_config(None if self.config_path == DEFAULT_CONFIG else self.config_path).modules[name]
+            except ConfigError:
+                if impl is None:
+                    raise
         target = impl or cfg.impl
-        self._swap(slot, target)
         slot.cfg = ModuleCfg(impl=target, fallback=cfg.fallback, options=cfg.options)
+        try:
+            self._swap(slot, target)
+        except Exception:
+            slot.cfg = old_cfg
+            raise
         slot.on_fallback = slot.gave_up = False
         slot.last_error = ""
         dt = time.perf_counter() - t0

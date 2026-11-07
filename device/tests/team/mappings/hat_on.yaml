@@ -1,0 +1,6 @@
+# Mapping for tests/team/fakes/fake_hat_on.py (JSON, metres; 8.19 m = nothing in range)
+command: [python, ../../../tests/team/fakes/fake_hat_on.py]
+format: json
+fields: { range: distance_m, status: status }
+unit: m
+restart: { initial_s: 0.2, max_s: 1 }

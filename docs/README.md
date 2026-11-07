@@ -5,7 +5,8 @@ Start here. Pick the guide that matches what you need to do.
 ## Guides
 
 - [CONNECT-THE-HAT.md](CONNECT-THE-HAT.md): step by step, from a blank SD card to your first real incident report.
-- [TEAM-HANDOFF.md](TEAM-HANDOFF.md): how to swap in the hardware team's sensor code, and how to hot-swap, shadow and test a module.
+- [../CONTRIBUTING.md](../CONTRIBUTING.md): who owns which folder, branch names, the one check command (`scripts/check.sh`) and how to resolve a lockfile conflict.
+- [TEAM-HANDOFF.md](TEAM-HANDOFF.md): how to plug the hardware team's sensor script in with a mapping file (no code), check it without hardware, and hot-swap, shadow and test a module.
 - [TUNING.md](TUNING.md): how to record labelled runs and tune the detector thresholds from real data.
 
 ## Reference
@@ -16,9 +17,9 @@ Start here. Pick the guide that matches what you need to do.
 - [../contracts/event.schema.json](../contracts/event.schema.json), [../contracts/report.schema.json](../contracts/report.schema.json), [../contracts/sensor_trace.schema.json](../contracts/sensor_trace.schema.json): JSON Schemas for events, reports and sensor traces.
 - [../contracts/device_queue.md](../contracts/device_queue.md): how the device queues events before upload.
 - [../device/hardware/argus/README.md](../device/hardware/argus/README.md): our hardware drivers, their options, and the bench checklist.
-- [../device/hardware/team/](../device/hardware/team/): one folder per module for the team's code. Each folder has a `README.md` and an `adapter.py`.
+- [../device/hardware/team/](../device/hardware/team/): one folder per module for the team's code. Each folder has a `README.md`, a `vendor/` folder for the original script, a `mapping.yaml` (made with `argus-cli team init <module>`) and a small `adapter.py`. Teammates edit only their own folder.
 - [../device/hardware/replay/FORMAT.md](../device/hardware/replay/FORMAT.md): the `.jsonl` recording format and the `.labels.json` sidecar.
-- [../device/config.yaml](../device/config.yaml): the config template. The installer copies it to `/etc/argus/config.yaml` on the Pi.
+- [../device/config.yaml](../device/config.yaml): the shared config template. The installer copies it to `/etc/argus/config.yaml` on the Pi. Machine-specific choices (such as `impl: team`) go in the ignored `device/config.local.yaml`, which is merged over it; see TEAM-HANDOFF.md section 2.
 
 ## Quick start on a laptop (no hardware)
 
@@ -39,6 +40,8 @@ uv run argus-cli scenario --list         # list the simulated scenarios
 uv run argus-cli run --duration 10       # run the device for 10 seconds, then stop
 uv run pytest -q                         # run the unit tests
 ```
+
+Before you push, run the one check command from the repo root: `scripts/check.sh` (hardware teammates with no Node installed use `scripts/check.sh --device`).
 
 Backend and dashboard side:
 

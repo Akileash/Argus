@@ -1,0 +1,7 @@
+# Mapping for tests/team/fakes/fake_range.py --style text  ("R2=120.0 R3=0", cm)
+command: [python, ../../../tests/team/fakes/fake_range.py, --style, text]
+format: text
+unit: cm
+no_echo: [0, -1]
+sensors: { R2: R2, R3: R3 }
+restart: { initial_s: 0.2, max_s: 1 }

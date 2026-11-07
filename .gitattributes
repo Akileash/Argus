@@ -1,0 +1,9 @@
+# Normalize line endings: git stores LF, your editor may show CRLF on Windows.
+* text=auto
+*.sh text eol=lf
+*.service text eol=lf
+
+# Generated files. Never edit or merge them by hand. On a merge conflict run scripts/fix-lockfiles.sh
+# (take either side, then regenerate from package.json / pyproject.toml). See CONTRIBUTING.md.
+pnpm-lock.yaml linguist-generated=true
+device/uv.lock linguist-generated=true

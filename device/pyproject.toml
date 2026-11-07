@@ -46,6 +46,8 @@ markers = ["hardware: needs the real hat (skipped unless ARGUS_HARDWARE=1)"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
+# Teammates' original scripts are pasted here unchanged (spec §5.5): not ours to lint.
+extend-exclude = ["hardware/team/*/vendor"]
 
 [tool.ruff.lint.per-file-ignores]
 # Hardware drivers must never raise out of start()/read()/set() (argus/contracts.py): they catch broadly on

@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from argus.contracts import MODULE_NAMES, ImplName
 
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config.yaml"
+LOCAL_CONFIG_PATH = DEFAULT_CONFIG_PATH.with_name("config.local.yaml")
 
 
 class ConfigError(ValueError):
@@ -215,15 +216,50 @@ def parse_config(data: dict[str, Any], path: Path | str = "<memory>") -> ArgusCo
         raise ConfigError(_format_errors(Path(path), e)) from None
 
 
-def load_config(path: Path | str | None = None) -> ArgusConfig:
-    """Load and validate config. Order: explicit path, $ARGUS_CONFIG, ``device/config.yaml``."""
-    p = Path(path or os.environ.get("ARGUS_CONFIG") or DEFAULT_CONFIG_PATH)
+def deep_merge(base: dict[str, Any], over: dict[str, Any]) -> dict[str, Any]:
+    """``over`` wins; nested mappings merge key by key, anything else (lists, scalars) is replaced."""
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = deep_merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+
+def local_config_path() -> Path | None:
+    """The gitignored per-machine override. ``ARGUS_LOCAL_CONFIG`` moves it; empty or ``none`` turns it off."""
+    env = os.environ.get("ARGUS_LOCAL_CONFIG")
+    if env is None:
+        return LOCAL_CONFIG_PATH
+    return None if env.strip().lower() in ("", "none") else Path(env)
+
+
+def _read_yaml(p: Path, allow_empty: bool = False) -> dict[str, Any]:
     try:
         raw = yaml.safe_load(p.read_text())
     except FileNotFoundError:
         raise ConfigError(f"config file not found: {p}") from None
     except yaml.YAMLError as e:
         raise ConfigError(f"config {p} is not valid YAML: {e}") from None
+    if raw is None and allow_empty:
+        return {}
     if not isinstance(raw, dict):
         raise ConfigError(f"config {p} must be a YAML mapping at the top level")
-    return parse_config(raw, p)
+    return raw
+
+
+def load_config(path: Path | str | None = None) -> ArgusConfig:
+    """Load and validate config. Precedence, highest first:
+
+    1. ``path`` (``--config``) or ``$ARGUS_CONFIG``: that one file, used as is (the Pi service passes
+       ``/etc/argus/config.yaml``). No local override is merged, so what you name is what you get.
+    2. Otherwise ``device/config.yaml`` with ``device/config.local.yaml`` (gitignored, optional) deep-merged
+       over it. Put machine-specific choices (``impl: team``, a serial port, backend creds) in the local file.
+    """
+    explicit = path or os.environ.get("ARGUS_CONFIG")
+    if explicit:
+        p = Path(explicit)
+        return parse_config(_read_yaml(p), p)
+    raw = _read_yaml(DEFAULT_CONFIG_PATH)
+    local = local_config_path()
+    if local is not None and local.exists():
+        raw = deep_merge(raw, _read_yaml(local, allow_empty=True))
+    return parse_config(raw, local if local is not None and local.exists() else DEFAULT_CONFIG_PATH)
