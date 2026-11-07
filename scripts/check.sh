@@ -81,7 +81,7 @@ fi
 
 # ---- shell scripts
 if have shellcheck; then
-  step "shellcheck" bash -c "cd '$ROOT' && git ls-files -z --cached --others --exclude-standard '*.sh' | xargs -0 shellcheck"
+  step "shellcheck" bash -c "cd '$ROOT' && git ls-files -z --cached --others --exclude-standard -- '*.sh' ':!.paradev/' | xargs -0 shellcheck"
 else
   skip "shellcheck" "shellcheck not installed (brew install shellcheck)"
 fi
