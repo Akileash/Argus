@@ -9,7 +9,7 @@ modules:
   hat_on:  { impl: mock }
   env:     { impl: mock }
   haptics: { impl: mock }
-  camera:  { impl: mock, options: { ring_s: 35 } }   # real camera: `ring_seconds` (>= 30); `ring_s` is accepted by both
+  camera:  { impl: mock, options: { ring_s: 35, size: 640x480, fps: 30 } }   # real camera: `ring_seconds` (>= 30); `ring_s` is accepted by both
   # camera.rear intentionally absent: the rear camera is out of scope (phase 2).
 
 detectors:           # NOT swappable: only `argus` is accepted (anything else is a config error); tune `thresholds:`

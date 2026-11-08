@@ -15,3 +15,6 @@ tof: { keyframes: [[0, null]] }
 expected:
   - { type: fall, t_window_s: [3.4, 4.6], notes: "free fall 450 ms, drop height ~1.0 m; landing peak ~14 g reported on the fall (one physical drop = one event, PM decision)" }
 allowed_extra: []
+# Real footage instead of the test pattern: the worker steps off the ledge (~0.80 s into the video) exactly
+# when the hat's free fall starts (t=3.0 s).
+video: { file: fixtures/clips/fall-from-ledge.mp4, event_at_s: 0.80, scenario_event_s: 3.0 }

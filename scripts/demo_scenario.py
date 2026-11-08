@@ -41,6 +41,8 @@ def shift(raw: dict, lead: float) -> dict:
         o["t_start"] += lead
     if (raw.get("tof") or {}).get("keyframes"):
         raw["tof"]["keyframes"] = _shift_keys(raw["tof"]["keyframes"], lead)
+    if raw.get("video"):
+        raw["video"] = {**raw["video"], "scenario_event_s": raw["video"]["scenario_event_s"] + lead}
     for e in raw.get("expected", []):
         e["t_window_s"] = [e["t_window_s"][0] + lead, e["t_window_s"][1] + lead]
     return raw
