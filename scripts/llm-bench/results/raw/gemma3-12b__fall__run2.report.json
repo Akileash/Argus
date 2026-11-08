@@ -1,0 +1,178 @@
+{
+  "summary": "Worker J. Smith experienced a fall resulting in a peak acceleration of 12.4 g. The worker was walking forward and tripped, leading to a fall of approximately 0.99 meters. The hard hat's sensors detected the fall and initiated a confirmation buzz.",
+  "sequence_of_events": [
+    {
+      "offset_s": 0.0,
+      "description": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Confirmation buzz on both motors (1.5 s) to tell the wearer the event was recorded.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -15.0,
+      "description": "A person is walking forward, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": -6.0,
+      "description": "The person is walking forward, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.8,
+      "description": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.6,
+      "description": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.4,
+      "description": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.3,
+      "description": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "The person trips and falls forward, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.3,
+      "description": "The person is on the ground, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.4,
+      "description": "The person is on the ground, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.6,
+      "description": "The person is on the ground, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.8,
+      "description": "The person is on the ground, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.9,
+      "description": "The person is on the ground, facing away from the camera.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "The person is still on the ground, facing away from the camera.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -15.0,
+        "observation": "Person walking forward, facing away from camera."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "Person trips and falls forward, facing away from camera."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "12.4 g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "slip_trip_fall",
+    "energy_source": "gravity, potential energy due to height and momentum"
+  },
+  "risk": {
+    "severity": 4,
+    "likelihood": 3,
+    "severity_justification": "Potential for serious injury (fractures, concussion) due to fall from height.",
+    "likelihood_justification": "Walking with an object while navigating a construction site increases the risk of tripping."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "Worker was walking while carrying an object, potentially obstructing their view and balance."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "The walking surface may have been uneven or obstructed, contributing to the trip."
+      }
+    ],
+    "root_five_whys": [
+      "Why did the worker trip? The worker was carrying an object.",
+      "Why was the worker carrying an object? The worker was transporting materials.",
+      "Why was the worker transporting materials? Materials were not stored in a designated area.",
+      "Why were materials not stored in a designated area? Lack of a clear material storage plan.",
+      "Why was there a lack of a clear material storage plan? Insufficient site organization and material handling procedures."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Develop and implement a site-wide material storage plan to ensure materials are stored in designated areas.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Review and reinforce safe material handling procedures, emphasizing the importance of keeping hands free while walking.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Conduct a site assessment to identify and correct any uneven or obstructed walking surfaces.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Provide additional training to workers on hazard identification and safe work practices, including proper lifting and carrying techniques.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This incident may meet the threshold for a provincial serious-incident or dangerous-occurrence notification. Verify the requirements with your provincial OHS regulator.",
+  "confidence_and_gaps": "The worker's actions leading up to the fall were partially obscured by their orientation away from the camera. No physical contact with the hat was visible or audible in the video. The exact nature of the object the worker was carrying could not be determined. No video was available. The location of the incident on the site is unknown.","classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "summary": "Worker J. Smith experienced a fall detected by the ARGUS-001 hard hat, resulting in a peak acceleration of 12.4 g and an estimated drop height of 0.99 m. The event was recorded with a confirmation buzz on both motors.",
+  "sequence_of_events": [
+    {
+      "offset_s": 0.0,
+      "description": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Confirmation buzz on both motors (1.5 s) to tell the wearer the event was recorded.",
+      "source": "sensor"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -1.0,
+        "observation": "A person is seen standing on a staircase, holding a tool in their right hand."
+      },
+      {
+        "offset_s": -0.9,
+        "observation": "The person is seen stepping down the staircase, still holding the tool."
+      },
+      {
+        "offset_s": -0.8,
+        "observation": "The person is now at the bottom of the staircase, still holding the tool."
+      },
+      {
+        "offset_s": -0.6,
+        "observation": "The person is seen standing at the bottom of the staircase, now without the tool."
+      },
+      {
+        "offset_s": -0.4,
+        "observation": "The person is seen walking away from the staircase, turning slightly to the right."
+      },
+      {
+        "offset_s": -0.3,
+        "observation": "The person is now walking further away from the staircase, their back to the camera."
+      },
+      {
+        "offset_s": -0.1,
+        "observation": "The person is seen walking away from the staircase, their back to the camera."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "The person is now out of frame, indicating they have walked away from the staircase."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+      },
+      {
+        "offset_s": 0.4,
+        "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+      },
+      {
+        "offset_s": 0.6,
+        "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+      },
+      {
+        "offset_s": 0.8,
+        "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+      },
+      {
+        "offset_s": 0.9,
+        "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+      },
+      {
+        "offset_s": 6.0,
+        "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "{12.4} g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%"
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "gravity"
+  },
+  "risk": {
+    "severity": 5,
+    "likelihood": 5,
+    "severity_justification": "The fall resulted in a peak acceleration of 12.4 g, which is a significant impact.",
+    "likelihood_justification": "The fall was recorded by the ARGUS-001 hard hat, indicating the event was captured and not overlooked."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "The worker may have been distracted or not paying attention, as indicated by the video showing the person walking away from the staircase."
+      }
+    ],
+    "root_five_whys": [
+      "Why was the worker distracted? Because they were not focused on their surroundings.",
+      "Why were they not focused? Because they were preoccupied with a task.",
+      "Why were they preoccupied? Because they were handling a tool.",
+      "Why were they handling a tool? Because they were performing a task.",
+      "Why were they performing a task? Because it was part of their job."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Ensure workers are trained on the importance of maintaining situational awareness and focusing on their surroundings.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Implement a buddy system or buddy check procedure to ensure workers are aware of their surroundings and are not distracted.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Review and update the site-specific safe work procedures to include specific guidelines for handling tools and maintaining situational awareness.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This incident may meet the criteria for a serious-incident or dangerous-occurrence notification under provincial regulations. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "The video shows the person walking away from the staircase, but it does not provide evidence of the person's state of mind or the exact nature of the task they were performing. Further investigation may be required to determine the root causes of the distraction.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

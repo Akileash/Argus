@@ -1,0 +1,76 @@
+{
+  "observations": [
+    {
+      "video_time_s": 19.10,
+      "category": "worker_activity",
+      "observation": "The worker is holding a tool, possibly a hammer, with their right hand."
+    },
+    {
+      "video_time_s": 19.25,
+      "category": "worker_activity",
+      "observation": "The worker is using the tool to strike a piece of wood or similar material."
+    },
+    {
+      "video_time_s": 19.40,
+      "category": "worker_activity",
+      "observation": "The worker continues to strike the material with the tool."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "worker_activity",
+      "observation": "The worker maintains the action of striking the material."
+    },
+    {
+      "video_time_s": 19.70,
+      "category": "worker_activity",
+      "observation": "The worker continues to strike the material with the tool."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "worker_activity",
+      "observation": "The worker is still engaged in the task of striking the material."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "worker_activity",
+      "observation": "The worker is actively using the tool to strike the material."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "worker_activity",
+      "observation": "The worker continues to strike the material with the tool."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "worker_activity",
+      "observation": "The worker is still engaged in the task of striking the material."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "worker_activity",
+      "observation": "The worker continues to strike the material with the tool."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "worker_activity",
+      "observation": "The worker is still actively using the tool to strike the material."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "worker_activity",
+      "observation": "The worker continues to strike the material with the tool."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is still engaged in the task of striking the material."
+    },
+    {
+      "video_time_s": 26.00,
+      "category": "worker_activity",
+      "observation": "The worker has stopped striking the material and is holding the tool in a relaxed position."
+    }
+  ],
+  "contact_visible": "unclear",
+  "visibility_notes": "The frame is slightly blurred, making it difficult to discern fine details of the worker's actions."
+}

@@ -1,0 +1,71 @@
+{
+  "observations": [
+    {
+      "video_time_s": 19.25,
+      "category": "person",
+      "observation": "A person is seen walking down a staircase."
+    },
+    {
+      "video_time_s": 19.40,
+      "category": "person",
+      "observation": "The person continues to descend the staircase."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "person",
+      "observation": "The person is now closer to the bottom of the staircase."
+    },
+    {
+      "video_time_s": 19.70,
+      "category": "person",
+      "observation": "The person is at the bottom of the staircase, appearing to fall."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "person",
+      "observation": "The person is on the ground, having fallen."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    },
+    {
+      "video_time_s": 26.00,
+      "category": "person",
+      "observation": "The person is lying on the ground, having fallen."
+    }
+  ],
+  "contact_visible": "unclear",
+  "visibility_notes": "The image is blurry, making it difficult to discern specific details."
+}

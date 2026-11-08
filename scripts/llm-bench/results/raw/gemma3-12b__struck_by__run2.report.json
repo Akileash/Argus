@@ -1,0 +1,168 @@
+{
+  "summary": "Worker J. Smith experienced a near-miss incident when a falling object approached the hard hat at a closing rate of 4.2 m/s, with an estimated 0.8 seconds to contact. The object was detected by rear sensor R2 at a range of 3.40 meters before passing by without impact. The worker was wearing the hard hat at the time of the event, and no physical contact with the hat was observed.",
+  "sequence_of_events": [
+    {
+      "offset_s": -0.9,
+      "description": "Rear sensor R2 warned of an approaching object closing at 4.2 m/s, with approximately 0.9 s to contact and 3.40 m away, with readings ranging from 2.65 m away.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "A warning pulse was emitted on the back motor.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Near miss confirmed on rear sensor R2: an object was closing at 4.2 m/s, with approximately 0.8 s to contact and 3.40 m away, with no impact detected.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.5,
+      "description": "Range sensor R2 detected 51 valid echoes, with the closest echo at 0.10 m.",
+      "source": "sensor"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -15.0,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": -6.0,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": -0.9,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": -0.8,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": -0.6,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": -0.4,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": -0.3,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": -0.1,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 0.4,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 0.6,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 0.8,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 0.9,
+        "observation": "The view is obstructed by a grey object."
+      },
+      {
+        "offset_s": 6.0,
+        "observation": "The view is obstructed by a grey object."
+      }
+    ],"key_sensor_values": [
+      {
+        "name": "closing_rate",
+        "value": "4.2 m/s"
+      },
+      {
+        "name": "time_to_contact",
+        "value": "0.8 s"
+      },
+      {
+        "name": "range_at_trigger",
+        "value": "3.40 m"
+      },
+      {
+        "name": "triggering_sensor",
+        "value": "R2"
+      },
+      {
+        "name": "hat_on_at_trigger",
+        "value": "yes"
+      }
+    ],"environment": "Near-wearer conditions (indicative; the sensor is biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "gravitational potential energy"
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 4,
+    "severity_justification": "A direct impact could have resulted in serious head injury.",
+    "likelihood_justification": "The closing rate and short time to contact indicate a high probability of impact if corrective actions were not taken."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "Unsecured material on site."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "Lack of overhead protection in the work area."
+      }
+    ],
+    "root_five_whys": [
+      "Why did the material fall?",
+      "Because it was not properly secured.",
+      "Why was it not properly secured?",
+      "Because workers were not following proper securing procedures.",
+      "Why were workers not following proper procedures?",
+      "Because training on proper securing techniques was inadequate and supervision was lacking.",
+      "Why was training inadequate and supervision lacking?",
+      "Because of insufficient resources allocated to safety training and supervision."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Review and reinforce site-wide procedures for securing materials.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Provide refresher training on proper material securing techniques for all workers.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Assess the need for temporary overhead protection in areas where materials are handled.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site engineer"
+    }
+  ],
+  "regulatory_note": "This event may meet the criteria for a provincial serious-incident or dangerous-occurrence notification. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "The video consistently showed an obstruction, preventing a clear view of the object's trajectory and characteristics. The exact nature of the falling object could not be determined from the video. No video was available to assess the worker's actions or the surrounding environment in detail. The location of the incident on the site is unknown.","classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

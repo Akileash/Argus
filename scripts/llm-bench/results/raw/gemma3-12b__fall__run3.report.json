@@ -1,0 +1,178 @@
+{
+  "summary": "Worker J. Smith experienced a fall resulting in a peak acceleration of 12.4 g. The fall occurred while the worker was walking forward and holding an object, and resulted in the worker being on the ground with their arms outstretched. The Argus device recorded the event and provided haptic feedback to the wearer.",
+  "sequence_of_events": [
+    {
+      "offset_s": 0.0,
+      "description": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Confirmation buzz on both motors (1.5 s) to tell the wearer the event was recorded.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -15.0,
+      "description": "A person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -6.0,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.8,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.6,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.4,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.3,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "The person trips and falls forward.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.3,
+      "description": "The person is on the ground, arms outstretched.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.4,
+      "description": "The person is on the ground, arms outstretched.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.6,
+      "description": "The person is on the ground, arms outstretched.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.8,
+      "description": "The person is on the ground, arms outstretched.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.9,
+      "description": "The person is on the ground, arms outstretched.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "The person is still on the ground, arms outstretched.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -15.0,
+        "observation": "Person walking forward, holding something."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "Person trips and falls forward."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "Person on the ground, arms outstretched."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "peak_g",
+        "value": "12.4 g"
+      },
+      {
+        "name": "free_fall_duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "estimated_drop_height",
+        "value": "0.99 m"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "slip_trip_fall",
+    "energy_source": "gravity, uneven surface, potential obstruction"
+  },
+  "risk": {
+    "severity": 4,
+    "likelihood": 3,
+    "severity_justification": "Potential for serious injury (fractures, concussion) from a fall of this height.",
+    "likelihood_justification": "The worker was observed walking while carrying an object, which could have contributed to a loss of balance."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "Worker was walking while carrying an object, potentially distracting them and affecting balance."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "Potential for uneven surface or obstruction in the walking path."
+      }
+    ],
+    "root_five_whys": [
+      "Why did the worker walk while carrying an object?",
+      "Because they were likely trying to expedite a task or avoid a return trip.",
+      "Why is there a need to expedite tasks?",
+      "Because of time pressure or perceived efficiency gains.",
+      "Why are there time pressures?",
+      "Due to project scheduling or resource constraints."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Review and reinforce safe work procedures for carrying objects while walking, emphasizing the importance of maintaining balance and situational awareness.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Conduct a site survey to identify and mitigate potential trip hazards (uneven surfaces, obstructions).",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Review project scheduling and resource allocation to reduce time pressures and encourage safe work practices.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Project manager"
+    }
+  ],
+  "regulatory_note": "This event may meet the threshold for a provincial serious incident or dangerous occurrence notification. Verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "The video visibility was limited due to camera angle, hindering a complete assessment of the walking surface and the object the worker was carrying. No video was available for review. The location of the incident on the site is unknown.","classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

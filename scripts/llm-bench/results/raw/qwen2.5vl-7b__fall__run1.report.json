@@ -1,0 +1,98 @@
+{
+  "summary": "Worker J. Smith experienced a fall, as indicated by the ARGUS-001 device, which recorded a peak acceleration of 12.4 g during a 450 ms free-fall lasting an estimated 0.99 m. The event occurred while the worker was wearing the hard hat.",
+  "sequence_of_events": [
+    {
+      "offset_s": 0.0,
+      "description": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Confirmation buzz on both motors (1.5 s) to tell the wearer the event was recorded.",
+      "source": "sensor"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": 0.0,
+        "observation": "Free-fall duration: 450 ms"
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Estimated drop height: 0.99 m"
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Peak acceleration: 12.4 g"
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "{12.4} g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%"
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "gravitational_energy"
+  },
+  "risk": {
+    "severity": 5,
+    "likelihood": 5,
+    "severity_justification": "The fall resulted in a peak acceleration of 12.4 g, which is a severe impact.",
+    "likelihood_justification": "The fall was recorded by the ARGUS-001 device, indicating it occurred during a free-fall, which is a high-likelihood event."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "The worker was not wearing a harness or other fall protection equipment."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "The worker was not wearing a hard hat with a built-in fall detection system."
+      }
+    ],
+    "root_five_whys": [
+      "Why was the worker not wearing a harness or other fall protection equipment? Because the site supervisor did not ensure the worker was properly equipped.",
+      "Why was the worker not wearing a hard hat with a built-in fall detection system? Because the equipment operator did not provide the worker with the appropriate PPE.",
+      "Why was the site supervisor not ensuring the worker was properly equipped? Because the health and safety coordinator did not conduct a risk assessment for the task.",
+      "Why was the equipment operator not providing the worker with the appropriate PPE? Because the site supervisor did not prioritize worker safety.",
+      "Why was the health and safety coordinator not conducting a risk assessment for the task? Because the site supervisor did not prioritize worker safety."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Ensure all workers are properly equipped with fall protection equipment.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Provide workers with hard hats equipped with fall detection systems.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Equipment operator"
+    },
+    {
+      "description": "Conduct a risk assessment for all tasks to identify and mitigate fall hazards.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This incident may meet the threshold for a serious-incident or dangerous-occurrence notification under provincial regulations. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "No video was available for this incident, so the physical contact with the hat and the worker's actions during the fall cannot be confirmed.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "summary": "The device detected a near miss as an object closed at 4.2 m/s and was 3.40 m away at trigger, with no impact occurring. The video shows only a test pattern with no real-world environment or physical contact. The event was confirmed by sensor data but not visually verifiable in the clip.",
+  "sequence_of_events": [
+    {
+      "offset_s": -0.9,
+      "description": "Rear sensor R2 detected an approaching object with a closing rate of 4.2 m/s, time to contact of 0.9 s, and range of 3.40 m. A warning pulse was triggered on the back motor.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Near miss confirmed on sensor R2: object closing at 4.2 m/s, 0.8 s to contact, 3.40 m away, with no impact detected.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "Video shows a large gray square appearing on the left side of the green bar in the test pattern.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Video shows the large gray square remains in the same position on the left side of the green bar.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -0.9,
+        "observation": "R2 sensor detected object closing at 4.2 m/s, 3.40 m away, with 0.9 s to contact."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Near miss confirmed with no impact detected."
+      },
+      {
+        "offset_s": -0.9,
+        "observation": "Video shows gray square on green bar in test pattern."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Video shows gray square remains in place."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Closing rate",
+        "value": "value: 4.2 m/s"
+      },
+      {
+        "name": "Time to contact",
+        "value": "0.8 s"
+      },
+      {
+        "name": "Range at trigger",
+        "value": "3.40 m"
+      },
+      {
+        "name": "Triggering sensor",
+        "value": "R2"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "struck_by",
+    "energy_source": "moving object (unspecified, likely falling or swinging item)"
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 4,
+    "severity_justification": "The object was closing at 4.2 m/s and 3.40 m away, but no impact occurred — potential for injury if contact had occurred.",
+    "likelihood_justification": "The object was detected early by sensor R2 and warnings were issued, but the worker was not able to avoid it, indicating a high likelihood of failure in avoidance."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "Worker did not take evasive action despite sensor warnings."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "No visible environmental cues in video to indicate object presence or motion."
+      }
+    ],
+    "root_five_whys": [
+      "Why was the object not avoided? Because the worker did not respond to the haptic warning.",
+      "Why didn’t the worker respond? Because the warning may have been insufficiently noticeable or timed.",
+      "Why was the warning insufficient? Because the sensor detected the object too late for the worker to react.",
+      "Why was the detection too late? Because the object was not visible in the video or environment.",
+      "Why was the object not visible? Because the video was a test pattern with no real-world environment."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Review and optimize haptic alert timing and intensity for better worker response.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Implement visual or auditory backup alerts for sensor-based warnings.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Verify that test patterns are not used during active site operations.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This event may meet a provincial serious-incident or dangerous-occurrence notification threshold. Verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "Location unknown. No video evidence of physical contact or object identity. Sensor data only confirms proximity and speed. No worker or equipment identification visible in video. Environment values are near-wearer conditions only.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

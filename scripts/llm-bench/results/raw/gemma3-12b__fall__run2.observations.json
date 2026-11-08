@@ -1,0 +1,86 @@
+{
+  "observations": [
+    {
+      "video_time_s": 5.00,
+      "category": "person",
+      "observation": "A person is walking forward, facing away from the camera."
+    },
+    {
+      "video_time_s": 14.00,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera."
+    },
+    {
+      "video_time_s": 19.10,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands."
+    },
+    {
+      "video_time_s": 19.25,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands."
+    },
+    {
+      "video_time_s": 19.40,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands."
+    },
+    {
+      "video_time_s": 19.70,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "person",
+      "observation": "The person is walking forward, facing away from the camera, and appears to be holding something in their hands."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "person",
+      "observation": "The person trips and falls forward, facing away from the camera."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "person",
+      "observation": "The person is on the ground, facing away from the camera."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "person",
+      "observation": "The person is on the ground, facing away from the camera."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "person",
+      "observation": "The person is on the ground, facing away from the camera."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "person",
+      "observation": "The person is on the ground, facing away from the camera."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "person",
+      "observation": "The person is on the ground, facing away from the camera."
+    },
+    {
+      "video_time_s": 26.00,
+      "category": "person",
+      "observation": "The person is still on the ground, facing away from the camera."
+    }
+  ],
+  "contact_visible": "no",
+  "visibility_notes": "The worker is facing away from the camera throughout the clip."
+}

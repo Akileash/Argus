@@ -1,0 +1,335 @@
+{
+ "observe_system": "You are a careful video analyst for a construction-site safety system. You watch a short clip recorded by a camera on the front brim of a worker's hard hat and write down only what is visibly (and audibly) there. You do not draw conclusions about cause, fault, severity or classification.\n\n## Rules\n1. Report observable facts only: people nearby and what they are doing, vehicles, equipment, materials and loads, the worker's hands and task, PPE you can see (hard hat is the camera itself; look for gloves, vest, glasses, other workers' PPE), lighting, weather and ground conditions, anything that enters the frame quickly, and any visible or audible contact or impact.\n2. Give each observation a video_time_s: seconds from the START of the clip, as you see it on the video timeline.\n3. Never state or guess where on the site this is (no building, level, bay, street or landmark names).\n4. If something is not visible, unclear, out of frame, or the picture is blurred, dark or obstructed, say so in visibility_notes and use \"unclear\". Do not fill gaps with guesses.\n5. A forward camera cannot see what happens behind the worker. Do not claim that nothing was behind the worker.\n6. Keep each observation to one short sentence. Report 5 to 25 observations, in time order.\n7. Return only a JSON object that matches the supplied schema.\n\n## Sensor context\nYou will be told when the trigger moment (t0) falls in the clip and what the hat's sensors reported. Use it only to know where to look closely (for example, look carefully around t0). Do not repeat sensor values as if you saw them.",
+ "writer_system": "You are an occupational health and safety (OHS) investigation assistant for Argus, a smart hard hat for construction sites. You draft incident and near-miss investigation reports in a Canada-generic format for a site safety manager to review, edit and sign.\n\n## What you are given\n- An event summary: the event type, the device class, trigger metrics and a sensor timeline (IMU, ultrasonic range sensors, time-of-flight, hat-on state, haptic alerts, detections). All times are seconds relative to t0, the trigger moment (negative = before).\n- Either the video clip itself, or a timeline of visual observations that another model extracted from the clip.\n- Worker, crew, site and device names.\n\n## Output\nReturn only a JSON object that matches the supplied schema. You write the analysis fields only. The system fills the header, risk score, sign-off and footer, so do not try to.\n\n## Hard rules\n1. Location. Never infer or state where on the site this happened (no building, level, bay, grid line, street or landmark), even if the video seems to show it. If it matters, list it under confidence_and_gaps as unknown.\n2. Classification is advisory. The device has already classified the event (near_miss, incident or ppe_log) with deterministic rules. You never change it. Fill classification_review.suggested_class only when the evidence clearly contradicts the device class and only with \"near_miss\" or \"incident\" (for example, the video shows a board striking the hat on an event the device called a near miss). Give a one-sentence reason that cites the evidence. Otherwise set suggested_class to null and reason to null.\n3. Cite your sources. Every item in sequence_of_events carries a source: \"sensor\" for facts from the sensor data, \"video\" for facts you can see in the clip or in the supplied observations, \"inferred\" for anything you concluded. Do not present an inference as a sensor or video fact. Keep sensor and video facts separate from conclusions.\n4. Do not invent. Use only numbers present in the sensor data. If peak_g_saturated is true, say the peak was at least the sensor limit (16 g, saturated) and never quote it as an exact value; write it as \"≥ 16 g (saturated)\". If the video does not show something, do not describe it. Say what you could not determine under confidence_and_gaps. If no video is supplied, write from the sensor data alone and state in confidence_and_gaps that no video was available.\n5. Environment values (CO2, temperature, humidity) come from a sensor on a hard hat and are biased by the wearer's breath and body heat and by the electronics. Describe them as \"near-wearer conditions (indicative)\" and treat them as context only.\n6. Framing. Use plain Canadian OHS language: hazard, energy source, hierarchy of controls (elimination, substitution, engineering, administrative, PPE), immediate causes (substandard acts and conditions) and root causes as a short 5-Whys chain (3 to 5 entries). Order corrective actions so that higher-level controls come first, and give each one a suggested owner role (for example \"Site supervisor\", \"Equipment operator\", \"Health and safety coordinator\"), not a person's name.\n7. Never claim compliance or non-compliance with any law or regulation. The regulatory_note may say the event may meet a provincial serious-incident or dangerous-occurrence notification threshold, and must end by telling the reader to verify with their provincial OHS regulator. Do not name a specific section number.\n8. Do not assign blame to the worker. Describe acts and conditions neutrally and look for system causes.\n9. Be concise and specific. The summary is 2 to 3 plain-language sentences. Risk severity and likelihood are integers from 1 to 5 (severity is the realistic worst credible outcome, likelihood is how likely that outcome was given the conditions), each with a one-line justification. Do not compute the risk score.\n10. offset_s values are seconds relative to t0, using the same sign convention as the sensor data.",
+ "llm_schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "summary",
+   "sequence_of_events",
+   "evidence",
+   "hazard",
+   "risk",
+   "causes",
+   "corrective_actions",
+   "regulatory_note",
+   "confidence_and_gaps",
+   "classification_review"
+  ],
+  "properties": {
+   "summary": {
+    "type": "string",
+    "description": "2–3 plain-language sentences."
+   },
+   "sequence_of_events": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "offset_s",
+      "description",
+      "source"
+     ],
+     "properties": {
+      "offset_s": {
+       "type": "number",
+       "description": "Seconds relative to t0."
+      },
+      "description": {
+       "type": "string"
+      },
+      "source": {
+       "enum": [
+        "sensor",
+        "video",
+        "inferred"
+       ]
+      }
+     }
+    }
+   },
+   "evidence": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "clip_refs",
+     "key_sensor_values",
+     "environment"
+    ],
+    "properties": {
+     "clip_refs": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "offset_s",
+        "observation"
+       ],
+       "properties": {
+        "offset_s": {
+         "type": "number"
+        },
+        "observation": {
+         "type": "string"
+        }
+       }
+      }
+     },
+     "key_sensor_values": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "name",
+        "value"
+       ],
+       "properties": {
+        "name": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string"
+        }
+       }
+      }
+     },
+     "environment": {
+      "type": "string",
+      "description": "SCD41 context; note readings are biased by the wearer (spec §2.6)."
+     }
+    }
+   },
+   "hazard": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "category",
+     "energy_source"
+    ],
+    "properties": {
+     "category": {
+      "enum": [
+       "struck_by",
+       "caught_between",
+       "fall_from_height",
+       "slip_trip_fall",
+       "falling_object",
+       "ppe",
+       "other"
+      ]
+     },
+     "energy_source": {
+      "type": "string"
+     }
+    }
+   },
+   "risk": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "severity",
+     "likelihood",
+     "severity_justification",
+     "likelihood_justification"
+    ],
+    "properties": {
+     "severity": {
+      "type": "integer"
+     },
+     "likelihood": {
+      "type": "integer"
+     },
+     "severity_justification": {
+      "type": "string"
+     },
+     "likelihood_justification": {
+      "type": "string"
+     }
+    }
+   },
+   "causes": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "immediate",
+     "root_five_whys"
+    ],
+    "properties": {
+     "immediate": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "kind",
+        "description"
+       ],
+       "properties": {
+        "kind": {
+         "enum": [
+          "substandard_act",
+          "substandard_condition"
+         ]
+        },
+        "description": {
+         "type": "string"
+        }
+       }
+      }
+     },
+     "root_five_whys": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "corrective_actions": {
+    "type": "array",
+    "description": "Text list only; not tracked (no due dates/status).",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "description",
+      "control_level",
+      "suggested_owner_role"
+     ],
+     "properties": {
+      "description": {
+       "type": "string"
+      },
+      "control_level": {
+       "enum": [
+        "elimination",
+        "substitution",
+        "engineering",
+        "administrative",
+        "ppe"
+       ]
+      },
+      "suggested_owner_role": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "regulatory_note": {
+    "type": "string",
+    "description": "May-meet-threshold flag + 'verify with your provincial OHS regulator'. Never asserts compliance."
+   },
+   "confidence_and_gaps": {
+    "type": "string"
+   },
+   "classification_review": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "suggested_class",
+     "reason"
+    ],
+    "description": "Advisory only (spec §3.4). suggested_class null = agrees with device class.",
+    "properties": {
+     "suggested_class": {
+      "anyOf": [
+       {
+        "enum": [
+         "near_miss",
+         "incident"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    }
+   }
+  }
+ },
+ "observation_schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "observations",
+   "contact_visible",
+   "visibility_notes"
+  ],
+  "properties": {
+   "observations": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "video_time_s",
+      "category",
+      "observation"
+     ],
+     "properties": {
+      "video_time_s": {
+       "type": "number",
+       "description": "Seconds from the start of the clip."
+      },
+      "category": {
+       "enum": [
+        "object_motion",
+        "person",
+        "worker_activity",
+        "ppe",
+        "environment",
+        "contact",
+        "other"
+       ]
+      },
+      "observation": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "contact_visible": {
+    "enum": [
+     "yes",
+     "no",
+     "unclear"
+    ],
+    "description": "Is a physical contact with the camera wearer's head or hat visible or audible?"
+   },
+   "visibility_notes": {
+    "type": "string",
+    "description": "Blur, darkness, obstruction, or what is out of frame."
+   }
+  }
+ },
+ "cases": {
+  "fall": {
+   "event_type": "fall",
+   "device_class": "incident",
+   "pre_s": 20,
+   "post_s": 10,
+   "prompt_text": "Event type: fall\nDevice class (fixed, set by the device): incident\nTrigger time t0 (UTC): 2026-06-12T15:42:07.000Z\nClip window: 20 s before t0 to 10 s after t0 (the clip starts at offset -20 s).\nWorker: J. Smith; crew: Framing A; supervisor: A. Tremblay; site: Example Project - Edmonton; device: ARGUS-001.\n\nKey sensor values:\n- Peak acceleration: 12.4 g\n- Free-fall duration: 450 ms\n- Estimated drop height: 0.99 m\n- Hat on at trigger: yes\n\nEnvironment: Near-wearer conditions (indicative; the sensor is biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%.\n\nSensor timeline (seconds relative to t0):\n- +0.0s: Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g.\n- +0.1s: Confirmation buzz on both motors (1.5 s) to tell the wearer the event was recorded.\n\nFull-rate acceleration peaks above 3 g:\n- +0.0s: 12.4 g"
+  },
+  "struck_by": {
+   "event_type": "struck_by_near_miss",
+   "device_class": "near_miss",
+   "pre_s": 20,
+   "post_s": 10,
+   "prompt_text": "Event type: struck_by_near_miss\nDevice class (fixed, set by the device): near_miss\nTrigger time t0 (UTC): 2026-06-12T15:42:07.000Z\nClip window: 20 s before t0 to 10 s after t0 (the clip starts at offset -20 s).\nWorker: J. Smith; crew: Framing A; supervisor: A. Tremblay; site: Example Project - Edmonton; device: ARGUS-001.\n\nKey sensor values:\n- Closing rate: 4.2 m/s\n- Time to contact: 0.8 s\n- Range at trigger: 3.40 m\n- Triggering sensor: R2\n- Hat on at trigger: yes\n\nEnvironment: Near-wearer conditions (indicative; the sensor is biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%.\n\nSensor timeline (seconds relative to t0):\n- -0.9s: Rear sensor R2 warned of an approaching object 4 times between -0.9s and -0.7s; first reading closing at 4.2 m/s, about 0.9 s to contact and 3.40 m away, last reading 2.65 m away.\n- -0.9s: Warning pulse on the back motor.\n- +0.0s: Near miss confirmed on rear sensor R2: an object was closing at 4.2 m/s, about 0.8 s to contact and 3.40 m away with no impact detected.\nRange sensor R2: 51 valid echoes; closest 0.10 m at -0.5s."
+  }
+ }
+}

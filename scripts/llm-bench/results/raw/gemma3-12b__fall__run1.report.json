@@ -1,0 +1,178 @@
+{
+  "summary": "Worker J. Smith experienced a fall resulting in a peak acceleration of 12.4 g. The fall occurred while the worker was walking forward, and resulted in the worker being on the ground. The Argus device recorded the event and provided haptic feedback to the wearer.",
+  "sequence_of_events": [
+    {
+      "offset_s": 0.0,
+      "description": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Confirmation buzz on both motors (1.5 s) to tell the wearer the event was recorded.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -15.0,
+      "description": "A person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -6.0,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.8,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.6,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.4,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.3,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "The person is walking forward, holding something in their hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "The person stumbles forward.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.3,
+      "description": "The person falls forward.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.4,
+      "description": "The person is on the ground.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.6,
+      "description": "The person is on the ground.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.8,
+      "description": "The person is on the ground.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.9,
+      "description": "The person is on the ground.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "The person is still on the ground.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -15.0,
+        "observation": "A person is walking forward, holding something in their hands."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "The person falls forward."
+      },
+      {
+        "offset_s": 0.4,
+        "observation": "The person is on the ground."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "12.4 g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "slip_trip_fall",
+    "energy_source": "gravity, worker movement"
+  },
+  "risk": {
+    "severity": 4,
+    "likelihood": 3,
+    "severity_justification": "A fall resulting in a 12.4 g impact could result in serious injury (fractures, concussion).",
+    "likelihood_justification": "The worker was observed to stumble, indicating a potential hazard in the walking path or a momentary loss of balance."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "Worker stumbled while walking, potentially due to distraction or uneven surface."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "Possible uneven walking surface or obstruction in the path."
+      }
+    ],
+    "root_five_whys": [
+      "Why did the worker stumble?",
+      "Potentially due to distraction or an unexpected change in walking surface.",
+      "Why was the worker distracted or did the surface change?",
+      "Possible lack of situational awareness or inadequate housekeeping.",
+      "Why was situational awareness lacking or housekeeping inadequate?",
+      "Insufficient training on hazard awareness or lack of a routine inspection schedule."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Review and enhance worker training on hazard awareness and safe walking practices.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Implement or reinforce a routine housekeeping schedule to ensure walking surfaces are clear and level.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Conduct a site walk-through to identify and correct any uneven surfaces or potential trip hazards.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    }
+  ],
+  "regulatory_note": "This incident may meet the threshold for a provincial serious incident or dangerous occurrence notification. Verify requirements with your provincial OHS regulator.",
+  "confidence_and_gaps": "The worker was often partially obscured in the video, limiting the ability to fully assess the circumstances leading to the fall. No video was available, so the analysis is based solely on sensor data and the limited visual observations. The exact location of the incident on the site is unknown.","classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

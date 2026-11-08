@@ -1,0 +1,94 @@
+{
+  "summary": "A fall event occurred with a 450 ms free-fall duration and impact acceleration of 12.4 g, detected by the hard hat sensor. No visual evidence confirms physical contact or impact location. The device classified this as an incident based on acceleration and duration thresholds.",
+  "sequence_of_events": [
+    {
+      "offset_s": 0.0,
+      "description": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Confirmation buzz activated on both motors for 1.5 seconds to notify wearer.",
+      "source": "sensor"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "12.4 g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "gravitational potential energy converted to kinetic energy during free fall"
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 2,
+    "severity_justification": "The impact acceleration (12.4 g) suggests potential for injury, but the short fall height (0.99 m) reduces severity.",
+    "likelihood_justification": "The fall was brief (450 ms) and occurred without visible contact or obstruction, suggesting low probability of repeated or severe events."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "No visual evidence of fall restraint or fall protection systems in use during the event."
+      },
+      {
+        "kind": "substandard_act",
+        "description": "Worker was not observed using fall protection equipment or securing the work area before the fall."
+      }
+    ],
+    "root_five_whys": [
+      "Why did the worker fall? Because they were not using fall protection.",
+      "Why was fall protection not used? Because the worker was not instructed to use it.",
+      "Why was the worker not instructed? Because the supervisor did not enforce fall protection protocols.",
+      "Why did the supervisor not enforce protocols? Because there was no documented fall protection plan for the task.",
+      "Why was there no documented plan? Because the crew was not briefed on fall hazards for this task."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Implement a mandatory fall protection briefing for all crew members before starting work at heights.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Install temporary fall protection systems (e.g., guardrails or safety nets) for all elevated work areas.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Require all workers to wear fall arrest systems when working at heights greater than 1.8 m.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Crew lead"
+    },
+    {
+      "description": "Conduct monthly inspections of fall protection equipment and ensure all gear is certified and in good condition.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This event may meet a provincial serious-incident or dangerous-occurrence notification threshold. Verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "No video observations were available to confirm physical contact or impact location. Location on site is unknown. No evidence of worker behavior or equipment failure was observed in the video or sensor data.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "observations": [
+    {
+      "video_time_s": 19.85,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    },
+    {
+      "video_time_s": 26.00,
+      "category": "worker_activity",
+      "observation": "Worker is moving the arm with a tool."
+    }
+  ],
+  "contact_visible": "no",
+  "visibility_notes": "The image is clear."
+}
