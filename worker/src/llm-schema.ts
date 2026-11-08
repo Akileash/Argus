@@ -1,14 +1,12 @@
-import { readFileSync } from "node:fs";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { ArgusReportSchema, type ArgusReport } from "@argus/shared";
+import reportContract from "../../contracts/report.schema.json";
 
 type Json = Record<string, any>;
 
-const contract = (name: string): Json =>
-  JSON.parse(readFileSync(new URL(`../../contracts/${name}`, import.meta.url), "utf8"));
-
-const reportSchema = contract("report.schema.json");
+// Imported (not read from disk at runtime) so the contract is bundled into the Next/Vercel build.
+const reportSchema = reportContract as Json;
 
 /** Top-level report keys the worker owns. The LLM is never asked for them. */
 export const WORKER_OWNED_KEYS = ["schema_version", "header", "sign_off", "footer"] as const;

@@ -12,6 +12,16 @@ function isLocked(err: { code?: string; message?: string } | null): boolean {
   return !!err && (err.code === "55006" || /signed and locked|immutable/i.test(err.message ?? ""));
 }
 
+const READ_ONLY_MSG = "Your account is read-only (viewer). Only managers can edit or sign reports.";
+
+/** Viewer accounts (judges) are read-only. RLS enforces it in the database; this gives a clear message before any write. */
+async function viewerBlocked(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return false; // the callers' own session checks and RLS handle signed-out users
+  const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", auth.user.id).maybeSingle();
+  return !profile || profile.role !== "manager";
+}
+
 /** Save manager edits to report_json (RLS: manager + draft; trigger logs report_edits and sets `edited`). */
 export async function saveReport(reportId: string, report: unknown): Promise<ActionResult<{ report: ReportJson; edited: boolean; updatedAt: string }>> {
   const v = validateReport(report);
@@ -21,6 +31,7 @@ export async function saveReport(reportId: string, report: unknown): Promise<Act
   next.sign_off = { signed_by: null, signed_at: null, final_class: null, reclass_decision: null };
 
   const supabase = await createClient();
+  if (await viewerBlocked(supabase)) return { ok: false, error: READ_ONLY_MSG };
   const { data, error } = await supabase
     .from("reports")
     .update({ report_json: next })
@@ -54,6 +65,7 @@ export async function signOffReport(input: {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { ok: false, error: "Your session expired. Sign in again." };
+  if (await viewerBlocked(supabase)) return { ok: false, error: READ_ONLY_MSG };
 
   const report = normalizeReport(v.report);
   report.sign_off = { signed_by: null, signed_at: null, final_class: null, reclass_decision: null };

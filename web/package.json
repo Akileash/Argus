@@ -2,6 +2,7 @@
   "name": "@argus/web",
   "version": "0.1.0",
   "private": true,
+  "engines": { "node": "22.x" },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,7 +15,10 @@
     "test:int": "ARGUS_INTEGRATION=1 vitest run tests/integration"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
     "@argus/shared": "workspace:*",
+    "@argus/worker": "workspace:*",
+    "@google/genai": "^3.0.0",
     "@radix-ui/react-dropdown-menu": "^2.2.1",
     "@radix-ui/react-label": "^2.1.17",
     "@radix-ui/react-slot": "^1.5.0",

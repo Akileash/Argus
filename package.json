@@ -9,9 +9,12 @@
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "demo:seed-media": "pnpm --filter @argus/web demo:seed-media"
+    "demo:seed-media": "pnpm --filter @argus/web demo:seed-media",
+    "hosted:create-user": "tsx scripts/hosted/create-user.ts"
   },
   "devDependencies": {
-    "supabase": "^2.0.0"
+    "@supabase/supabase-js": "^2.119.0",
+    "supabase": "^2.0.0",
+    "tsx": "^4.23.15"
   }
 }

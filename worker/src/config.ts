@@ -48,6 +48,12 @@ export interface WorkerConfig {
   /** Delay before the 2nd Gemini try; doubles after that, plus up to 25% jitter (10 s then 20 s: 30-38 s in all). */
   geminiTransientBackoffMs: number;
   geminiPrice: { input: number; output: number };
+  /**
+   * Wall-clock limit (ms) for the paid, slow part of ONE event, measured from when the event is claimed. 0 = off
+   * (the long-running worker). Once it is used up no new provider call starts, the running one is cut at the limit,
+   * and the report falls back to the sensor-only draft. This is what makes the hosted (serverless) worst case provable.
+   */
+  eventBudgetMs: number;
 }
 
 // Local `supabase start` defaults (the service-role key is the public demo key printed by the CLI).
@@ -76,7 +82,7 @@ export function defaultStaleMs(llmCallTimeoutS: number, processingTimeoutS: numb
   return (2 * gemini + llmCallTimeoutS + DOWNLOAD_ALLOWANCE_S + STALE_MARGIN_S) * 1000;
 }
 
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
+export function loadConfig(env: Record<string, string | undefined> = process.env): WorkerConfig {
   const mode = (env.REPORT_MODE || "fixture").trim() as ReportMode;
   if (!["fixture", "gemini", "hybrid"].includes(mode)) {
     throw new Error(`REPORT_MODE must be fixture | gemini | hybrid (got "${mode}")`);
@@ -112,6 +118,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     llmCallTimeoutS,
     geminiTransientRetries: Math.max(1, Math.floor(posNum(env.GEMINI_TRANSIENT_RETRIES, 3))),
     geminiTransientBackoffMs: num(env.GEMINI_TRANSIENT_BACKOFF_MS, 10_000),
+    eventBudgetMs: Math.round(Math.max(0, num(env.WORKER_EVENT_BUDGET_S, 0)) * 1000),
     geminiPrice: {
       input: num(env.GEMINI_PRICE_IN_PER_MTOK, dflt.input),
       output: num(env.GEMINI_PRICE_OUT_PER_MTOK, dflt.output),

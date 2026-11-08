@@ -24,3 +24,6 @@ test-results/
 # per-machine overrides (teammates: impl team, ports, pairing); see CONTRIBUTING.md
 device/config.local.yaml
 scripts/llm-bench/writers/.*.mp4
+
+# Vercel CLI local state (project link, pulled env, build output)
+.vercel/

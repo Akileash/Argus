@@ -5,6 +5,7 @@ Start here. Pick the guide that matches what you need to do.
 ## Guides
 
 - [CONNECT-THE-HAT.md](CONNECT-THE-HAT.md): step by step, from a blank SD card to your first real incident report.
+- [HOSTED.md](HOSTED.md): deploy to Vercel + Supabase cloud with no laptop: env vars, cron safety net, accounts, pairing the Pi, logs, rollback, free-tier limits.
 - [../CONTRIBUTING.md](../CONTRIBUTING.md): who owns which folder, branch names, the one check command (`scripts/check.sh`) and how to resolve a lockfile conflict.
 - [TEAM-HANDOFF.md](TEAM-HANDOFF.md): how to plug the hardware team's sensor script in with a mapping file (no code), check it without hardware, and hot-swap, shadow and test a module.
 - [TUNING.md](TUNING.md): how to record labelled runs and tune the detector thresholds from real data.
@@ -37,6 +38,7 @@ The worker (`worker/`) reads these from the environment (`.env.example` lists th
 | `WORKER_MAX_ANALYSIS_ATTEMPTS` | `3` | Total claims per event (`events.analysis_attempts`), reclaims included. After that the event is `failed` with an error and is never picked up again. To retry one by hand, set its status to `uploaded` and `analysis_attempts` to `0`. |
 | `WORKER_HEARTBEAT_MS` | `30000` | How often a working worker refreshes `events.updated_at`. |
 | `WORKER_STALE_ANALYZING_MS` | computed, `1560000` (26 min) | An `analyzing` event with no heartbeat for this long is re-queued (if it has claims left). Default = 2 x (180 + 120 + 30 + 180) + 180 + 60 + 300 s: two Gemini calls and one Claude call (the longest hybrid path), a download allowance and a 5 min margin. |
+| `WORKER_EVENT_BUDGET_S` | `0` (off) | Wall-clock limit for the paid part of ONE event, from its claim. Model calls are cut at the limit and the report falls back to sensor data. The hosted app sets 150; see [HOSTED.md](HOSTED.md#3-time-budget-why-one-event-always-fits-in-300-s). |
 | `WORKER_POLL_MS`, `WORKER_RETRY_DELAY_MS` | `2000`, `3000` | Poll interval, and the pause before the one in-claim retry (retryable errors only). |
 
 ## Quick start on a laptop (no hardware)

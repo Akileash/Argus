@@ -91,6 +91,12 @@ export class MemoryStore implements Store {
     return ids;
   }
 
+  async countWaiting(): Promise<number> {
+    let n = 0;
+    for (const ev of this.events.values()) if (ev.status === "uploaded") n++;
+    return n;
+  }
+
   async touch(eventId: string): Promise<void> {
     const ev = this.events.get(eventId);
     if (ev && ev.status === "analyzing") ev.updated_at = this.now();

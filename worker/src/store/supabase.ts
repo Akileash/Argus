@@ -98,6 +98,12 @@ export class SupabaseStore implements Store {
     return rows.map((r) => r[E.id] as string);
   }
 
+  async countWaiting(): Promise<number> {
+    const res = await this.db.from(T.events).select(E.id, { count: "exact", head: true }).eq(E.status, "uploaded");
+    if (res.error) throw new Error(`count waiting events: ${res.error.message}`);
+    return res.count ?? 0;
+  }
+
   async touch(eventId: string): Promise<void> {
     // Any UPDATE fires the events_updated_at trigger, which sets updated_at = now().
     const res = await this.db.from(T.events).update({ [E.status]: "analyzing" }).eq(E.id, eventId).eq(E.status, "analyzing");

@@ -28,6 +28,8 @@ export interface PipelineDeps {
   providers: Providers;
   log?: Logger;
   sleep?: (ms: number) => Promise<void>;
+  /** Set by processClaimed from cfg.eventBudgetMs: epoch ms after which no paid call may run. */
+  eventDeadlineAt?: number;
 }
 
 export { LlmTimeoutError, NonRetryableError, SpendCapError, VideoUnusableError };
@@ -77,6 +79,9 @@ const spendCapSentence = (detail: string) =>
   `AI spend cap reached (${detail}); this draft is from sensor data only. Review the video and complete the cause and actions before signing.`;
 const unanalysedSentence = (reason: string) => `The video for this event could not be analysed (${reason}); this report is based on sensor data only.`;
 
+/** Below this much budget left, a provider call is not worth starting. */
+const MIN_CALL_MS = 2000;
+
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 async function assertUnderCap(deps: PipelineDeps, stage: string): Promise<void> {
@@ -118,7 +123,17 @@ async function paidCall(
   const budgetMs = isClaude
     ? deps.cfg.llmCallTimeoutS * 1000
     : geminiCallBudgetS(deps.cfg.llmCallTimeoutS, deps.cfg.geminiProcessingTimeoutS) * 1000 + retryExtraMs;
-  const res = await withDeadline(budgetMs, `${stage} (${model}) call`, () => call());
+  let limitMs = budgetMs;
+  if (deps.eventDeadlineAt !== undefined) {
+    // Per-event wall-clock budget (hosted): never run past it. Hybrid keeps one Claude call's time in reserve for Gemini stages.
+    const reserveMs = deps.cfg.mode === "hybrid" && !isClaude ? deps.cfg.llmCallTimeoutS * 1000 : 0;
+    const remaining = deps.eventDeadlineAt - Date.now() - reserveMs;
+    if (remaining < MIN_CALL_MS) {
+      throw new LlmTimeoutError(`event time budget of ${Math.round(deps.cfg.eventBudgetMs / 1000)} s is used up; skipping ${stage} (${model}) call`);
+    }
+    limitMs = Math.min(budgetMs, remaining);
+  }
+  const res = await withDeadline(limitMs, `${stage} (${model}) call`, () => call());
   const latency = Date.now() - t;
   let parsed: unknown;
   let parseError: string | null = null;
@@ -399,7 +414,8 @@ async function attempt(deps: PipelineDeps, eventId: string, log: Logger): Promis
 }
 
 /** Process one already-claimed event: up to cfg.maxAttempts tries, then mark failed. Never throws. */
-export async function processClaimed(deps: PipelineDeps, eventId: string): Promise<void> {
+export async function processClaimed(base: PipelineDeps, eventId: string): Promise<void> {
+  const deps: PipelineDeps = base.cfg.eventBudgetMs > 0 ? { ...base, eventDeadlineAt: Date.now() + base.cfg.eventBudgetMs } : base;
   const log = deps.log ?? consoleLogger;
   const sleep = deps.sleep ?? defaultSleep;
   let lastError = "unknown error";

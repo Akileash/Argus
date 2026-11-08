@@ -53,6 +53,8 @@ export interface Store {
   reclaimStale(maxAgeMs: number, maxClaims?: number): Promise<string[]>;
   /** Mark failed the stale `analyzing` events that already used all `maxClaims` claims. Returns their ids. */
   failExhausted(maxAgeMs: number, maxClaims: number): Promise<string[]>;
+  /** How many events are waiting (status `uploaded`). Used by the hosted route to report `remaining`. */
+  countWaiting(): Promise<number>;
   /** Heartbeat: refresh updated_at of an event this worker is still working on. */
   touch(eventId: string): Promise<void>;
   loadContext(eventId: string): Promise<EventContext>;

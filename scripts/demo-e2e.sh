@@ -112,6 +112,7 @@ export NEXT_PUBLIC_SUPABASE_ANON_KEY="$SB_ANON"
 export SUPABASE_SERVICE_ROLE_KEY="$SB_SERVICE"
 export SUPABASE_URL="$SB_URL"
 export REPORT_MODE="${REPORT_MODE:-fixture}"
+export WORKER_INLINE=off  # this demo runs the standalone worker process; the in-app after() run would only compete with it
 
 # The seed has media rows but no files; attach a clip and a matching sensor trace to the seeded events so the
 # backup event (spec section 7) and the history play video. Idempotent. Needs ffmpeg (checked above).
