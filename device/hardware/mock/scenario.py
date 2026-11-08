@@ -138,6 +138,14 @@ class ExpectedEvent(_M):
     notes: str = ""
 
 
+class VideoSpec(_M):
+    """Optional real footage for the mock camera (instead of the ffmpeg test pattern)."""
+
+    file: str  # absolute, or relative to device/ (e.g. fixtures/clips/fall-from-ledge.mp4)
+    event_at_s: float = Field(ge=0)  # the key moment, seconds into the video file
+    scenario_event_s: float  # the scenario second the key moment lands on
+
+
 class ScenarioSpec(_M):
     name: str
     description: str = ""
@@ -150,6 +158,7 @@ class ScenarioSpec(_M):
     expected: list[ExpectedEvent] = Field(default_factory=list)
     # Types a detector may additionally emit without it being a false positive (e.g. repeat warnings).
     allowed_extra: list[str] = Field(default_factory=list)
+    video: VideoSpec | None = None
 
 
 # ---------------------------------------------------------------- kinematics
