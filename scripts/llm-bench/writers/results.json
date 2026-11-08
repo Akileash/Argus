@@ -1,0 +1,1187 @@
+[
+  {
+    "case": "fall",
+    "what": "Worker looking at a phone steps off an unguarded ledge and falls into a floor opening (security-camera view).",
+    "writer": "A-gemini",
+    "label": "Gemini 3.5 Flash writes (one call with the video)",
+    "status": "ready",
+    "error": null,
+    "total_ms": 23795,
+    "cost_usd": 0.0321795,
+    "analyses": [
+      {
+        "stage": "report_draft",
+        "model": "gemini-3.6-flash",
+        "in": 3153,
+        "out": 3050,
+        "cost": 0.0321795,
+        "ms": 23784
+      }
+    ],
+    "report": {
+      "schema_version": "1",
+      "header": {
+        "report_no": "ARG-2026-0001",
+        "classification": "incident",
+        "occurred_at": "2026-06-12T15:42:07.000Z",
+        "site": "Example Project - Edmonton",
+        "location_on_site": "Location to be determined",
+        "worker": "J. Smith",
+        "crew": "Framing A",
+        "supervisor": "A. Tremblay",
+        "device": "ARGUS-001"
+      },
+      "summary": "A worker walking near an unguarded floor edge while looking down at a mobile device stepped off the perimeter opening into a stairwell void. The device recorded a 450 ms free fall (~0.99 m drop) resulting in a peak impact acceleration of 12.4 g. Physical edge protection was absent at the time of the fall.",
+      "sequence_of_events": [
+        {
+          "offset_s": -20,
+          "description": "Worker observed walking along an unguarded floor opening while looking at a handheld device.",
+          "source": "video"
+        },
+        {
+          "offset_s": -1,
+          "description": "Worker steps over the unprotected edge into the opening.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0,
+          "description": "Sensor recorded a 450 ms free fall with an estimated drop height of 0.99 m and a peak impact of 12.4 g.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 1,
+          "description": "Worker fell to the lower level structure.",
+          "source": "inferred"
+        }
+      ],
+      "evidence": {
+        "clip_refs": [
+          {
+            "offset_s": -20,
+            "observation": "Worker walking near open, unguarded edge while distracted by a handheld device."
+          },
+          {
+            "offset_s": -1,
+            "observation": "Worker steps directly into an open floor drop-off."
+          },
+          {
+            "offset_s": 1,
+            "observation": "Worker drops below floor level out of camera view."
+          }
+        ],
+        "key_sensor_values": [
+          {
+            "name": "Peak acceleration",
+            "value": "12.4 g"
+          },
+          {
+            "name": "Free-fall duration",
+            "value": "450 ms"
+          },
+          {
+            "name": "Estimated drop height",
+            "value": "0.99 m"
+          }
+        ],
+        "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+      },
+      "hazard": {
+        "category": "fall_from_height",
+        "energy_source": "gravitational potential energy"
+      },
+      "risk": {
+        "severity": 4,
+        "likelihood": 4,
+        "score": 16,
+        "severity_justification": "Falls through open floor voids can result in severe, disabling injuries or critical fractures.",
+        "likelihood_justification": "Working in close proximity to unguarded floor openings creates a high probability of stepping into the void."
+      },
+      "causes": {
+        "immediate": [
+          {
+            "kind": "substandard_condition",
+            "description": "Unguarded floor opening lacking guardrails or protective covers."
+          },
+          {
+            "kind": "substandard_act",
+            "description": "Walking adjacent to an open floor hazard while distracted by a handheld device."
+          }
+        ],
+        "root_five_whys": [
+          "Why did the worker fall? The worker stepped over an unguarded floor edge while focused on a handheld device.",
+          "Why was the edge unprotected? Guardrails or temporary hole covers were not in place around the floor opening.",
+          "Why were guardrails not installed? Edge protection was omitted during active work without temporary barrier controls being erected.",
+          "Why were temporary barriers missing? Work-area hazard inspections did not identify or correct exposed floor opening risks prior to site access.",
+          "Why did hazard inspections fail? Pre-task edge protection verification and hazard communication procedures were not systematically enforced."
+        ]
+      },
+      "corrective_actions": [
+        {
+          "description": "Install compliant guardrails or secure covers over all floor openings and unprotected edges across the site.",
+          "control_level": "engineering",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Implement and enforce a site restriction policy regarding device-induced distraction near active construction edges.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Conduct daily pre-shift inspections to confirm edge protection and fall prevention controls are active before work begins.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Site supervisor"
+        }
+      ],
+      "regulatory_note": "This fall from elevation event may meet provincial notification thresholds for dangerous occurrences or serious worker incidents; verify with your provincial OHS regulator.",
+      "confidence_and_gaps": "Specific building level, floor location, and exact post-impact medical condition of the worker could not be determined from available data; location kept unspecified per protocol.",
+      "classification_review": {
+        "suggested_class": null,
+        "reason": null
+      },
+      "sign_off": {
+        "signed_by": null,
+        "signed_at": null,
+        "final_class": null,
+        "reclass_decision": null
+      },
+      "footer": "AI-generated draft for review by a competent person. Does not replace provincial OHS reporting or your employer's incident-reporting procedure."
+    }
+  },
+  {
+    "case": "scooter",
+    "what": "First-person e-scooter rider crashes on a wooden pier; hand and head hit the deck.",
+    "writer": "A-gemini",
+    "label": "Gemini 3.5 Flash writes (one call with the video)",
+    "status": "ready",
+    "error": null,
+    "total_ms": 24852,
+    "cost_usd": 0.0361815,
+    "analyses": [
+      {
+        "stage": "report_draft",
+        "model": "gemini-3.6-flash",
+        "in": 3115,
+        "out": 3501,
+        "cost": 0.0361815,
+        "ms": 24843
+      }
+    ],
+    "report": {
+      "schema_version": "1",
+      "header": {
+        "report_no": "ARG-2026-0001",
+        "classification": "incident",
+        "occurred_at": "2026-06-12T15:42:07.000Z",
+        "site": "Example Project - Edmonton",
+        "location_on_site": "Location to be determined",
+        "worker": "J. Smith",
+        "crew": "Framing A",
+        "supervisor": "A. Tremblay",
+        "device": "ARGUS-001"
+      },
+      "summary": "A worker riding a powered scooter lost control upon transitioning onto a wooden walkway, resulting in a fall and a high-g head impact. The hard hat recorded a peak acceleration of at least 16 g (saturated) at the moment of impact. The worker subsequently stood up without visible assistance.",
+      "sequence_of_events": [
+        {
+          "offset_s": -20,
+          "description": "Wearer is travelling along a paved pathway on a powered scooter.",
+          "source": "video"
+        },
+        {
+          "offset_s": -3,
+          "description": "Wearer approaches and enters onto a wooden walkway surface.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0,
+          "description": "Scooter tips over and wearer falls onto the wooden walkway surface.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0,
+          "description": "Head impact recorded with peak acceleration exceeding sensor threshold at ≥ 16 g (saturated).",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 0,
+          "description": "Abrupt loss of balance occurred due to surface transition or sudden deceleration of scooter.",
+          "source": "inferred"
+        },
+        {
+          "offset_s": 0.1,
+          "description": "Haptic confirmation alert activated on device.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 7,
+          "description": "Wearer regains standing position next to the overturned scooter.",
+          "source": "video"
+        }
+      ],
+      "evidence": {
+        "clip_refs": [
+          {
+            "offset_s": -20,
+            "observation": "Wearer riding motorized scooter on paved path."
+          },
+          {
+            "offset_s": 0,
+            "observation": "Scooter falls onto side on wooden deck, camera angle shifts rapidly downward."
+          },
+          {
+            "offset_s": 7,
+            "observation": "Wearer stands up and looks down at the scooter on the deck."
+          }
+        ],
+        "key_sensor_values": [
+          {
+            "name": "Peak acceleration",
+            "value": "≥ 16 g (saturated)"
+          },
+          {
+            "name": "Hat on at trigger",
+            "value": "yes"
+          }
+        ],
+        "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+      },
+      "hazard": {
+        "category": "slip_trip_fall",
+        "energy_source": "Kinetic energy (mobile equipment motion and fall onto walkway deck)"
+      },
+      "risk": {
+        "severity": 3,
+        "likelihood": 3,
+        "score": 9,
+        "severity_justification": "Head impacts resulting from falls from motorized equipment pose a moderate risk of head injury or concussion.",
+        "likelihood_justification": "Operating small motorized vehicles on pedestrian or timber surfaces carries a moderate likelihood of surface slip or loss of control."
+      },
+      "causes": {
+        "immediate": [
+          {
+            "kind": "substandard_act",
+            "description": "Operating a personal powered scooter on a non-designated pedestrian walkway."
+          },
+          {
+            "kind": "substandard_condition",
+            "description": "Traction variation at the transition point between paved path and wooden deck."
+          }
+        ],
+        "root_five_whys": [
+          "Why did the head impact occur? The worker fell off a powered scooter onto a wooden surface.",
+          "Why did the fall occur? The worker lost control of the scooter when crossing onto the wooden walkway.",
+          "Why was the scooter operated on the walkway? Personal motorized transport was being used for site mobility.",
+          "Why was personal motorized transport used in pedestrian zones? Site traffic control procedures did not define restricted areas for micro-mobility devices.",
+          "Why were restrictions undefined? Site mobile equipment risk assessments had not evaluated personal motorized scooter hazards."
+        ]
+      },
+      "corrective_actions": [
+        {
+          "description": "Prohibit the use of unapproved personal motorized scooters across pedestrian walkways and non-designated site zones.",
+          "control_level": "elimination",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Establish clear signage and physical segregation delineating mobile equipment routes from pedestrian walkways.",
+          "control_level": "engineering",
+          "suggested_owner_role": "Project engineer"
+        },
+        {
+          "description": "Develop and communicate a comprehensive site traffic management policy addressing small personal mobility devices.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        }
+      ],
+      "regulatory_note": "This event may meet provincial serious-incident or dangerous-occurrence notification thresholds depending on worker injury status; verify with your provincial OHS regulator.",
+      "confidence_and_gaps": "Exact site coordinates, specific ground surface friction characteristics, and post-incident medical status were not available in the provided data.",
+      "classification_review": {
+        "suggested_class": null,
+        "reason": null
+      },
+      "sign_off": {
+        "signed_by": null,
+        "signed_at": null,
+        "final_class": null,
+        "reclass_decision": null
+      },
+      "footer": "AI-generated draft for review by a competent person. Does not replace provincial OHS reporting or your employer's incident-reporting procedure."
+    }
+  },
+  {
+    "case": "scooter",
+    "what": "First-person e-scooter rider crashes on a wooden pier; hand and head hit the deck.",
+    "writer": "B-sonnet",
+    "label": "Gemini observes, Claude Sonnet 5.5 writes",
+    "status": "ready",
+    "error": null,
+    "total_ms": 39519,
+    "cost_usd": 0.1214175,
+    "analyses": [
+      {
+        "stage": "video_analysis",
+        "model": "gemini-3.6-flash",
+        "in": 2303,
+        "out": 1517,
+        "cost": 0.0171075,
+        "ms": 14408
+      },
+      {
+        "stage": "report_draft",
+        "model": "claude-sonnet-5-5",
+        "in": 4067,
+        "out": 3359,
+        "cost": 0.10431,
+        "ms": 25099
+      }
+    ],
+    "report": {
+      "schema_version": "1",
+      "header": {
+        "report_no": "ARG-2026-0001",
+        "classification": "incident",
+        "occurred_at": "2026-06-12T15:42:07.000Z",
+        "site": "Example Project - Edmonton",
+        "location_on_site": "Location to be determined",
+        "worker": "J. Smith",
+        "crew": "Framing A",
+        "supervisor": "A. Tremblay",
+        "device": "ARGUS-001"
+      },
+      "summary": "The device recorded a head impact of at least 16 g (saturated) while the hat was worn. The video observations show a scooter's handlebars and front wheel tipping sideways, the camera striking a wooden deck during a fall, and the wearer beginning to get up about 5 seconds later. The worker's condition after the fall and the cause of the loss of control are not shown in the data.",
+      "sequence_of_events": [
+        {
+          "offset_s": -6,
+          "description": "A person walks along a paved path ahead of the camera wearer.",
+          "source": "video"
+        },
+        {
+          "offset_s": -3,
+          "description": "The camera wearer moves forward along wooden decking.",
+          "source": "video"
+        },
+        {
+          "offset_s": -0.5,
+          "description": "The scooter handlebars and front wheel tip rapidly to the side.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0,
+          "description": "Head impact detected by the IMU, peak ≥ 16 g (saturated). Hat was on.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 0,
+          "description": "The camera tilts sharply sideways and strikes the wooden deck during a fall.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0.1,
+          "description": "Confirmation buzz on both haptic motors (1.5 s).",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 2,
+          "description": "The camera remains lying sideways on the deck near the fallen scooter.",
+          "source": "video"
+        },
+        {
+          "offset_s": 5,
+          "description": "The camera wearer extends a leg and begins to rise from the deck.",
+          "source": "video"
+        },
+        {
+          "offset_s": 8,
+          "description": "The scooter lies flat on the wooden deck beside a metal deck plate.",
+          "source": "video"
+        },
+        {
+          "offset_s": -0.5,
+          "description": "The wearer was probably riding the scooter when it tipped, and the fall carried the head into the deck. The video does not show the rider's body directly.",
+          "source": "inferred"
+        }
+      ],
+      "evidence": {
+        "clip_refs": [
+          {
+            "offset_s": -3,
+            "observation": "The wearer moves forward along wooden decking."
+          },
+          {
+            "offset_s": -0.5,
+            "observation": "The scooter handlebars and front wheel tip rapidly to the side."
+          },
+          {
+            "offset_s": 0,
+            "observation": "The camera tilts sharply sideways and strikes the wooden deck. Physical contact with the hat is visible in the video."
+          },
+          {
+            "offset_s": 5,
+            "observation": "The wearer extends a leg and begins to rise from the deck."
+          },
+          {
+            "offset_s": 8,
+            "observation": "The scooter lies flat on the deck beside a metal deck plate."
+          }
+        ],
+        "key_sensor_values": [
+          {
+            "name": "Peak acceleration",
+            "value": "≥ 16 g (saturated); the true peak is unknown and was at least the sensor limit"
+          },
+          {
+            "name": "Hat on at trigger",
+            "value": "yes"
+          },
+          {
+            "name": "Acceleration peaks above 3 g",
+            "value": "one, at +0.0 s"
+          },
+          {
+            "name": "Haptic confirmation",
+            "value": "both motors, 1.5 s, starting +0.1 s"
+          }
+        ],
+        "environment": "Near-wearer conditions (indicative only; biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%. Context only, with no apparent bearing on the event."
+      },
+      "hazard": {
+        "category": "slip_trip_fall",
+        "energy_source": "Kinetic energy of the moving scooter and rider, and gravitational energy of the fall, released as the head struck the hard deck surface."
+      },
+      "risk": {
+        "severity": 4,
+        "likelihood": 3,
+        "score": 12,
+        "severity_justification": "A saturated head impact (≥ 16 g) against a hard deck could realistically cause a concussion or a serious head injury, even with the hat worn.",
+        "likelihood_justification": "The scooter tipped suddenly on a deck surface with a metal plate nearby. Whether the surface was a factor, and how often this activity occurs, is unknown, so a moderate likelihood is assumed."
+      },
+      "causes": {
+        "immediate": [
+          {
+            "kind": "substandard_condition",
+            "description": "The scooter tipped sideways on a wooden deck surface. A metal deck plate was visible near where the scooter came to rest, but the video does not show whether it or any surface irregularity contributed."
+          },
+          {
+            "kind": "substandard_act",
+            "description": "A wheeled scooter was in use on a deck surface with a possible hard-surface transition. Whether this use was planned, authorized or assessed is not known."
+          }
+        ],
+        "root_five_whys": [
+          "Why was the head struck? The wearer fell and the head contacted the deck.",
+          "Why did the wearer fall? The scooter's front wheel and handlebars tipped sideways at about -0.5 s.",
+          "Why did it tip? Unknown. Possible factors are the deck surface or plate transition, speed, or steering input; these need confirmation by interview and a site inspection.",
+          "Why was a scooter being used on this surface? No documented rule, route assessment or alternative transport is evident from the data.",
+          "Why was there no control? A possible gap in site procedures for wheeled personal mobility devices and in inspection of travel surfaces, to be confirmed in the investigation."
+        ]
+      },
+      "corrective_actions": [
+        {
+          "description": "Eliminate the hazard by prohibiting or restricting personal wheeled devices such as scooters on work areas and deck surfaces unless a specific assessment approves them, and provide alternative transport where distances warrant.",
+          "control_level": "elimination",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Inspect the deck surface and any metal plate transitions where the fall occurred. Repair, flush-mount, ramp or mark them, and provide a smooth, designated travel route if wheeled devices are allowed.",
+          "control_level": "engineering",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Arrange prompt medical assessment for the worker. Interview the worker and witnesses to establish why the scooter tipped, and use the findings to update the site rules for wheeled devices and for route inspection.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Take the hat out of service for inspection or replacement after this impact. Confirm that chin straps are fitted and adjusted for any approved wheeled-device use.",
+          "control_level": "ppe",
+          "suggested_owner_role": "Health and safety coordinator"
+        }
+      ],
+      "regulatory_note": "A head impact with a possible head injury may meet a provincial serious-incident or dangerous-occurrence notification threshold, depending on the injury outcome and medical treatment. Verify with your provincial OHS regulator.",
+      "confidence_and_gaps": "Confidence is moderate. Sensor and video observations agree on the timing of the impact. The peak was saturated, so the true severity of the impact is unknown. Not determined: the worker's injuries or condition afterward; the cause of the tip (surface, speed, obstacle, or steering); whether the scooter is site-authorized or the activity is work-related; and whether the deck plate contributed. The clip has a play icon overlay for part of its length, and the motion blur during the fall limits detail. The location is unknown and is not stated in this report. Video observations came from a model-generated timeline, not direct review of the clip.",
+      "classification_review": {
+        "suggested_class": null,
+        "reason": null
+      },
+      "sign_off": {
+        "signed_by": null,
+        "signed_at": null,
+        "final_class": null,
+        "reclass_decision": null
+      },
+      "footer": "AI-generated draft for review by a competent person. Does not replace provincial OHS reporting or your employer's incident-reporting procedure."
+    }
+  },
+  {
+    "case": "fall",
+    "what": "Worker looking at a phone steps off an unguarded ledge and falls into a floor opening (security-camera view).",
+    "writer": "B-sonnet",
+    "label": "Gemini observes, Claude Sonnet 5.5 writes",
+    "status": "ready",
+    "error": null,
+    "total_ms": 41657,
+    "cost_usd": 0.12976949999999998,
+    "analyses": [
+      {
+        "stage": "video_analysis",
+        "model": "gemini-3.6-flash",
+        "in": 2301,
+        "out": 1282,
+        "cost": 0.0149895,
+        "ms": 13446
+      },
+      {
+        "stage": "report_draft",
+        "model": "claude-sonnet-5-5",
+        "in": 4026,
+        "out": 3786,
+        "cost": 0.11478,
+        "ms": 28202
+      }
+    ],
+    "report": {
+      "schema_version": "1",
+      "header": {
+        "report_no": "ARG-2026-0001",
+        "classification": "incident",
+        "occurred_at": "2026-06-12T15:42:07.000Z",
+        "site": "Example Project - Edmonton",
+        "location_on_site": "Location to be determined",
+        "worker": "J. Smith",
+        "crew": "Framing A",
+        "supervisor": "A. Tremblay",
+        "device": "ARGUS-001"
+      },
+      "summary": "A worker stood near the unguarded edge of a floor opening, looking at a handheld device for at least 20 seconds. Video shows the worker step backward past the edge and fall into the opening. The hat sensor recorded 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g, with the hat on.",
+      "sequence_of_events": [
+        {
+          "offset_s": -20,
+          "description": "Person in a blue long-sleeved shirt and trousers stands near the unguarded edge of a floor opening.",
+          "source": "video"
+        },
+        {
+          "offset_s": -15,
+          "description": "Person stands looking down at a mobile device held in both hands.",
+          "source": "video"
+        },
+        {
+          "offset_s": -8,
+          "description": "Person continues focusing on the handheld device near the edge.",
+          "source": "video"
+        },
+        {
+          "offset_s": -2,
+          "description": "Person turns slightly while still looking at the device.",
+          "source": "video"
+        },
+        {
+          "offset_s": -0.5,
+          "description": "Person steps backward past the edge of the floor opening.",
+          "source": "video"
+        },
+        {
+          "offset_s": -0.45,
+          "description": "Free fall likely began about 0.45 s before t0, if t0 marks the impact that ended the free-fall phase. This is consistent with the backward step seen in the video.",
+          "source": "inferred"
+        },
+        {
+          "offset_s": 0,
+          "description": "Device detected a fall: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g. Hat was on.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 0,
+          "description": "Person falls downward into the floor opening.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0.1,
+          "description": "Confirmation buzz on both haptic motors (1.5 s) to tell the wearer the event was recorded.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 1,
+          "description": "Person goes out of frame below the floor level.",
+          "source": "video"
+        },
+        {
+          "offset_s": 5,
+          "description": "Floor opening and surrounding walkway remain empty in the frame.",
+          "source": "video"
+        }
+      ],
+      "evidence": {
+        "clip_refs": [
+          {
+            "offset_s": -20,
+            "observation": "Person standing near the unguarded edge of a floor opening."
+          },
+          {
+            "offset_s": -15,
+            "observation": "Person looking down at a handheld mobile device."
+          },
+          {
+            "offset_s": -2,
+            "observation": "Person turns slightly while looking at the device."
+          },
+          {
+            "offset_s": -0.5,
+            "observation": "Person steps backward past the edge of the floor opening."
+          },
+          {
+            "offset_s": 0,
+            "observation": "Person falls downward into the opening."
+          },
+          {
+            "offset_s": 1,
+            "observation": "Person out of frame below floor level."
+          },
+          {
+            "offset_s": 5,
+            "observation": "Opening and walkway remain empty. No physical contact with the hat is visible or audible in the video."
+          }
+        ],
+        "key_sensor_values": [
+          {
+            "name": "Peak acceleration",
+            "value": "12.4 g (not saturated)"
+          },
+          {
+            "name": "Free-fall duration",
+            "value": "450 ms"
+          },
+          {
+            "name": "Estimated drop height",
+            "value": "0.99 m"
+          },
+          {
+            "name": "Hat on at trigger",
+            "value": "yes"
+          },
+          {
+            "name": "Haptic confirmation",
+            "value": "both motors, 1.5 s, at +0.1 s"
+          }
+        ],
+        "environment": "Near-wearer conditions (indicative; biased by the wearer's breath, head heat and the electronics): CO2 612 ppm, temperature 21.4 C, relative humidity 38%. Context only; nothing here suggests an environmental contribution."
+      },
+      "hazard": {
+        "category": "fall_from_height",
+        "energy_source": "Gravitational potential energy (worker falling into an unguarded floor opening)"
+      },
+      "risk": {
+        "severity": 4,
+        "likelihood": 4,
+        "score": 16,
+        "severity_justification": "A fall into an unguarded floor opening could realistically cause a serious or life-altering injury. The sensor estimate of 0.99 m is the measured drop, but the total depth of the opening and what the worker landed on are unknown.",
+        "likelihood_justification": "The worker stayed near an unguarded edge for at least 20 s while attending to a handheld device, and no edge protection is seen in the video. This made a fall into the opening likely."
+      },
+      "causes": {
+        "immediate": [
+          {
+            "kind": "substandard_condition",
+            "description": "Floor opening edge was unguarded: no guardrail, cover or other barrier is visible in the video."
+          },
+          {
+            "kind": "substandard_act",
+            "description": "Worker's attention was on a handheld device while positioned at the edge and stepping backward, without awareness of the edge behind them."
+          },
+          {
+            "kind": "substandard_condition",
+            "description": "No fall-arrest or fall-restraint protection is visible in the video. Whether any was available or required is unknown."
+          }
+        ],
+        "root_five_whys": [
+          "Why did the worker fall? They stepped backward past the edge of an unguarded floor opening.",
+          "Why was the worker able to step past the edge? No physical barrier or cover stopped access to the edge, and the worker's attention was on a device.",
+          "Why was there no barrier? Edge protection was missing, removed or not yet installed. The reason is not determinable from the data.",
+          "Why was a worker positioned at the unprotected edge while doing a task unrelated to the opening? Work area layout and task planning did not keep people away from the opening or separate reading and device tasks from edge zones.",
+          "Why was this not corrected beforehand? Hazard assessment, inspection and supervision routines for floor openings and edge protection may not have identified or closed this exposure; verify during the investigation."
+        ]
+      },
+      "corrective_actions": [
+        {
+          "description": "Eliminate the exposure where practicable by closing or permanently covering the floor opening, or by re-sequencing work so no one needs to be near it while it is open.",
+          "control_level": "elimination",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Install and verify guardrails or secured, clearly marked covers on all floor openings and open edges, with inspection before each shift and after any change.",
+          "control_level": "engineering",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Establish exclusion zones and designated areas for reading plans or devices that are away from open edges and openings. Add a pre-task hazard assessment item for edge and opening exposure.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Confirm the worker's medical status and ensure appropriate follow-up. Brief the crew on edge awareness and on device use near hazards, and review the incident with the crew.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Where the opening cannot be fully guarded, require fall-restraint or fall-arrest systems with defined anchor points, and verify training and use.",
+          "control_level": "ppe",
+          "suggested_owner_role": "Site supervisor"
+        }
+      ],
+      "regulatory_note": "A fall from height into a floor opening may meet a provincial serious-incident or dangerous-occurrence notification threshold, depending on injury outcome and circumstances. Verify with your provincial OHS regulator.",
+      "confidence_and_gaps": "Confidence is moderate to high that the worker stepped backward past the edge and fell, since the video and the fall sensor agree on timing (step at -0.5 s, free fall ending at t0). The video comes from a fixed elevated third-person camera, not from the hat. The landing is out of frame, so the actual depth of the opening, the landing surface, the worker's posture and the injury outcome are unknown. The sensor estimate of 0.99 m is a device estimate. The video does not show whether edge protection, fall protection or signage existed beforehand. It does not show what the worker was viewing on the device or why they were at the edge. It also does not show who responded or what happened after +5 s. The worker's condition after the fall is unknown. Site location is unknown and not stated, by design. Environment readings are indicative only.",
+      "classification_review": {
+        "suggested_class": null,
+        "reason": null
+      },
+      "sign_off": {
+        "signed_by": null,
+        "signed_at": null,
+        "final_class": null,
+        "reclass_decision": null
+      },
+      "footer": "AI-generated draft for review by a competent person. Does not replace provincial OHS reporting or your employer's incident-reporting procedure."
+    }
+  },
+  {
+    "case": "fall",
+    "what": "Worker looking at a phone steps off an unguarded ledge and falls into a floor opening (security-camera view).",
+    "writer": "C-opus",
+    "label": "Gemini observes, Claude Opus 5.5 writes",
+    "status": "ready",
+    "error": null,
+    "total_ms": 46800,
+    "cost_usd": 0.0940355,
+    "analyses": [
+      {
+        "stage": "video_analysis",
+        "model": "gemini-3.6-flash",
+        "in": 2301,
+        "out": 1004,
+        "cost": 0.0124875,
+        "ms": 14354
+      },
+      {
+        "stage": "report_draft",
+        "model": "claude-opus-5-5",
+        "in": 4002,
+        "out": 3277,
+        "cost": 0.081548,
+        "ms": 32437
+      }
+    ],
+    "report": {
+      "schema_version": "1",
+      "header": {
+        "report_no": "ARG-2026-0001",
+        "classification": "incident",
+        "occurred_at": "2026-06-12T15:42:07.000Z",
+        "site": "Example Project - Edmonton",
+        "location_on_site": "Location to be determined",
+        "worker": "J. Smith",
+        "crew": "Framing A",
+        "supervisor": "A. Tremblay",
+        "device": "ARGUS-001"
+      },
+      "summary": "A worker fell into an unguarded floor opening; the hard hat recorded 450 ms of free fall (estimated drop 0.99 m) ending in a 12.4 g impact. The clip shows a person looking down at an object in their hands while near the opening, stepping forward over its edge and disappearing below floor level. The worker's injury status and the depth of the opening are not known from the available data.",
+      "sequence_of_events": [
+        {
+          "offset_s": -20,
+          "description": "A person in a blue shirt is standing near an open floor ledge.",
+          "source": "video"
+        },
+        {
+          "offset_s": -15,
+          "description": "The person stands near the edge while looking down at an object in their hands.",
+          "source": "video"
+        },
+        {
+          "offset_s": -10,
+          "description": "An unguarded opening in the floor is visible next to the walkway.",
+          "source": "video"
+        },
+        {
+          "offset_s": -5,
+          "description": "The person continues looking down at their hands while stepping near the ledge.",
+          "source": "video"
+        },
+        {
+          "offset_s": -1,
+          "description": "The person steps forward over the edge of the floor opening.",
+          "source": "video"
+        },
+        {
+          "offset_s": -1,
+          "description": "Attention on the hand-held object likely reduced the person's awareness of the opening edge as they stepped forward.",
+          "source": "inferred"
+        },
+        {
+          "offset_s": 0,
+          "description": "The person falls downward into the floor opening.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0,
+          "description": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g. Hat on at trigger.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 0.1,
+          "description": "Confirmation buzz on both motors (1.5 s) indicating the event was recorded.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 1,
+          "description": "The person disappears below the floor level.",
+          "source": "video"
+        }
+      ],
+      "evidence": {
+        "clip_refs": [
+          {
+            "offset_s": -15,
+            "observation": "Person near the edge looking down at an object in their hands."
+          },
+          {
+            "offset_s": -10,
+            "observation": "Unguarded opening in the floor visible next to the walkway."
+          },
+          {
+            "offset_s": -1,
+            "observation": "Person steps forward over the edge of the floor opening."
+          },
+          {
+            "offset_s": 0,
+            "observation": "Person falls downward into the floor opening."
+          },
+          {
+            "offset_s": 1,
+            "observation": "Person disappears below the floor level."
+          }
+        ],
+        "key_sensor_values": [
+          {
+            "name": "Peak acceleration",
+            "value": "12.4 g (not saturated)"
+          },
+          {
+            "name": "Free-fall duration",
+            "value": "450 ms"
+          },
+          {
+            "name": "Estimated drop height",
+            "value": "0.99 m"
+          },
+          {
+            "name": "Hat on at trigger",
+            "value": "Yes"
+          },
+          {
+            "name": "Haptic alert",
+            "value": "Confirmation buzz, both motors, 1.5 s at +0.1 s"
+          }
+        ],
+        "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%. These readings are biased by the wearer's breath, head heat and the hat electronics and are context only; nothing in them suggests an environmental contribution to the event."
+      },
+      "hazard": {
+        "category": "fall_from_height",
+        "energy_source": "Gravity: fall of the worker through an unguarded floor opening (estimated free-fall drop of 0.99 m from the hat sensor; actual depth of the opening unknown), ending in a 12.4 g head-level impact."
+      },
+      "risk": {
+        "severity": 4,
+        "likelihood": 4,
+        "score": 16,
+        "severity_justification": "A fall through a floor opening with a 12.4 g head-level impact can realistically cause serious head, spinal or fracture injuries, and the opening's full depth is unknown.",
+        "likelihood_justification": "An unguarded opening beside a walkway combined with tasks that draw attention to the hands makes a fall like this likely to recur and to cause serious injury.;"
+      },
+      "causes": {
+        "immediate": [
+          {
+            "kind": "substandard_condition",
+            "description": "Floor opening next to the walkway was unguarded (no visible guardrail or cover)."
+          },
+          {
+            "kind": "substandard_act",
+            "description": "Person was looking down at an object in their hands while moving near the opening edge and stepped forward over it."
+          },
+          {
+            "kind": "substandard_condition",
+            "description": "No visible fall protection or barrier to prevent access to the opening edge."
+          }
+        ],
+        "root_five_whys": [
+          "Why did the worker fall? They stepped over the edge of a floor opening while attending to an object in their hands.",
+          "Why could they step into the opening? The opening beside the walkway was not guarded or covered.",
+          "Why was it not guarded or covered? To be determined; possible gaps in the process for identifying, protecting and inspecting floor openings as work progresses.",
+          "Why was a task requiring visual attention being done next to the edge? To be determined; possible gaps in task planning or hazard assessment that did not separate hand-held work from edge exposure."
+        ]
+      },
+      "corrective_actions": [
+        {
+          "description": "Where possible, eliminate the exposure by sequencing work so floor openings are closed in or permanently covered before access to the area is allowed.",
+          "control_level": "elimination",
+          "suggested_owner_role": "Site superintendent"
+        },
+        {
+          "description": "Immediately guard this and all similar floor openings with guardrails or secured, load-rated and clearly labelled covers, and restrict access until done.",
+          "control_level": "engineering",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Implement a routine inspection and sign-off of floor openings and edge protection at each shift and whenever openings are created or altered.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Update the field-level hazard assessment and toolbox talk to address edge exposure and to direct that hand-held tasks (reading, sorting or carrying items) be done away from openings.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Confirm the worker received first aid or medical assessment and document injury status; review the incident with the crew.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Where guarding or covers are not yet practicable, require a fall protection system (travel restraint or arrest) for anyone working near the opening.",
+          "control_level": "ppe",
+          "suggested_owner_role": "Site supervisor"
+        }
+      ],
+      "regulatory_note": "A worker falling through an unguarded floor opening, particularly if an injury requiring medical treatment resulted, may meet a provincial serious-incident or dangerous-occurrence notification threshold. Verify with your provincial OHS regulator.",
+      "confidence_and_gaps": "Moderate confidence in the sequence: the sensor fall signature and video observations agree on timing. Gaps: (1) The clip is from a fixed third-person overhead angle, not a worn hard-hat camera, so its source and its link to device ARGUS-001 must be confirmed, and it cannot be confirmed that the person shown is the wearer. (2) The actual depth of the opening and the landing surface are unknown; the 0.99 m figure is a sensor estimate from free-fall time. (3) The worker's injury status and post-fall condition are unknown; the sensor timeline has no data after +0.1 s. (4) The object in the person's hands, the task being done, and why the opening was unguarded were not determined. (5) Location on site is unknown and not stated. (6) Whether fall protection or other controls were planned for this area is unknown.",
+      "classification_review": {
+        "suggested_class": null,
+        "reason": null
+      },
+      "sign_off": {
+        "signed_by": null,
+        "signed_at": null,
+        "final_class": null,
+        "reclass_decision": null
+      },
+      "footer": "AI-generated draft for review by a competent person. Does not replace provincial OHS reporting or your employer's incident-reporting procedure."
+    }
+  },
+  {
+    "case": "scooter",
+    "what": "First-person e-scooter rider crashes on a wooden pier; hand and head hit the deck.",
+    "writer": "C-opus",
+    "label": "Gemini observes, Claude Opus 5.5 writes",
+    "status": "ready",
+    "error": null,
+    "total_ms": 54461,
+    "cost_usd": 0.1149575,
+    "analyses": [
+      {
+        "stage": "video_analysis",
+        "model": "gemini-3.6-flash",
+        "in": 2303,
+        "out": 1235,
+        "cost": 0.0145695,
+        "ms": 12684
+      },
+      {
+        "stage": "report_draft",
+        "model": "claude-opus-5-5",
+        "in": 4097,
+        "out": 4200,
+        "cost": 0.100388,
+        "ms": 41768
+      }
+    ],
+    "report": {
+      "schema_version": "1",
+      "header": {
+        "report_no": "ARG-2026-0001",
+        "classification": "incident",
+        "occurred_at": "2026-06-12T15:42:07.000Z",
+        "site": "Example Project - Edmonton",
+        "location_on_site": "Location to be determined",
+        "worker": "J. Smith",
+        "crew": "Framing A",
+        "supervisor": "A. Tremblay",
+        "device": "ARGUS-001"
+      },
+      "summary": "At t0 the hard hat recorded a head impact of at least 16 g (saturated) while being worn, and the video shows the camera dropping sharply to a wooden plank surface with a scooter visible just before. One second later the wearer is lying on the deck beside the fallen scooter and begins to stand up about five seconds after the impact. The setting and activity look unusual for construction work, so the supervisor should confirm the worker's condition and whether the travel was work-related.",
+      "sequence_of_events": [
+        {
+          "offset_s": -20,
+          "description": "Clip starts on an outdoor paved pathway under overcast skies. A video player overlay covers the first 12 seconds of the clip.",
+          "source": "video"
+        },
+        {
+          "offset_s": -7,
+          "description": "The camera moves forward along the paved path.",
+          "source": "video"
+        },
+        {
+          "offset_s": -6,
+          "description": "A person is walking ahead along the same path.",
+          "source": "video"
+        },
+        {
+          "offset_s": -3,
+          "description": "The camera moves from the paved surface onto a wooden plank surface.",
+          "source": "video"
+        },
+        {
+          "offset_s": -1,
+          "description": "The handlebars and front end of a scooter become visible in the lower frame.",
+          "source": "video"
+        },
+        {
+          "offset_s": -1,
+          "description": "Because the handlebars appear from the wearer's point of view, the wearer was likely riding the scooter.",
+          "source": "inferred"
+        },
+        {
+          "offset_s": 0,
+          "description": "Head impact detected with peak acceleration ≥ 16 g (saturated). The hat was on at the trigger.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 0,
+          "description": "The camera tilts rapidly sideways and drops toward the wooden deck, with motion blur.",
+          "source": "video"
+        },
+        {
+          "offset_s": 0,
+          "description": "The wearer likely lost control of the scooter and fell, and the head struck the deck or the scooter. The struck object is not confirmed.",
+          "source": "inferred"
+        },
+        {
+          "offset_s": 0.1,
+          "description": "Confirmation buzz on both haptic motors for 1.5 s to tell the wearer the event was recorded.",
+          "source": "sensor"
+        },
+        {
+          "offset_s": 1,
+          "description": "The wearer is lying on the wooden deck next to the fallen scooter.",
+          "source": "video"
+        },
+        {
+          "offset_s": 5,
+          "description": "The wearer moves their legs and starts to stand up.",
+          "source": "video"
+        },
+        {
+          "offset_s": 8,
+          "description": "The camera faces downward at the wooden planks and the scooter.",
+          "source": "video"
+        }
+      ],
+      "evidence": {
+        "clip_refs": [
+          {
+            "offset_s": -3,
+            "observation": "Camera moves from the paved surface onto the wooden plank surface (surface transition)."
+          },
+          {
+            "offset_s": -1,
+            "observation": "Scooter handlebars and front end visible in the lower frame."
+          },
+          {
+            "offset_s": 0,
+            "observation": "Rapid sideways tilt and drop of the camera toward the deck, with motion blur. Physical contact with the hat is unclear in video and audio."
+          },
+          {
+            "offset_s": 1,
+            "observation": "Wearer lying on the deck beside the fallen scooter."
+          },
+          {
+            "offset_s": 5,
+            "observation": "Wearer begins to stand up."
+          }
+        ],
+        "key_sensor_values": [
+          {
+            "name": "Peak acceleration",
+            "value": "≥ 16 g (saturated)"
+          },
+          {
+            "name": "Full-rate peaks above 3 g",
+            "value": "One peak at +0.0 s, ≥ 16 g (saturated)"
+          },
+          {
+            "name": "Hat on at trigger",
+            "value": "Yes"
+          },
+          {
+            "name": "Haptic alert",
+            "value": "Confirmation buzz on both motors at +0.1 s for 1.5 s"
+          }
+        ],
+        "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%. These readings are biased by the wearer's breath, head heat and the device electronics. They are context only and do not point to an environmental factor in this event."
+      },
+      "hazard": {
+        "category": "slip_trip_fall",
+        "energy_source": "Kinetic energy of the wearer travelling on a scooter, plus gravity during the fall to a wooden plank surface. This produced a head impact of at least 16 g (saturated)."
+      },
+      "risk": {
+        "severity": 4,
+        "likelihood": 3,
+        "score": 12,
+        "severity_justification": "A saturated (≥ 16 g) head impact from a fall off a moving scooter can realistically cause a concussion or other serious head injury needing medical treatment.",
+        "likelihood_justification": "The impact exceeded the sensor limit even with the hat on, so a meaningful head injury was plausible, although the wearer began to stand within about 5 s."
+      },
+      "causes": {
+        "immediate": [
+          {
+            "kind": "substandard_act",
+            "description": "The wearer appears to have been travelling on a scooter (inferred from handlebars in frame) on a mixed paved and wooden plank route shared with a pedestrian."
+          },
+          {
+            "kind": "substandard_condition",
+            "description": "There was a surface transition from paved path to wooden planks about 3 s before the fall. Plank joints or uneven boards may affect the stability of small-wheeled scooters (not confirmed by video)."
+          },
+          {
+            "kind": "substandard_condition",
+            "description": "Wheeled travel and a pedestrian shared the same route without separation."
+          }
+        ],
+        "root_five_whys": [
+          "Why did the head impact occur? The wearer fell from a scooter onto the wooden deck.",
+          "Why did the wearer fall? Likely loss of scooter stability shortly after moving onto the wooden plank surface (inferred; cause not confirmed).",
+          "Why was a scooter used on that surface? There appears to be no defined rule or route for personal mobility devices on mixed surfaces.",
+          "Why was there no rule? The hazard assessment for travel between or around work areas likely did not cover ride-on personal mobility devices (to be verified)."
+        ]
+      },
+      "corrective_actions": [
+        {
+          "description": "Prohibit ride-on personal mobility devices (scooters, e-scooters) for travel within and between work areas where practicable, and designate walking routes instead.",
+          "control_level": "elimination",
+          "suggested_owner_role": "Site superintendent"
+        },
+        {
+          "description": "Where wheeled travel is permitted, provide smooth transitions at surface changes, repair uneven planking, and separate wheeled routes from pedestrian routes.",
+          "control_level": "engineering",
+          "suggested_owner_role": "Site supervisor"
+        },
+        {
+          "description": "Arrange a medical assessment for the worker and apply the site's head-injury or concussion protocol, including monitoring for delayed symptoms before return to duties.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Confirm whether the travel was work-related, then update the hazard assessment and toolbox talk to cover personal mobility devices and surface transitions.",
+          "control_level": "administrative",
+          "suggested_owner_role": "Health and safety coordinator"
+        },
+        {
+          "description": "Remove the impacted hard hat (ARGUS-001 shell and suspension) from service and inspect or replace it according to the manufacturer's guidance. Consider a chin strap or a hat rated for lateral impact where falls are possible.",
+          "control_level": "ppe",
+          "suggested_owner_role": "Site supervisor"
+        }
+      ],
+      "regulatory_note": "If the event was work-related and the head impact resulted in an injury requiring medical treatment or hospital admission, it may meet a provincial serious-injury or incident notification threshold. Verify with your provincial OHS regulator.",
+      "confidence_and_gaps": "Confidence is moderate. The sensor and video agree that a fall with a head impact occurred. The peak acceleration is saturated, so the true magnitude is unknown and above 16 g. Contact with the hat is unclear in the video, and it was not determined what the head struck (deck, scooter or other). Not determined: scooter type, whether it was motorized, its speed, and the exact reason for loss of control (surface condition, plank gaps, swerving, or the pedestrian ahead). The worker's injury status and any medical treatment are unknown. The video player overlay obscures the first 12 s, and motion blur affects the fall itself. The setting and scooter use appear atypical for framing work, so it must be confirmed that the activity was work-related and that the device was being used as intended. Location is intentionally not stated and is unknown for this report.",
+      "classification_review": {
+        "suggested_class": null,
+        "reason": null
+      },
+      "sign_off": {
+        "signed_by": null,
+        "signed_at": null,
+        "final_class": null,
+        "reclass_decision": null
+      },
+      "footer": "AI-generated draft for review by a competent person. Does not replace provincial OHS reporting or your employer's incident-reporting procedure."
+    }
+  }
+]

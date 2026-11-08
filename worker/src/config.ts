@@ -7,6 +7,8 @@ export type ReportMode = "fixture" | "gemini" | "hybrid";
  */
 export const PRICES_USD_PER_MTOK: Record<string, { input: number; output: number }> = {
   "claude-opus-5-5": { input: 4, output: 20 },
+  "claude-sonnet-5-5": { input: 2, output: 10 },
+  "claude-haiku-5-5": { input: 0.1, output: 0.5 },
   // Gemini Flash-tier estimate; override with GEMINI_PRICE_IN_PER_MTOK / GEMINI_PRICE_OUT_PER_MTOK.
   "gemini-default": { input: 1.5, output: 9 },
 };
