@@ -3,7 +3,7 @@
 #
 #   hat (mock hardware, real device stack) -> uploader -> web API -> Supabase -> worker -> report
 #
-# Runs the demo scenarios (a fall and a hat removal; add --with-struck-by for the board swing) against local Supabase, a production build of the web
+# Runs the demo scenarios (a fall, a scooter crash and a hat removal; add --with-struck-by for the board swing) against local Supabase, a production build of the web
 # app and the report worker, then asserts the resulting database/storage state through the REST API.
 #
 # Usage: scripts/demo-e2e.sh [--reset] [--keep-running] [--ui] [--with-struck-by] [--port N] [--no-build]
@@ -169,8 +169,8 @@ SINCE="$(python3 -c 'from datetime import datetime,timezone,timedelta;print((dat
 # camera ring holds the full 20 s pre-roll (a real hat has been running for minutes); run time =
 # lead-in + time to the event + 10 s post-roll + clip encode margin.
 LEAD=21
-# The demo runs the fall (with the real ledge-fall video) and the hat removal. The struck-by near miss is opt-in.
-SCENARIOS=("hat_drop_1m:fall:40" "hat_removed_table:hat_removed:33")
+# The demo runs the fall (real ledge-fall video), the scooter crash (real first-person video) and the hat removal. The struck-by near miss is opt-in.
+SCENARIOS=("hat_drop_1m:fall:40" "scooter_crash:head_impact:42" "hat_removed_table:hat_removed:33")
 [ "$STRUCK" = 1 ] && SCENARIOS=("board_swing_rear:struck_by_near_miss:39" "${SCENARIOS[@]}")
 EXPECT=()
 for spec in "${SCENARIOS[@]}"; do

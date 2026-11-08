@@ -1,0 +1,22 @@
+name: scooter_crash
+description: >
+  First-person e-scooter crash on a wooden pier. The wearer rides forward at ~4 m/s, the scooter goes down
+  and the head hits the deck: a ~9 g blow (head impact), the head pitches over to ~60 deg and the rider
+  comes to rest. The hat stays on (ToF steady), and nothing approaches from behind. Expect one head_impact.
+duration_s: 16
+seed: 11
+wearer:
+  hat_height_m: 1.75
+  vx: [[0, 4.0], [4.8, 4.0], [5.0, 0.0], [16, 0.0]]
+  vz: [[0, 0], [4.8, 0], [4.95, -1.2], [5.05, 0], [16, 0]]
+  pitch_deg: [[0, 0], [4.8, 0], [5.2, 60], [16, 60]]
+  impulses:
+    - { t: 5.0, kind: hit, peak_g: 9.0, dur_ms: 14, dir: [0.3, 0.2, -0.93], recoil: true }
+world:
+  planes: []
+tof: { keyframes: [[0, 62.0]] }
+expected:
+  - { type: head_impact, t_window_s: [4.95, 5.4], notes: "peak ~9 g when the scooter goes down" }
+allowed_extra: [hat_on]
+# Real first-person footage: the rider's hand and head hit the deck ~8.25 s into the video, aligned with the impact.
+video: { file: fixtures/clips/scooter-crash-pier.mp4, event_at_s: 8.25, scenario_event_s: 5.0 }

@@ -14,6 +14,7 @@ device/recordings/*
 !device/recordings/curated/
 device/fixtures/clips/*.mp4
 !device/fixtures/clips/fall-from-ledge.mp4
+!device/fixtures/clips/scooter-crash-pier.mp4
 device/var/
 supabase/.temp/
 coverage/
