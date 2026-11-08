@@ -1,0 +1,16 @@
+.venv/
+**/__pycache__/
+**/.pytest_cache/
+*.pyc
+.lgd-nfy*
+events.jsonl
+clips/*
+!clips/.gitkeep
+outbox/*
+!outbox/.gitkeep
+outbox_sent/
+recordings/*
+!recordings/.gitkeep
+pi_sensors/logs/*
+!pi_sensors/logs/.gitkeep
+pi_sensors/.venv/

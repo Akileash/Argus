@@ -1,0 +1,5 @@
+{"type":"hello","device":"scd41","co2_ppm":null,"temp_c":null,"rh_pct":null,"sensor_ok":true,"reads":0,"recoveries":0,"t_ms":535,"received_at":"2026-11-07T20:49:30.870443+00:00"}
+{"type":"air_sample","co2_ppm":261,"temp_c":22.93,"rh_pct":21.61,"sensor_ok":true,"reads":1,"recoveries":0,"t_ms":5347,"received_at":"2026-11-07T20:49:35.679027+00:00"}
+{"type":"air_sample","co2_ppm":233,"temp_c":23.02,"rh_pct":21.88,"sensor_ok":true,"reads":2,"recoveries":0,"t_ms":10147,"received_at":"2026-11-07T20:49:40.478965+00:00"}
+{"type":"air_sample","co2_ppm":332,"temp_c":22.97,"rh_pct":22.18,"sensor_ok":true,"reads":3,"recoveries":0,"t_ms":14948,"received_at":"2026-11-07T20:49:45.278834+00:00"}
+{"type":"air_sample","co2_ppm":367,"temp_c":22.92,"rh_pct":22.87,"sensor_ok":true,"reads":4,"recoveries":0,"t_ms":19748,"received_at":"2026-11-07T20:49:50.075873+00:00"}

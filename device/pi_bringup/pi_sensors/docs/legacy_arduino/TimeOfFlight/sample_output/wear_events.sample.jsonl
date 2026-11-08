@@ -1,0 +1,5 @@
+{"type":"hello","device":"vl6180x_wear","near_mm_min":10,"near_mm_max":60,"on_dwell_ms":5000,"off_dwell_ms":3000,"helmet_worn":false,"state":"OFF","distance_mm":null,"status":7,"near":false,"t_ms":21,"received_at":"2026-11-07T18:56:58.857685+00:00"}
+{"type":"wear_event","helmet_worn":true,"state":"ON","distance_mm":28,"status":0,"near":true,"t_ms":5136,"received_at":"2026-11-07T18:57:03.698273+00:00"}
+{"type":"sensor_recover","ok":true,"recoveries":1,"t_ms":19725,"received_at":"2026-11-07T20:21:23.527804+00:00"}
+{"type":"wear_event","helmet_worn":true,"state":"ON","distance_mm":36,"status":0,"near":true,"sensor_ok":true,"recoveries":2,"t_ms":46710,"received_at":"2026-11-07T20:21:50.505932+00:00"}
+{"type":"wear_event","helmet_worn":false,"state":"OFF","distance_mm":null,"status":7,"near":false,"sensor_ok":true,"recoveries":3,"t_ms":63296,"received_at":"2026-11-07T20:22:07.085913+00:00"}

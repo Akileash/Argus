@@ -1,0 +1,10 @@
+{"co2_ppm": 561, "temp_c": 25.57, "rh_pct": 22.23}
+{"co2_ppm": 560, "temp_c": 25.44, "rh_pct": 22.53}
+{"co2_ppm": 555, "temp_c": 25.29, "rh_pct": 22.71}
+{"co2_ppm": 552, "temp_c": 25.20, "rh_pct": 22.80}
+{"co2_ppm": 548, "temp_c": 25.10, "rh_pct": 23.00}
+{"co2_ppm": 545, "temp_c": 25.05, "rh_pct": 23.10}
+{"co2_ppm": 540, "temp_c": 24.98, "rh_pct": 23.20}
+{"co2_ppm": 538, "temp_c": 24.90, "rh_pct": 23.40}
+{"co2_ppm": 535, "temp_c": 24.85, "rh_pct": 23.50}
+{"co2_ppm": 533, "temp_c": 24.80, "rh_pct": 23.55}

@@ -1,0 +1,3 @@
+# Camera has no sample stream; save_command writes MP4.
+# Real clips produced by: cd device/pi_bringup && python -m hat.main
+# Clip path appears on fall events as clip_path / clip_pending.

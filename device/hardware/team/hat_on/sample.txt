@@ -1,0 +1,10 @@
+{"distance_mm": 59, "status": "ok", "near": true, "helmet_worn": true}
+{"distance_mm": 62, "status": "ok", "near": true, "helmet_worn": true}
+{"distance_mm": 55, "status": "ok", "near": true, "helmet_worn": true}
+{"distance_mm": 66, "status": "ok", "near": true, "helmet_worn": true}
+{"distance_mm": null, "status": "out_of_range", "near": false, "helmet_worn": false}
+{"distance_mm": null, "status": "out_of_range", "near": false, "helmet_worn": false}
+{"distance_mm": 50, "status": "ok", "near": true, "helmet_worn": true}
+{"distance_mm": 254, "status": "ok", "near": true, "helmet_worn": true}
+{"distance_mm": null, "status": "out_of_range", "near": false, "helmet_worn": false}
+{"distance_mm": 61, "status": "ok", "near": true, "helmet_worn": true}

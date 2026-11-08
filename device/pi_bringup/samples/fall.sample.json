@@ -1,0 +1,27 @@
+{
+  "event_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "hat_id": "hat-01",
+  "type": "fall",
+  "timestamp": "2026-11-08T15:30:00.000-07:00",
+  "side": null,
+  "confidence": "high",
+  "clip_path": null,
+  "clip_pending": true,
+  "sensor": {
+    "peak_accel_g": 3.42,
+    "freefall_ms": 120.0,
+    "helmet_worn_at_onset": true,
+    "helmet_worn_lookback_s": 3.0,
+    "wear_on_fraction": 0.87,
+    "imu_trace": [
+      [-80.0, 0.12, -0.08, 0.95],
+      [-60.0, 0.18, -0.10, 0.41],
+      [-40.0, 0.22, -0.05, 0.28],
+      [-20.0, 0.15, -0.02, 0.21],
+      [0.0, 0.08, 0.01, 0.18],
+      [20.0, 0.45, -0.20, 1.85],
+      [40.0, 0.62, -0.15, 2.40],
+      [60.0, 0.30, -0.08, 1.12]
+    ]
+  }
+}

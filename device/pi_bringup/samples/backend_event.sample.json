@@ -1,0 +1,83 @@
+{
+  "event_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "hat_id": "hat-01",
+  "worker_id": "W-001",
+  "type": "fall",
+  "timestamp": "2026-11-08T15:30:00.000-07:00",
+  "zone": "DEMO",
+  "sensor": {
+    "distance_m": null,
+    "closing_speed_mps": null,
+    "peak_accel_g": 3.42,
+    "freefall_ms": 120.0,
+    "imu_trace": [
+      [
+        -80.0,
+        0.12,
+        -0.08,
+        0.95
+      ],
+      [
+        -60.0,
+        0.18,
+        -0.1,
+        0.41
+      ],
+      [
+        -40.0,
+        0.22,
+        -0.05,
+        0.28
+      ],
+      [
+        -20.0,
+        0.15,
+        -0.02,
+        0.21
+      ],
+      [
+        0.0,
+        0.08,
+        0.01,
+        0.18
+      ],
+      [
+        20.0,
+        0.45,
+        -0.2,
+        1.85
+      ],
+      [
+        40.0,
+        0.62,
+        -0.15,
+        2.4
+      ],
+      [
+        60.0,
+        0.3,
+        -0.08,
+        1.12
+      ]
+    ],
+    "detail": {
+      "peak_gyro_dps": 0.0,
+      "tilt_change_deg": 0.0,
+      "still_after": false,
+      "score": 0.0,
+      "hat_source_type": "fall",
+      "hat_possibly_set_down": false,
+      "worn_before": false,
+      "worn_after": false,
+      "worn_confidence": "low",
+      "detector_confidence": "high",
+      "priority": "low",
+      "helmet_worn_at_onset": true,
+      "helmet_worn_lookback_s": 3.0,
+      "wear_on_fraction": 0.87
+    }
+  },
+  "frame_times_ms": [],
+  "clip_pending": true,
+  "schema_version": 1
+}

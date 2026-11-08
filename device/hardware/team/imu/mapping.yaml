@@ -1,0 +1,10 @@
+# Argus Pi — MPU-6050 on I2C3 (proven). Units already g / deg/s.
+command: [python, vendor/stream_imu.py, --hz, "200"]
+format: json
+fields: { ax: ax, ay: ay, az: az, gx: gx, gy: gy, gz: gz }
+accel_unit: g
+gyro_unit: deg/s
+# Hat frame on our build: treat board axes as hat axes until calibrated on head.
+axes: { x: x, y: y, z: z }
+warmup_s: 0.5
+restart: { initial_s: 0.5, max_s: 10 }

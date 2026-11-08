@@ -4,6 +4,9 @@ Start here. Pick the guide that matches what you need to do.
 
 ## Guides
 
+- [PI-BRINGUP.md](PI-BRINGUP.md): **hardware branch** — proven Pi stack (`device/pi_bringup/`), sample JSON, how teammates pull and start.
+- [HARDWARE-DIFF.md](HARDWARE-DIFF.md): **sensor truth** (DRV2605L, VL6180X, pins) vs older L293D/VL53 docs.
+- [CONTRACT-BRIDGE.md](CONTRACT-BRIDGE.md): Pi event JSON ↔ `contracts/event.schema.json`.
 - [CONNECT-THE-HAT.md](CONNECT-THE-HAT.md): step by step, from a blank SD card to your first real incident report.
 - [../CONTRIBUTING.md](../CONTRIBUTING.md): who owns which folder, branch names, the one check command (`scripts/check.sh`) and how to resolve a lockfile conflict.
 - [TEAM-HANDOFF.md](TEAM-HANDOFF.md): how to plug the hardware team's sensor script in with a mapping file (no code), check it without hardware, and hot-swap, shadow and test a module.

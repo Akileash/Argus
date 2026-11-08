@@ -1,0 +1,12 @@
+{
+  "type": "wear_event",
+  "helmet_worn": true,
+  "state": "ON",
+  "distance_mm": 59,
+  "status": 0,
+  "near": true,
+  "sensor_ok": true,
+  "recoveries": 0,
+  "t_ms": 5189,
+  "received_at": "2026-11-08T22:24:40.562780+00:00"
+}

@@ -1,0 +1,8 @@
+command: [python, vendor/stream_range.py]
+format: json
+id: sensor
+value: dist_cm
+ids: { back_left: R2, back_right: R3 }
+unit: cm
+no_echo: [0, -1]
+restart: { initial_s: 0.5, max_s: 10 }

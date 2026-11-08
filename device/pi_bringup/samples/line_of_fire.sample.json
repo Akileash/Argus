@@ -1,0 +1,13 @@
+{
+  "event_id": "68a215f1-c2c6-4a76-92aa-99da2946dc35",
+  "hat_id": "hat-01",
+  "type": "line_of_fire",
+  "timestamp": "2026-11-07T13:12:25.599-06:00",
+  "side": "left",
+  "clip_path": null,
+  "clip_pending": false,
+  "sensor": {
+    "distance_m": 0.311,
+    "closing_speed_mps": 2.6
+  }
+}
