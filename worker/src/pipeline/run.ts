@@ -1,6 +1,7 @@
 import { SensorTraceSchema, type SensorTrace } from "@argus/shared";
 import { costUsd, geminiCallBudgetS, priceFor, type WorkerConfig } from "../config";
 import { LlmTimeoutError, NonRetryableError, SpendCapError, VideoUnusableError } from "../errors";
+import { TransientExhaustedError, describeTransient, maxBackoffMs } from "../providers/transient";
 import { LLM_SCHEMA, OBSERVATION_SCHEMA, type Observations } from "../llm-schema";
 import { OBSERVE_SYSTEM_PROMPT, WRITER_SYSTEM_PROMPT } from "../prompts/index";
 import { withDeadline } from "../providers/timeout";
@@ -33,6 +34,19 @@ export { LlmTimeoutError, NonRetryableError, SpendCapError, VideoUnusableError }
 
 function timeoutsOf(cfg: WorkerConfig): CallTimeouts {
   return { callMs: cfg.llmCallTimeoutS * 1000, processingMs: cfg.geminiProcessingTimeoutS * 1000 };
+}
+
+/** Gemini limits plus the transient-retry policy; every retry is logged and refreshes the event heartbeat. */
+function geminiTimeouts(deps: PipelineDeps, eventId: string): CallTimeouts {
+  const log = deps.log ?? consoleLogger;
+  return {
+    ...timeoutsOf(deps.cfg),
+    transient: { tries: deps.cfg.geminiTransientRetries, baseMs: deps.cfg.geminiTransientBackoffMs },
+    onTransientRetry: ({ attempt, tries, delayMs, error }) => {
+      log.warn(`event ${eventId}: Gemini try ${attempt}/${tries} failed (${describeTransient(error)}); retrying in ${Math.round(delayMs / 1000)} s`);
+      void beat(deps, eventId);
+    },
+  };
 }
 
 /** Best-effort heartbeat: a failed touch must never fail the event. */
@@ -96,7 +110,12 @@ async function paidCall(
   const t = Date.now();
   // Backstop: the providers enforce their own limits, this also stops a mock or a future provider that ignores them.
   const isClaude = model === deps.cfg.anthropicModel && model !== deps.cfg.geminiModel;
-  const budgetMs = (isClaude ? deps.cfg.llmCallTimeoutS : geminiCallBudgetS(deps.cfg.llmCallTimeoutS, deps.cfg.geminiProcessingTimeoutS)) * 1000;
+  // Gemini may spend extra tries (each bounded by the call limit) plus backoff sleeps on transient errors.
+  const retryExtraMs =
+    (deps.cfg.geminiTransientRetries - 1) * deps.cfg.llmCallTimeoutS * 1000 + maxBackoffMs(deps.cfg.geminiTransientRetries, deps.cfg.geminiTransientBackoffMs);
+  const budgetMs = isClaude
+    ? deps.cfg.llmCallTimeoutS * 1000
+    : geminiCallBudgetS(deps.cfg.llmCallTimeoutS, deps.cfg.geminiProcessingTimeoutS) * 1000 + retryExtraMs;
   const res = await withDeadline(budgetMs, `${stage} (${model}) call`, () => call());
   const latency = Date.now() - t;
   let parsed: unknown;
@@ -145,12 +164,17 @@ async function geminiReport(deps: PipelineDeps, ctx: EventContext, trace: Sensor
       mimeType: "video/mp4",
       displayName: `${ctx.eventId}.mp4`,
       schema: LLM_SCHEMA,
-      timeouts: timeoutsOf(deps.cfg),
+      timeouts: geminiTimeouts(deps, ctx.eventId),
     }),
   );
 }
 
-async function hybridReport(deps: PipelineDeps, ctx: EventContext, trace: SensorTrace | null, video: Uint8Array, log: Logger): Promise<unknown> {
+/** Hybrid bookkeeping: did the Claude writer already fail (so a no-video Claude retry is pointless)? */
+interface HybridState {
+  claudeFailed: boolean;
+}
+
+async function hybridReport(deps: PipelineDeps, ctx: EventContext, trace: SensorTrace | null, video: Uint8Array, log: Logger, st: HybridState): Promise<unknown> {
   const gemini = requireGemini(deps);
   if (!deps.providers.claude) throw new NonRetryableError("Claude client is not configured (set ANTHROPIC_API_KEY)");
   const claude = deps.providers.claude;
@@ -167,7 +191,7 @@ async function hybridReport(deps: PipelineDeps, ctx: EventContext, trace: Sensor
       mimeType: "video/mp4",
       displayName: `${ctx.eventId}.mp4`,
       schema: OBSERVATION_SCHEMA,
-      timeouts: timeoutsOf(deps.cfg),
+      timeouts: geminiTimeouts(deps, ctx.eventId),
     }),
   )) as Observations;
 
@@ -192,11 +216,48 @@ async function hybridReport(deps: PipelineDeps, ctx: EventContext, trace: Sensor
       claude.generateJson({ model: deps.cfg.anthropicModel, system: WRITER_SYSTEM_PROMPT, prompt, schema: LLM_SCHEMA, timeouts: timeoutsOf(deps.cfg) }),
     );
   } catch (e) {
+    if (e instanceof SpendCapError) throw e;
+    st.claudeFailed = true;
+    if (e instanceof LlmTimeoutError) throw e; // not retried; attempt() writes the sensor-only report
     if (e instanceof NonRetryableError || e instanceof VideoUnusableError) throw e;
     // Spec 3.3: Gemini can write the report itself if stage 2 fails.
     log.warn(`Claude stage failed (${(e as Error).message}); falling back to a Gemini-written report`);
     return geminiReport(deps, ctx, trace, video);
   }
+}
+
+/**
+ * Hybrid fallback when the video could not be analysed: Claude writes the report from the sensor data alone.
+ * The "video could not be analysed" sentence is added by the worker (not left to the model), and nothing in the
+ * draft may claim video evidence.
+ */
+async function claudeSensorReport(deps: PipelineDeps, ctx: EventContext, trace: SensorTrace | null, sentence: string): Promise<unknown> {
+  if (!deps.providers.claude) throw new NonRetryableError("Claude client is not configured (set ANTHROPIC_API_KEY)");
+  const claude = deps.providers.claude;
+  const prompt = [
+    eventPromptText(ctx, trace),
+    "",
+    `IMPORTANT: no video analysis is available for this event. ${sentence}`,
+    "Write the investigation analysis as JSON from the sensor data above only. Do not state or imply anything about what was seen or heard; every sequence_of_events entry has source \"sensor\", evidence.clip_refs is an empty array, and confidence_and_gaps says plainly that the video could not be analysed and why.",
+  ].join("\n");
+  const draft = await paidCall(deps, ctx, "report_draft", deps.cfg.anthropicModel, () =>
+    claude.generateJson({ model: deps.cfg.anthropicModel, system: WRITER_SYSTEM_PROMPT, prompt, schema: LLM_SCHEMA, timeouts: timeoutsOf(deps.cfg) }),
+  );
+  if (draft === null || typeof draft !== "object" || Array.isArray(draft)) throw new Error("model output is not a JSON object");
+  const d = draft as Record<string, any>;
+  const gaps = typeof d.confidence_and_gaps === "string" ? d.confidence_and_gaps : "";
+  d.confidence_and_gaps = gaps.includes(sentence) ? gaps : `${sentence} ${gaps}`.trim();
+  d.evidence = { ...(d.evidence ?? {}), clip_refs: [] };
+  if (Array.isArray(d.sequence_of_events)) d.sequence_of_events = d.sequence_of_events.map((x: any) => ({ ...x, source: "sensor" }));
+  return d;
+}
+
+/** Why the video stage failed, when that is a case we degrade on (not an event failure); otherwise null. */
+function videoStageGap(e: unknown): string | null {
+  if (e instanceof VideoUnusableError) return e.message;
+  if (e instanceof TransientExhaustedError) return e.message;
+  if (e instanceof LlmTimeoutError) return e.message;
+  return null;
 }
 
 async function loadTrace(deps: PipelineDeps, ctx: EventContext): Promise<SensorTrace | null> {
@@ -239,19 +300,48 @@ async function attempt(deps: PipelineDeps, eventId: string, log: Logger): Promis
       video = null;
     }
   }
+  let writtenBy: "claude" | null = null;
   if (live && video) {
+    const st: HybridState = { claudeFailed: false };
     try {
       draft =
         deps.cfg.mode === "gemini"
           ? await geminiReport(deps, ctx, trace, video)
-          : await hybridReport(deps, ctx, trace, video, log);
+          : await hybridReport(deps, ctx, trace, video, log, st);
     } catch (e) {
-      if (!(e instanceof VideoUnusableError)) throw e;
-      // The video cannot be analysed (file FAILED, or still PROCESSING at the limit). Do not retry the video.
-      gapReason = e.message;
-      gap = unanalysedSentence(e.message);
-      log.warn(`event ${eventId}: ${e.message}; writing a sensor-only report`);
+      const why = videoStageGap(e);
+      if (why === null) throw e;
+      // The video cannot be analysed (file FAILED/PROCESSING, Gemini overloaded or hung, or Claude timed out).
+      // Never an event failure: the report is written from sensor data. The video is not retried.
+      gapReason = why;
+      gap = unanalysedSentence(why);
+      log.warn(`event ${eventId}: ${why}; writing a report from sensor data`);
+      if (deps.cfg.mode === "hybrid" && deps.providers.claude && !st.claudeFailed) {
+        try {
+          draft = await claudeSensorReport(deps, ctx, trace, gap);
+          writtenBy = "claude";
+        } catch (ce) {
+          if (ce instanceof SpendCapError) throw ce;
+          log.warn(`event ${eventId}: Claude could not write the sensor-only report (${(ce as Error).message}); using the sensor-only draft`);
+          gapReason = `${why}; Claude was also unavailable (${(ce as Error).message})`;
+          gap = unanalysedSentence(gapReason);
+        }
+      }
     }
+  }
+  if (writtenBy === "claude") {
+    // paidCall already stored the report_draft row (model = Claude). This row records the skipped video stage; its
+    // model "sensor-only" is what the dashboard keys on for the "No usable video" note.
+    await deps.store.insertAnalysis({
+      event_id: eventId,
+      stage: "video_skipped",
+      model: "sensor-only",
+      input_tokens: 0,
+      output_tokens: 0,
+      cost_usd: 0,
+      latency_ms: 0,
+      output_json: { reason: gapReason, message: gap, report_written_by: "claude" },
+    });
   }
 
   if (draft === undefined) {

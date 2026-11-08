@@ -1,6 +1,7 @@
 import { GoogleGenAI, createPartFromUri, createUserContent } from "@google/genai";
 import { VideoUnusableError } from "../errors";
 import { withDeadline } from "./timeout";
+import { withTransientRetry } from "./transient";
 import type { CallTimeouts, GeminiClient, ProviderResult } from "./types";
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -32,11 +33,15 @@ export function createGeminiClient(apiKey: string, opts: GeminiClientOptions = {
       }
       const t = timeouts ?? DEFAULT_TIMEOUTS;
       // Files API upload, then poll until the video is processed (state ACTIVE).
-      let file = await withDeadline(t.callMs, "Gemini file upload", (signal) =>
-        ai.files.upload({
-          file: new Blob([video as BlobPart], { type: mimeType }),
-          config: { mimeType, displayName, abortSignal: signal },
-        }),
+      const retry = <T>(fn: () => Promise<T>) =>
+        withTransientRetry({ tries: t.transient?.tries ?? 1, baseMs: t.transient?.baseMs ?? 0, sleep, onRetry: t.onTransientRetry }, fn);
+      let file = await retry(() =>
+        withDeadline(t.callMs, "Gemini file upload", (signal) =>
+          ai.files.upload({
+            file: new Blob([video as BlobPart], { type: mimeType }),
+            config: { mimeType, displayName, abortSignal: signal },
+          }),
+        ),
       );
       try {
         const deadline = now() + t.processingMs;
@@ -58,17 +63,19 @@ export function createGeminiClient(apiKey: string, opts: GeminiClientOptions = {
         }
         const uri = file.uri;
         const fileMime = file.mimeType ?? mimeType;
-        const res = await withDeadline(t.callMs, "Gemini generate call", (signal) =>
-          ai.models.generateContent({
-            model,
-            contents: createUserContent([createPartFromUri(uri, fileMime), prompt]),
-            config: {
-              systemInstruction,
-              responseMimeType: "application/json",
-              responseJsonSchema: schema,
-              abortSignal: signal,
-            },
-          }),
+        const res = await retry(() =>
+          withDeadline(t.callMs, "Gemini generate call", (signal) =>
+            ai.models.generateContent({
+              model,
+              contents: createUserContent([createPartFromUri(uri, fileMime), prompt]),
+              config: {
+                systemInstruction,
+                responseMimeType: "application/json",
+                responseJsonSchema: schema,
+                abortSignal: signal,
+              },
+            }),
+          ),
         );
         const text = res.text;
         if (!text) throw new Error(`Gemini returned no text (finishReason=${res.candidates?.[0]?.finishReason ?? "unknown"})`);

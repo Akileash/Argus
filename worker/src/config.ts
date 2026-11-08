@@ -41,6 +41,10 @@ export interface WorkerConfig {
   geminiProcessingTimeoutS: number;
   /** Limit for each single provider network step (upload, generate, Claude request). */
   llmCallTimeoutS: number;
+  /** Tries per Gemini call on transient errors (429/5xx/UNAVAILABLE/network), the first included. 1 = no retry. */
+  geminiTransientRetries: number;
+  /** Delay before the 2nd Gemini try; doubles after that, plus up to 25% jitter (10 s then 20 s: 30-38 s in all). */
+  geminiTransientBackoffMs: number;
   geminiPrice: { input: number; output: number };
 }
 
@@ -104,6 +108,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     minClipBytes: num(env.WORKER_MIN_CLIP_BYTES, 50_000),
     geminiProcessingTimeoutS,
     llmCallTimeoutS,
+    geminiTransientRetries: Math.max(1, Math.floor(posNum(env.GEMINI_TRANSIENT_RETRIES, 3))),
+    geminiTransientBackoffMs: num(env.GEMINI_TRANSIENT_BACKOFF_MS, 10_000),
     geminiPrice: {
       input: num(env.GEMINI_PRICE_IN_PER_MTOK, dflt.input),
       output: num(env.GEMINI_PRICE_OUT_PER_MTOK, dflt.output),

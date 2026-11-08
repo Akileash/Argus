@@ -152,13 +152,17 @@ describe("Gemini file problems fall back to sensor-only", () => {
     expectSensorOnlyReport(store, /FAILED/);
   });
 
-  it("hybrid: a FAILED file never reaches Claude", async () => {
+  it("hybrid: a FAILED file -> Claude writes a no-video report from sensor data; the video is never sent to it", async () => {
     const { ai } = fakeAi(["FAILED"]);
     const claude = mockClaude(() => evilLlmOutput());
     const store = seed("struck_by_near_miss");
     await processClaimed(deps(store, cfg({ mode: "hybrid", anthropicModel: "claude-test" }), { gemini: createGeminiClient("k", { ai }), claude }), id);
-    expect(claude.calls).toHaveLength(0);
-    expectSensorOnlyReport(store, /FAILED/);
+    expect(claude.calls).toHaveLength(1);
+    expect(claude.calls[0]!.prompt).toMatch(/no video analysis is available/);
+    const ev = store.events.get(id)!;
+    expect(ev.status, ev.error ?? "").toBe("ready");
+    expect(store.reports.get(id)!.report_json.confidence_and_gaps).toMatch(/FAILED/);
+    expect(store.analyses.find((a) => a.stage === "video_skipped")).toMatchObject({ model: "sensor-only" });
   });
 
   it("a provider that throws VideoUnusableError is not retried", async () => {
@@ -180,31 +184,27 @@ describe("a hung provider call cannot stall the worker", () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it("Gemini generate hangs past LLM_CALL_TIMEOUT_S -> one clear failure, no retry, file deleted", async () => {
+  it("Gemini generate hangs past LLM_CALL_TIMEOUT_S -> sensor-only report with the reason, no retry, file deleted", async () => {
     const { ai, log } = fakeAi(["ACTIVE"], { hangGenerate: true });
     const store = seed("struck_by_near_miss");
     const done = processClaimed(deps(store, cfg({ mode: "gemini", llmCallTimeoutS: 180 }), { gemini: createGeminiClient("k", { ai }) }), id);
     await vi.advanceTimersByTimeAsync(181_000);
     await done;
-    const ev = store.events.get(id)!;
-    expect(ev.status).toBe("failed");
-    expect(ev.error).toMatch(/Gemini generate call timed out after 180 s/);
     expect(log.generates).toBe(1); // timeouts are not retried
     expect(log.deletes).toEqual(["files/abc"]);
-    expect(store.reports.size).toBe(0);
+    expectSensorOnlyReport(store, /Gemini generate call timed out after 180 s/);
   });
 
   it("a provider that ignores its own limit is stopped by the pipeline backstop", async () => {
     const gemini = { generateWithVideo: () => new Promise<never>(() => {}) };
     const store = seed("struck_by_near_miss");
     const done = processClaimed(deps(store, cfg({ mode: "gemini" }), { gemini }), id);
-    await vi.advanceTimersByTimeAsync(600_000);
+    await vi.advanceTimersByTimeAsync(1_200_000);
     await done;
-    expect(store.events.get(id)!.status).toBe("failed");
-    expect(store.events.get(id)!.error).toMatch(/timed out/);
+    expectSensorOnlyReport(store, /timed out/);
   });
 
-  it("Claude hangs in hybrid mode -> one clear failure", async () => {
+  it("Claude hangs in hybrid mode -> sensor-only report (no failure)", async () => {
     const claude = { generateJson: () => new Promise<never>(() => {}) };
     const store = seed("struck_by_near_miss");
     const gemini = mockGemini(() => ({ observations: [], contact_visible: "no", visibility_notes: "" }));
@@ -212,8 +212,7 @@ describe("a hung provider call cannot stall the worker", () => {
     await vi.advanceTimersByTimeAsync(181_000);
     await done;
     expect(gemini.calls).toHaveLength(1);
-    expect(store.events.get(id)!.status).toBe("failed");
-    expect(store.events.get(id)!.error).toMatch(/timed out after 180 s/);
+    expectSensorOnlyReport(store, /timed out after 180 s/);
   });
 });
 

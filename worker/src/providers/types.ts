@@ -16,6 +16,10 @@ export interface CallTimeouts {
   callMs: number;
   /** How long to wait for a Gemini file to leave PROCESSING. */
   processingMs: number;
+  /** Retry policy for transient Gemini errors (429/5xx/UNAVAILABLE/network). Default: 1 try, i.e. none. */
+  transient?: { tries: number; baseMs: number };
+  /** Called before each transient retry sleep (the pipeline logs and refreshes the heartbeat). */
+  onTransientRetry?: (info: { attempt: number; tries: number; delayMs: number; error: unknown }) => void;
 }
 
 export interface GeminiClient {
