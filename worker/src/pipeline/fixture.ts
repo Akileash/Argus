@@ -155,7 +155,7 @@ function summaryFor(ctx: EventContext): string {
 }
 
 /** Deterministic, schema-valid analysis fields built from the event and trace. No network, no LLM. */
-export function buildFixtureDraft(ctx: EventContext, trace: SensorTrace | null, opts: { videoMissing?: boolean } = {}): LlmFields {
+export function buildFixtureDraft(ctx: EventContext, trace: SensorTrace | null, opts: { videoMissing?: boolean; videoGap?: string } = {}): LlmFields {
   const ev = ctx.event;
   const tpl = template(ev.type, ctx);
   const r = riskFor(ctx);
@@ -187,7 +187,7 @@ export function buildFixtureDraft(ctx: EventContext, trace: SensorTrace | null, 
     causes: { immediate: tpl.immediate, root_five_whys: tpl.whys },
     corrective_actions: tpl.actions,
     regulatory_note: regulatory,
-    confidence_and_gaps: `This draft was prepared from the sensor data alone; ${opts.videoMissing ? "no video clip was received for this event, so" : "the video clip was not reviewed, so"} visual causes, the activity being performed and any nearby people are not known and should be confirmed by the investigator. ${ev.metrics.peak_g_saturated ? "The peak acceleration reached the sensor limit (\u2265 16 g, saturated), so the true peak is unknown. " : ""}Location on site is not determined.`,
+    confidence_and_gaps: `${opts.videoGap ? `${opts.videoGap} Visual causes` : `This draft was prepared from the sensor data alone; ${opts.videoMissing ? "no video clip was received for this event, so" : "the video clip was not reviewed, so"} visual causes`}, the activity being performed and any nearby people are not known and should be confirmed by the investigator. ${ev.metrics.peak_g_saturated ? "The peak acceleration reached the sensor limit (\u2265 16 g, saturated), so the true peak is unknown. " : ""}Location on site is not determined.`,
     classification_review: { suggested_class: null, reason: null },
   };
 }

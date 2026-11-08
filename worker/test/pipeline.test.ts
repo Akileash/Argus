@@ -238,7 +238,8 @@ describe("stale analyzing recovery (crashed worker)", () => {
     const ev = store.events.get(id)!;
     ev.status = "analyzing"; // a worker claimed it, then died
     ev.updated_at = now;
-    const deps = { store, cfg: cfg(), providers: {}, log: silent, sleep: noSleep };
+    // the stale threshold is configurable (the default is now computed from the timeouts, ~26 min)
+    const deps = { store, cfg: cfg({ staleAnalyzingMs: 300_000 }), providers: {}, log: silent, sleep: noSleep };
 
     now += 4 * 60_000; // 4 min: a slow-but-alive worker may still own it
     expect(await runOnce(deps)).toBe(false);

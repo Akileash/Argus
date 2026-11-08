@@ -10,8 +10,20 @@ export interface ProviderResult {
   model: string;
 }
 
+/** Time limits the pipeline passes to a provider call. */
+export interface CallTimeouts {
+  /** Limit for each single network step (upload, generate, Claude request). */
+  callMs: number;
+  /** How long to wait for a Gemini file to leave PROCESSING. */
+  processingMs: number;
+}
+
 export interface GeminiClient {
-  /** Upload the MP4 (Files API), wait until ACTIVE, then generate JSON constrained by `schema`. */
+  /**
+   * Upload the MP4 (Files API), wait until ACTIVE (at most `timeouts.processingMs`), then generate JSON constrained
+   * by `schema`. Throws VideoUnusableError when the file goes FAILED or stays PROCESSING, LlmTimeoutError on a hung
+   * call. Always deletes the uploaded file afterwards.
+   */
   generateWithVideo(args: {
     model: string;
     systemInstruction: string;
@@ -20,6 +32,7 @@ export interface GeminiClient {
     mimeType: string;
     displayName: string;
     schema: Record<string, unknown>;
+    timeouts?: CallTimeouts;
   }): Promise<ProviderResult>;
 }
 
@@ -29,6 +42,7 @@ export interface ClaudeClient {
     system: string;
     prompt: string;
     schema: Record<string, unknown>;
+    timeouts?: CallTimeouts;
   }): Promise<ProviderResult>;
 }
 

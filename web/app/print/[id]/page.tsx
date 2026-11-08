@@ -26,6 +26,7 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
         status={data.report.status}
         displayClass={data.event.final_class ?? data.event.device_class}
         trace={data.trace}
+        noVideo={data.noVideo}
       />
     </>
   );

@@ -21,6 +21,22 @@ Start here. Pick the guide that matches what you need to do.
 - [../device/hardware/replay/FORMAT.md](../device/hardware/replay/FORMAT.md): the `.jsonl` recording format and the `.labels.json` sidecar.
 - [../device/config.yaml](../device/config.yaml): the shared config template. The installer copies it to `/etc/argus/config.yaml` on the Pi. Machine-specific choices (such as `impl: team`) go in the ignored `device/config.local.yaml`, which is merged over it; see TEAM-HANDOFF.md section 2.
 
+## Report worker settings
+
+The worker (`worker/`) reads these from the environment (`.env.example` lists them). All are optional.
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `REPORT_MODE` | `fixture` | `fixture` (no keys, no video model), `gemini`, or `hybrid` (Gemini watches, Claude writes). |
+| `LLM_SPEND_CAP_USD` | `25` | Hard stop for total LLM spend recorded in `analyses`. |
+| `WORKER_MIN_CLIP_BYTES` | `50000` | A clip counts only if its `media` row is `confirmed` and at least this big (and the downloaded file too). Otherwise the report is written from sensor data only and says why in "Confidence and gaps". A real 30 s 720p clip is megabytes; the mock camera's 2 s clips are about 130 KB. |
+| `GEMINI_PROCESSING_TIMEOUT_S` | `120` | How long to wait for Gemini to finish processing an uploaded video. On a timeout or a `FAILED` file the video is not retried: sensor-only report, reason recorded in the report and in an `analyses` row (`video_skipped`). The uploaded file is always deleted. |
+| `LLM_CALL_TIMEOUT_S` | `180` | Time limit for each single provider step (Gemini upload, Gemini generate, Claude request). A call that hangs fails the event with a clear error and is not retried. |
+| `WORKER_MAX_ANALYSIS_ATTEMPTS` | `3` | Total claims per event (`events.analysis_attempts`), reclaims included. After that the event is `failed` with an error and is never picked up again. To retry one by hand, set its status to `uploaded` and `analysis_attempts` to `0`. |
+| `WORKER_HEARTBEAT_MS` | `30000` | How often a working worker refreshes `events.updated_at`. |
+| `WORKER_STALE_ANALYZING_MS` | computed, `1560000` (26 min) | An `analyzing` event with no heartbeat for this long is re-queued (if it has claims left). Default = 2 x (180 + 120 + 30 + 180) + 180 + 60 + 300 s: two Gemini calls and one Claude call (the longest hybrid path), a download allowance and a 5 min margin. |
+| `WORKER_POLL_MS`, `WORKER_RETRY_DELAY_MS` | `2000`, `3000` | Poll interval, and the pause before the one in-claim retry (retryable errors only). |
+
 ## Quick start on a laptop (no hardware)
 
 You can run the whole system on a laptop with simulated sensors. You do not need a Pi.

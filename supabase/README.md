@@ -15,6 +15,7 @@ Postgres schema, RLS, seed and tests for Supabase. Migration: `migrations/202601
 organizations, sites, crews, workers, profiles, devices, device_assignments, events (PK `id` = device `event_id`), media, analyses, reports, report_edits, report_counters. Enums: `event_type`, `event_class`, `event_status` (received, uploading, uploaded, analyzing, ready, failed), `media_kind` (clip, sensor_trace), `report_status` (draft, signed), `profile_role` (manager, viewer).
 
 ## Behaviours the API/worker can rely on
+- `events.analysis_attempts` counts worker claims (migration 20260101000400). The worker increments it on each claim (compare-and-set from `uploaded`) and fails the event at 3. Only `service_role` can write it.
 - Insert an event idempotently: `insert into events (id, device_id, type, ...) values (...) on conflict (id) do nothing` (check row count; if 0, it is a repeat). A trigger fills `org_id`, `site_id` (from the device) and `worker_id` (from `resolve_worker(device_id, t0)`), and bumps `devices.last_event_at`.
 - `events.device_class` must match `type` (check constraint).
 - `media`, `analyses`, `reports` get `org_id` from their event by trigger; you need not supply it. `media` is unique on `(event_id, filename)`; set `confirmed = true` after `/complete` verifies the object.

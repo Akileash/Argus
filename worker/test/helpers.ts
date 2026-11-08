@@ -23,6 +23,14 @@ export function jsonSchemaValid(r: unknown): { ok: boolean; errors: string } {
   return { ok, errors: ajv.errorsText(validate.errors) };
 }
 
+/** Big enough to pass the default WORKER_MIN_CLIP_BYTES (50 000). */
+export const CLIP_TEST_BYTES = 200_000;
+export function fakeClip(n: number): Uint8Array {
+  const b = new Uint8Array(n);
+  b.set([0, 0, 0, 24, 102, 116, 121, 112]);
+  return b;
+}
+
 export function seed(type: EventType, store = new MemoryStore(), eventId = "6f1d2c1a-3b4e-4f5a-8b6c-7d8e9f0a1b2c"): MemoryStore {
   const event = makeEvent(type, eventId);
   const ctx: EventContext = {
@@ -33,12 +41,12 @@ export function seed(type: EventType, store = new MemoryStore(), eventId = "6f1d
     crewName: "Framing A",
     supervisorName: "A. Tremblay",
     deviceSerial: "ARGUS-001",
-    clip: event.media.some((m) => m.kind === "clip") ? { path: `org/${eventId}/clip.mp4`, contentType: "video/mp4" } : null,
+    clip: event.media.some((m) => m.kind === "clip") ? { path: `org/${eventId}/clip.mp4`, contentType: "video/mp4", bytes: CLIP_TEST_BYTES, confirmed: true } : null,
     trace: event.media.some((m) => m.kind === "sensor_trace") ? { path: `org/${eventId}/trace.json`, contentType: "application/json" } : null,
   };
   store.addEvent(ctx);
   if (ctx.trace) store.files.set(ctx.trace.path, new TextEncoder().encode(JSON.stringify(makeTrace(type, eventId))));
-  if (ctx.clip) store.files.set(ctx.clip.path, new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112]));
+  if (ctx.clip) store.files.set(ctx.clip.path, fakeClip(CLIP_TEST_BYTES));
   return store;
 }
 

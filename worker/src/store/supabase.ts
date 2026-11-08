@@ -12,7 +12,7 @@ import {
   TABLES as T,
   WORKER_COLS as W,
 } from "./columns";
-import type { AnalysisRow, EventContext, LlmSuggestion, MediaRef, Store } from "./types";
+import { giveUpMessage, type AnalysisRow, type EventContext, type LlmSuggestion, type MediaRef, type Store } from "./types";
 
 type Row = Record<string, any>;
 
@@ -29,37 +29,79 @@ export class SupabaseStore implements Store {
     this.db = createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   }
 
-  async claimNext(): Promise<string | null> {
-    const q = await this.db
-      .from(T.events)
-      .select(E.id)
-      .eq(E.status, "uploaded")
-      .order(E.t0, { ascending: true })
-      .limit(1);
-    const rows = must(q, "list uploaded events") as unknown as Row[];
-    const id = rows[0]?.[E.id] as string | undefined;
-    if (!id) return null;
-    // Compare-and-set: only one worker flips uploaded -> analyzing.
-    const upd = await this.db
-      .from(T.events)
-      .update({ [E.status]: "analyzing", [E.error]: null })
-      .eq(E.id, id)
-      .eq(E.status, "uploaded")
-      .select(E.id);
-    const won = must(upd, "claim event") as unknown as Row[];
-    return won.length === 1 ? id : null;
+  async claimNext(maxClaims: number): Promise<string | null> {
+    // A few candidates at most: exhausted ones are failed on the way and skipped.
+    for (let i = 0; i < 10; i++) {
+      const q = await this.db
+        .from(T.events)
+        .select(`${E.id}, ${E.analysisAttempts}`)
+        .eq(E.status, "uploaded")
+        .order(E.t0, { ascending: true })
+        .limit(1);
+      const rows = must(q, "list uploaded events") as unknown as Row[];
+      const id = rows[0]?.[E.id] as string | undefined;
+      if (!id) return null;
+      const attempts = Number(rows[0]![E.analysisAttempts] ?? 0);
+      if (attempts >= maxClaims) {
+        const f = await this.db
+          .from(T.events)
+          .update({ [E.status]: "failed", [E.error]: giveUpMessage(attempts, "it was queued again") })
+          .eq(E.id, id)
+          .eq(E.status, "uploaded")
+          .eq(E.analysisAttempts, attempts);
+        if (f.error) throw new Error(`fail exhausted event: ${f.error.message}`);
+        continue;
+      }
+      // Compare-and-set: only one worker flips uploaded -> analyzing (and bumps the counter from the value it read).
+      const upd = await this.db
+        .from(T.events)
+        .update({ [E.status]: "analyzing", [E.error]: null, [E.analysisAttempts]: attempts + 1 })
+        .eq(E.id, id)
+        .eq(E.status, "uploaded")
+        .eq(E.analysisAttempts, attempts)
+        .select(E.id);
+      const won = must(upd, "claim event") as unknown as Row[];
+      if (won.length === 1) return id;
+      // Lost the race: another worker took it. Report "nothing for me" and let the poll loop come back.
+      return null;
+    }
+    return null;
   }
 
-  async reclaimStale(maxAgeMs: number): Promise<string[]> {
+  async reclaimStale(maxAgeMs: number, maxClaims = Number.MAX_SAFE_INTEGER): Promise<string[]> {
     const cutoff = new Date(Date.now() - maxAgeMs).toISOString();
+    // One conditional UPDATE: an event whose worker refreshed updated_at after the cutoff does not match.
     const res = await this.db
       .from(T.events)
       .update({ [E.status]: "uploaded" })
       .eq(E.status, "analyzing")
       .lt(E.updatedAt, cutoff)
+      .lt(E.analysisAttempts, maxClaims)
       .select(E.id);
     const rows = must(res, "reclaim stale events") as unknown as Row[];
     return rows.map((r) => r[E.id] as string);
+  }
+
+  async failExhausted(maxAgeMs: number, maxClaims: number): Promise<string[]> {
+    const cutoff = new Date(Date.now() - maxAgeMs).toISOString();
+    const res = await this.db
+      .from(T.events)
+      .update({
+        [E.status]: "failed",
+        [E.error]: giveUpMessage(maxClaims, "the worker stopped responding"),
+      })
+      .eq(E.status, "analyzing")
+      .lt(E.updatedAt, cutoff)
+      .gte(E.analysisAttempts, maxClaims)
+      .select(E.id);
+    const rows = must(res, "fail exhausted events") as unknown as Row[];
+    return rows.map((r) => r[E.id] as string);
+  }
+
+  async touch(eventId: string): Promise<void> {
+    // Any UPDATE fires the events_updated_at trigger, which sets updated_at = now().
+    const res = await this.db.from(T.events).update({ [E.status]: "analyzing" }).eq(E.id, eventId).eq(E.status, "analyzing");
+    if (res.error) throw new Error(`heartbeat: ${res.error.message}`);
   }
 
   async loadContext(eventId: string): Promise<EventContext> {
@@ -89,9 +131,12 @@ export class SupabaseStore implements Store {
     const pick = (kind: string): MediaRef | null => {
       const r = mediaRows.find((m) => m[M.kind] === kind);
       if (!r) return null;
+      // bytes and confirmed are carried through: the pipeline decides whether a clip is usable (run.ts clipGap).
       return {
         path: r[M.storagePath] as string,
         contentType: kind === "clip" ? "video/mp4" : "application/json",
+        bytes: r[M.bytes] === null || r[M.bytes] === undefined ? null : Number(r[M.bytes]),
+        confirmed: r[M.confirmed] === true,
       };
     };
 
@@ -178,7 +223,8 @@ export class SupabaseStore implements Store {
         [E.llmReclassReason]: s.reason,
         [E.severity]: severity,
       })
-      .eq(E.id, eventId);
+      .eq(E.id, eventId)
+      .eq(E.status, "analyzing");
     if (res.error) throw new Error(`mark ready: ${res.error.message}`);
   }
 
@@ -186,7 +232,8 @@ export class SupabaseStore implements Store {
     const res = await this.db
       .from(T.events)
       .update({ [E.status]: "failed", [E.error]: error.slice(0, 2000) })
-      .eq(E.id, eventId);
+      .eq(E.id, eventId)
+      .eq(E.status, "analyzing"); // never overwrite an event someone else already finished or re-queued
     if (res.error) throw new Error(`mark failed: ${res.error.message}`);
   }
 }

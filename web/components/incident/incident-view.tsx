@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { Time } from "./time";
 import type { IncidentData } from "@/lib/queries/incident";
+import { NO_VIDEO_NOTE } from "@/lib/report/no-video";
 import { saveReport, type ReclassDecision } from "@/app/(app)/incidents/[id]/actions";
 import { normalizeReport, type ReportJson } from "@/lib/report/model";
 import { EvidencePanel } from "./evidence-panel";
@@ -203,6 +204,11 @@ export function IncidentView({ data, role, fullName }: { data: IncidentData; rol
             <ProcessingStepper status={live.status} videoAnalyzed={videoAnalyzed} error={live.error} />
           ) : showReport && report && draft ? (
             <div className="anim-reveal" data-testid="report-reveal">
+              {data.noVideo && (
+                <div className="mb-3 rounded-md border border-near-miss-line bg-near-miss-bg px-3 py-2 text-sm text-near-miss-fg" data-testid="no-video-note" role="note">
+                  {NO_VIDEO_NOTE}
+                </div>
+              )}
               {signed && (
                 <div className="anim-banner mb-3 rounded-md border border-status-signed-fg/30 bg-status-signed-bg px-3 py-2 text-sm text-status-signed-fg" data-testid="signed-banner">
                   Signed by <strong>{row!.signed_off_by}</strong> on <Time iso={row!.signed_off_at} />. This report is locked.

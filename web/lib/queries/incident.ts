@@ -58,7 +58,10 @@ export interface IncidentData {
   clipDurationS: number | null;
   trace: SensorTrace | null;
   traceState: TraceState;
+  /** The worker wrote this report without video (analyses model "sensor-only"): no clip, or it could not be analysed. */
+  noVideo?: boolean;
 }
+
 
 /** Module names from events.firmware.fallbacks_active, tolerant of missing or malformed JSON. */
 export function fallbackModules(firmware: unknown): string[] {
@@ -82,13 +85,15 @@ export async function getIncident(id: string, opts: { withMedia?: boolean } = {}
     .maybeSingle();
   if (!ev) return null;
 
-  const [{ data: rep }, { data: media }] = await Promise.all([
+  const [{ data: rep }, { data: media }, { data: sensorOnly }] = await Promise.all([
     supabase
       .from("reports")
       .select("id, report_no, status, edited, llm_draft_json, report_json, signed_off_by, signed_off_at, updated_at")
       .eq("event_id", id)
       .maybeSingle(),
     supabase.from("media").select("kind, storage_path, duration_s, confirmed").eq("event_id", id),
+    // The worker marks a report written without video with model "sensor-only" on its analyses rows.
+    supabase.from("analyses").select("id").eq("event_id", id).eq("model", "sensor-only").limit(1),
   ]);
 
   const worker = ev.workers as { full_name: string; crews: { name: string; supervisor_name: string | null } | null } | null;
@@ -162,6 +167,7 @@ export async function getIncident(id: string, opts: { withMedia?: boolean } = {}
     clipDurationS,
     trace,
     traceState,
+    noVideo: (sensorOnly?.length ?? 0) > 0,
   };
 }
 

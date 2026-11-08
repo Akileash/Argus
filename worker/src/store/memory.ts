@@ -1,10 +1,11 @@
 import type { ArgusReport } from "@argus/shared";
-import type { AnalysisRow, EventContext, LlmSuggestion, Store } from "./types";
+import { giveUpMessage, type AnalysisRow, type EventContext, type LlmSuggestion, type Store } from "./types";
 
 export interface MemoryEvent {
   ctx: EventContext;
   status: string;
   error: string | null;
+  analysis_attempts: number;
   llm_suggested_class: string | null;
   llm_reclass_reason: string | null;
   severity: number | null;
@@ -39,6 +40,7 @@ export class MemoryStore implements Store {
       ctx,
       status,
       error: null,
+      analysis_attempts: 0,
       llm_suggested_class: null,
       llm_reclass_reason: null,
       severity: null,
@@ -46,27 +48,52 @@ export class MemoryStore implements Store {
     });
   }
 
-  async claimNext(): Promise<string | null> {
+  async claimNext(maxClaims: number): Promise<string | null> {
     for (const [id, ev] of this.events) {
-      if (ev.status === "uploaded") {
-        ev.status = "analyzing";
+      if (ev.status !== "uploaded") continue;
+      if (ev.analysis_attempts >= maxClaims) {
+        ev.status = "failed";
+        ev.error = giveUpMessage(ev.analysis_attempts, "it was queued again");
         ev.updated_at = this.now();
-        return id;
+        continue;
       }
+      ev.status = "analyzing";
+      ev.analysis_attempts += 1;
+      ev.error = null;
+      ev.updated_at = this.now();
+      return id;
     }
     return null;
   }
 
-  async reclaimStale(maxAgeMs: number): Promise<string[]> {
+  async reclaimStale(maxAgeMs: number, maxClaims = Infinity): Promise<string[]> {
     const ids: string[] = [];
     for (const [id, ev] of this.events) {
-      if (ev.status === "analyzing" && this.now() - ev.updated_at > maxAgeMs) {
+      if (ev.status === "analyzing" && ev.analysis_attempts < maxClaims && this.now() - ev.updated_at > maxAgeMs) {
         ev.status = "uploaded";
         ev.updated_at = this.now();
         ids.push(id);
       }
     }
     return ids;
+  }
+
+  async failExhausted(maxAgeMs: number, maxClaims: number): Promise<string[]> {
+    const ids: string[] = [];
+    for (const [id, ev] of this.events) {
+      if (ev.status === "analyzing" && ev.analysis_attempts >= maxClaims && this.now() - ev.updated_at > maxAgeMs) {
+        ev.status = "failed";
+        ev.error = giveUpMessage(ev.analysis_attempts, "the worker stopped responding");
+        ev.updated_at = this.now();
+        ids.push(id);
+      }
+    }
+    return ids;
+  }
+
+  async touch(eventId: string): Promise<void> {
+    const ev = this.events.get(eventId);
+    if (ev && ev.status === "analyzing") ev.updated_at = this.now();
   }
 
   private get(eventId: string): MemoryEvent {

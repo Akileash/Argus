@@ -1,8 +1,10 @@
 import { SensorTraceSchema, type SensorTrace } from "@argus/shared";
-import { costUsd, priceFor, type WorkerConfig } from "../config";
+import { costUsd, geminiCallBudgetS, priceFor, type WorkerConfig } from "../config";
+import { LlmTimeoutError, NonRetryableError, SpendCapError, VideoUnusableError } from "../errors";
 import { LLM_SCHEMA, OBSERVATION_SCHEMA, type Observations } from "../llm-schema";
 import { OBSERVE_SYSTEM_PROMPT, WRITER_SYSTEM_PROMPT } from "../prompts/index";
-import type { ProviderResult, Providers } from "../providers/types";
+import { withDeadline } from "../providers/timeout";
+import type { CallTimeouts, ProviderResult, Providers } from "../providers/types";
 import type { EventContext, Store } from "../store/types";
 import { assembleReport } from "./assemble";
 import { buildFixtureDraft } from "./fixture";
@@ -27,9 +29,37 @@ export interface PipelineDeps {
   sleep?: (ms: number) => Promise<void>;
 }
 
-/** An error retrying cannot fix. */
-export class NonRetryableError extends Error {}
-export class SpendCapError extends NonRetryableError {}
+export { LlmTimeoutError, NonRetryableError, SpendCapError, VideoUnusableError };
+
+function timeoutsOf(cfg: WorkerConfig): CallTimeouts {
+  return { callMs: cfg.llmCallTimeoutS * 1000, processingMs: cfg.geminiProcessingTimeoutS * 1000 };
+}
+
+/** Best-effort heartbeat: a failed touch must never fail the event. */
+async function beat(deps: PipelineDeps, eventId: string): Promise<void> {
+  try {
+    await deps.store.touch(eventId);
+  } catch (e) {
+    (deps.log ?? consoleLogger).warn(`heartbeat for event ${eventId} failed: ${(e as Error).message}`);
+  }
+}
+
+/**
+ * Why this event has no video a model can use, or null when the clip row looks usable. Only a media row that is
+ * confirmed and at least cfg.minClipBytes counts; everything else is "no clip" and gets the sensor-only report.
+ */
+export function clipGap(ctx: EventContext, cfg: Pick<WorkerConfig, "minClipBytes">): string | null {
+  const c = ctx.clip;
+  if (!c) return "clip missing";
+  if (c.confirmed === false) return "clip upload was never confirmed";
+  if (c.bytes === null || c.bytes === undefined || c.bytes < cfg.minClipBytes) {
+    return `clip missing/empty: ${c.bytes ?? "unknown"} bytes, minimum ${cfg.minClipBytes}`;
+  }
+  return null;
+}
+
+const noVideoSentence = (reason: string) => `No usable video was received for this event (${reason}); this report is based on sensor data only.`;
+const unanalysedSentence = (reason: string) => `The video for this event could not be analysed (${reason}); this report is based on sensor data only.`;
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -62,8 +92,12 @@ async function paidCall(
   call: () => Promise<ProviderResult>,
 ): Promise<unknown> {
   await assertUnderCap(deps, stage);
+  await beat(deps, ctx.eventId);
   const t = Date.now();
-  const res = await call();
+  // Backstop: the providers enforce their own limits, this also stops a mock or a future provider that ignores them.
+  const isClaude = model === deps.cfg.anthropicModel && model !== deps.cfg.geminiModel;
+  const budgetMs = (isClaude ? deps.cfg.llmCallTimeoutS : geminiCallBudgetS(deps.cfg.llmCallTimeoutS, deps.cfg.geminiProcessingTimeoutS)) * 1000;
+  const res = await withDeadline(budgetMs, `${stage} (${model}) call`, () => call());
   const latency = Date.now() - t;
   let parsed: unknown;
   let parseError: string | null = null;
@@ -83,6 +117,7 @@ async function paidCall(
     latency_ms: latency,
     output_json: parseError ? { parse_error: parseError, raw_text: res.text.slice(0, 20000) } : parsed,
   });
+  await beat(deps, ctx.eventId);
   if (parseError) throw new Error(`${stage}: ${parseError}`);
   return parsed;
 }
@@ -93,11 +128,6 @@ function requireGemini(deps: PipelineDeps) {
     throw new NonRetryableError("GEMINI_MODEL is blank: set it to the Gemini Flash model name from your Google AI Studio account (verify the current name at signup)");
   }
   return deps.providers.gemini;
-}
-
-function clipRequired(ctx: EventContext) {
-  if (!ctx.clip) throw new Error("event has no clip media row; cannot run a video model");
-  return ctx.clip;
 }
 
 const OFFSET_NOTE = (pre: number) =>
@@ -115,6 +145,7 @@ async function geminiReport(deps: PipelineDeps, ctx: EventContext, trace: Sensor
       mimeType: "video/mp4",
       displayName: `${ctx.eventId}.mp4`,
       schema: LLM_SCHEMA,
+      timeouts: timeoutsOf(deps.cfg),
     }),
   );
 }
@@ -136,6 +167,7 @@ async function hybridReport(deps: PipelineDeps, ctx: EventContext, trace: Sensor
       mimeType: "video/mp4",
       displayName: `${ctx.eventId}.mp4`,
       schema: OBSERVATION_SCHEMA,
+      timeouts: timeoutsOf(deps.cfg),
     }),
   )) as Observations;
 
@@ -157,10 +189,10 @@ async function hybridReport(deps: PipelineDeps, ctx: EventContext, trace: Sensor
 
   try {
     return await paidCall(deps, ctx, "report_draft", deps.cfg.anthropicModel, () =>
-      claude.generateJson({ model: deps.cfg.anthropicModel, system: WRITER_SYSTEM_PROMPT, prompt, schema: LLM_SCHEMA }),
+      claude.generateJson({ model: deps.cfg.anthropicModel, system: WRITER_SYSTEM_PROMPT, prompt, schema: LLM_SCHEMA, timeouts: timeoutsOf(deps.cfg) }),
     );
   } catch (e) {
-    if (e instanceof NonRetryableError) throw e;
+    if (e instanceof NonRetryableError || e instanceof VideoUnusableError) throw e;
     // Spec 3.3: Gemini can write the report itself if stage 2 fails.
     log.warn(`Claude stage failed (${(e as Error).message}); falling back to a Gemini-written report`);
     return geminiReport(deps, ctx, trace, video);
@@ -177,17 +209,57 @@ async function attempt(deps: PipelineDeps, eventId: string, log: Logger): Promis
   const ctx = await deps.store.loadContext(eventId);
   if (ctx.event.device_class === "system") throw new NonRetryableError("system events do not produce reports");
   const trace = await loadTrace(deps, ctx);
+  await beat(deps, eventId);
 
-  // A clip-less event (upload failed, or the clip was never produced) still gets a report from the sensor data,
-  // with the missing video recorded in confidence_and_gaps, instead of ending as `failed` with nothing.
-  // hat_removed / module_fallback keep their existing rule: no clip, no report.
-  const sensorOnly = deps.cfg.mode !== "fixture" && !ctx.clip && ctx.event.type !== "hat_removed";
-  if (sensorOnly) log.warn(`event ${eventId} has no clip; writing a sensor-only report`);
+  // Only real video goes to a model. hat_removed / module_fallback keep their existing rule: no clip, no report.
+  let draft: unknown = undefined;
+  let gap: string | null = null; // set => sensor-only report, with this sentence in confidence_and_gaps
+  let gapReason = "";
+  const live = deps.cfg.mode !== "fixture";
 
-  let draft: unknown;
-  if (deps.cfg.mode === "fixture" || sensorOnly) {
+  if (live) {
+    const reason = clipGap(ctx, deps.cfg);
+    if (reason) {
+      // hat_removed keeps its existing rule: no clip, no report (it fails with this explicit error).
+      if (ctx.event.type === "hat_removed") throw new Error("event has no clip media row; cannot run a video model");
+      gapReason = reason;
+      gap = noVideoSentence(reason);
+    }
+  }
+
+  let video: Uint8Array | null = null;
+  if (live && gap === null) {
+    if (!ctx.clip) throw new Error("event has no clip media row; cannot run a video model");
+    video = await deps.store.download(ctx.clip.path);
+    await beat(deps, eventId);
+    if (video.length < deps.cfg.minClipBytes) {
+      if (ctx.event.type === "hat_removed") throw new Error("event has no clip media row; cannot run a video model");
+      gapReason = `clip missing/empty: downloaded file is ${video.length} bytes, minimum ${deps.cfg.minClipBytes}`;
+      gap = noVideoSentence(gapReason);
+      video = null;
+    }
+  }
+  if (live && video) {
+    try {
+      draft =
+        deps.cfg.mode === "gemini"
+          ? await geminiReport(deps, ctx, trace, video)
+          : await hybridReport(deps, ctx, trace, video, log);
+    } catch (e) {
+      if (!(e instanceof VideoUnusableError)) throw e;
+      // The video cannot be analysed (file FAILED, or still PROCESSING at the limit). Do not retry the video.
+      gapReason = e.message;
+      gap = unanalysedSentence(e.message);
+      log.warn(`event ${eventId}: ${e.message}; writing a sensor-only report`);
+    }
+  }
+
+  if (draft === undefined) {
+    const sensorOnly = live;
+    if (sensorOnly) log.warn(`event ${eventId}: ${gap}`);
     const t = Date.now();
-    draft = buildFixtureDraft(ctx, trace, { videoMissing: !ctx.clip });
+    const noClip = { ...ctx, clip: sensorOnly ? null : ctx.clip };
+    draft = buildFixtureDraft(noClip, trace, { videoMissing: !noClip.clip, videoGap: gap ?? undefined });
     await deps.store.insertAnalysis({
       event_id: eventId,
       stage: "report_draft",
@@ -198,12 +270,19 @@ async function attempt(deps: PipelineDeps, eventId: string, log: Logger): Promis
       latency_ms: Date.now() - t,
       output_json: draft,
     });
-  } else {
-    const video = await deps.store.download(clipRequired(ctx).path);
-    draft =
-      deps.cfg.mode === "gemini"
-        ? await geminiReport(deps, ctx, trace, video)
-        : await hybridReport(deps, ctx, trace, video, log);
+    if (sensorOnly) {
+      // The why, next to the draft, for anyone reading the analyses table.
+      await deps.store.insertAnalysis({
+        event_id: eventId,
+        stage: "video_skipped",
+        model: "sensor-only",
+        input_tokens: 0,
+        output_tokens: 0,
+        cost_usd: 0,
+        latency_ms: 0,
+        output_json: { reason: gapReason, message: gap },
+      });
+    }
   }
 
   const year = new Date(ctx.event.t0).getUTCFullYear();
@@ -219,6 +298,16 @@ export async function processClaimed(deps: PipelineDeps, eventId: string): Promi
   const log = deps.log ?? consoleLogger;
   const sleep = deps.sleep ?? defaultSleep;
   let lastError = "unknown error";
+  // Keep updated_at fresh for as long as we work, so reclaimStale never re-queues a live event (stage-level touches
+  // in attempt()/paidCall() cover the same ground; this timer covers the gaps inside a long provider call).
+  const hb = deps.cfg.heartbeatMs > 0 ? setInterval(() => void beat(deps, eventId), deps.cfg.heartbeatMs) : undefined;
+  try {
+    await runTries();
+  } finally {
+    if (hb) clearInterval(hb);
+  }
+
+  async function runTries(): Promise<void> {
   for (let n = 1; n <= deps.cfg.maxAttempts; n++) {
     try {
       await attempt(deps, eventId, log);
@@ -235,13 +324,19 @@ export async function processClaimed(deps: PipelineDeps, eventId: string): Promi
   } catch (e) {
     log.error(`could not mark event ${eventId} failed: ${(e as Error).message}`);
   }
+  }
 }
 
 /** Claim and process a single event. Returns false when nothing was waiting. */
 export async function runOnce(deps: PipelineDeps): Promise<boolean> {
-  const stale = await deps.store.reclaimStale(deps.cfg.staleAnalyzingMs);
-  if (stale.length) (deps.log ?? consoleLogger).warn(`re-queued ${stale.length} event(s) stuck in analyzing: ${stale.join(", ")}`);
-  const id = await deps.store.claimNext();
+  const log = deps.log ?? consoleLogger;
+  const { staleAnalyzingMs: age, maxAnalysisAttempts: max } = deps.cfg;
+  // Order matters: give up on exhausted events first, so they are not re-queued below.
+  const gaveUp = await deps.store.failExhausted(age, max);
+  if (gaveUp.length) log.error(`gave up on ${gaveUp.length} event(s) after ${max} attempts: ${gaveUp.join(", ")}`);
+  const stale = await deps.store.reclaimStale(age, max);
+  if (stale.length) log.warn(`re-queued ${stale.length} event(s) stuck in analyzing: ${stale.join(", ")}`);
+  const id = await deps.store.claimNext(max);
   if (!id) return false;
   await processClaimed(deps, id);
   return true;

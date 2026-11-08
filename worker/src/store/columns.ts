@@ -20,6 +20,8 @@ export const EVENT_COLS = {
   status: "status",
   updatedAt: "updated_at",
   error: "error",
+  /** Number of times a worker claimed the event (migration 20260101000400). */
+  analysisAttempts: "analysis_attempts",
   deviceId: "device_id",
   workerId: "worker_id",
   siteId: "site_id",
@@ -62,6 +64,8 @@ export const MEDIA_COLS = {
   storagePath: "storage_path",
   filename: "filename",
   camera: "camera",
+  bytes: "bytes",
+  confirmed: "confirmed",
 } as const;
 
 export const ANALYSIS_COLS = {

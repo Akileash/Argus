@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { withDeadline } from "./timeout";
 import type { ClaudeClient, ProviderResult } from "./types";
 
 export function createClaudeClient(apiKey: string): ClaudeClient {
@@ -6,9 +7,12 @@ export function createClaudeClient(apiKey: string): ClaudeClient {
   const client = new Anthropic({ apiKey });
 
   return {
-    async generateJson({ model, system, prompt, schema }): Promise<ProviderResult> {
+    async generateJson({ model, system, prompt, schema, timeouts }): Promise<ProviderResult> {
       // Stream and take the final message: adaptive thinking + a long structured report can exceed
       // non-streaming HTTP timeouts. Server-side refusal fallbacks per spec 6.1.
+      return withDeadline(timeouts?.callMs ?? 180_000, "Claude request", (signal) => generate(signal));
+
+      async function generate(signal: AbortSignal): Promise<ProviderResult> {
       const stream = client.beta.messages.stream({
         model,
         max_tokens: 32000,
@@ -18,7 +22,7 @@ export function createClaudeClient(apiKey: string): ClaudeClient {
         fallbacks: "default",
         system,
         messages: [{ role: "user", content: prompt }],
-      });
+      }, { signal });
       const msg = await stream.finalMessage();
 
       if (msg.stop_reason === "refusal") {
@@ -38,6 +42,7 @@ export function createClaudeClient(apiKey: string): ClaudeClient {
         outputTokens: msg.usage.output_tokens,
         model: msg.model,
       };
+      }
     },
   };
 }

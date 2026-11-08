@@ -82,7 +82,7 @@ describe("clip-less events in gemini/hybrid mode get a sensor-only report", () =
       expect(claude.calls).toHaveLength(0);
       const r = store.reports.get(id)!.report_json;
       expect(jsonSchemaValid(r).ok).toBe(true);
-      expect(r.confidence_and_gaps).toContain("no video clip was received");
+      expect(r.confidence_and_gaps).toContain("No usable video was received");
       expect(r.evidence.clip_refs).toEqual([]);
       expect(store.analyses[0]).toMatchObject({ stage: "report_draft", model: "sensor-only", cost_usd: 0 });
     });

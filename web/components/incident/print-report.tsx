@@ -2,6 +2,7 @@ import { REPORT_FOOTER } from "@argus/shared";
 import type { SensorTrace } from "@argus/shared";
 import { ClassChip, RiskChip, StatusChip, type EventClass } from "@/components/chips";
 import { Time } from "./time";
+import { NO_VIDEO_NOTE } from "@/lib/report/no-video";
 import { fmtPeakG } from "@/lib/report/format";
 import { fmtOffset, windowDomain } from "@/lib/report/timeline";
 import {
@@ -60,12 +61,14 @@ export function PrintReport({
   status,
   displayClass,
   trace,
+  noVideo,
 }: {
   report: ReportJson;
   event: IncidentEvent;
   status: "draft" | "signed";
   displayClass: EventClass;
   trace: SensorTrace | null;
+  noVideo?: boolean;
 }) {
   const h = report.header;
   const s = report.sign_off;
@@ -91,6 +94,12 @@ export function PrintReport({
       {status === "draft" && (
         <p className="rounded-sm border border-near-miss-line bg-near-miss-bg px-2 py-1 font-semibold text-near-miss-fg">
           DRAFT &mdash; not yet signed off by a manager.
+        </p>
+      )}
+
+      {noVideo && (
+        <p className="rounded-sm border border-near-miss-line bg-near-miss-bg px-2 py-1 font-semibold text-near-miss-fg" data-testid="no-video-note">
+          {NO_VIDEO_NOTE}
         </p>
       )}
 
