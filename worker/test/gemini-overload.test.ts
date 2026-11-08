@@ -195,15 +195,15 @@ describe("transient Gemini errors", () => {
     expect(store.reports.size).toBe(0);
   });
 
-  it("spend cap still blocks paid calls, including the Claude sensor-based fallback", async () => {
+  it("spend cap blocks paid calls, including the Claude fallback, and still yields a sensor-only draft", async () => {
     const { ai } = fakeAi([apiError(503)]);
     const claude = mockClaude(() => claudeSensorOutput());
     const store = seed("struck_by_near_miss");
     await store.insertAnalysis({ event_id: id, stage: "x", model: "m", input_tokens: 0, output_tokens: 0, cost_usd: 5, latency_ms: 0, output_json: {} });
     await run(store, cfg({ mode: "hybrid", anthropicModel: "claude-test", spendCapUsd: 5 }), { gemini: createGeminiClient("k", { ai }), claude });
     expect(claude.calls).toHaveLength(0);
-    expect(store.events.get(id)!.status).toBe("failed");
-    expect(store.events.get(id)!.error).toMatch(/LLM_SPEND_CAP_USD/);
+    expect(store.events.get(id)!.status).toBe("ready");
+    expect(store.reports.get(id)!.report_json.confidence_and_gaps).toMatch(/^AI spend cap reached/);
   });
 
   it("every outcome ends ready-with-report or failed-with-error, never neither", async () => {

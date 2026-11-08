@@ -73,6 +73,8 @@ export function clipGap(ctx: EventContext, cfg: Pick<WorkerConfig, "minClipBytes
 }
 
 const noVideoSentence = (reason: string) => `No usable video was received for this event (${reason}); this report is based on sensor data only.`;
+const spendCapSentence = (detail: string) =>
+  `AI spend cap reached (${detail}); this draft is from sensor data only. Review the video and complete the cause and actions before signing.`;
 const unanalysedSentence = (reason: string) => `The video for this event could not be analysed (${reason}); this report is based on sensor data only.`;
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -309,8 +311,15 @@ async function attempt(deps: PipelineDeps, eventId: string, log: Logger): Promis
           ? await geminiReport(deps, ctx, trace, video)
           : await hybridReport(deps, ctx, trace, video, log, st);
     } catch (e) {
-      const why = videoStageGap(e);
-      if (why === null) throw e;
+      if (e instanceof SpendCapError) {
+        // Over the cap: no more paid calls. A free sensor-only draft beats a failed event; the manager has the video.
+        gapReason = "spend cap reached";
+        gap = spendCapSentence(e.message);
+        log.warn(`event ${eventId}: ${e.message}; writing a sensor-only draft`);
+      }
+      const why = e instanceof SpendCapError ? null : videoStageGap(e);
+      if (why === null && !(e instanceof SpendCapError)) throw e;
+      if (why !== null) {
       // The video cannot be analysed (file FAILED/PROCESSING, Gemini overloaded or hung, or Claude timed out).
       // Never an event failure: the report is written from sensor data. The video is not retried.
       gapReason = why;
@@ -321,11 +330,17 @@ async function attempt(deps: PipelineDeps, eventId: string, log: Logger): Promis
           draft = await claudeSensorReport(deps, ctx, trace, gap);
           writtenBy = "claude";
         } catch (ce) {
-          if (ce instanceof SpendCapError) throw ce;
+          if (ce instanceof SpendCapError) {
+            gapReason = "spend cap reached";
+            gap = spendCapSentence(ce.message);
+            draft = undefined;
+          } else {
           log.warn(`event ${eventId}: Claude could not write the sensor-only report (${(ce as Error).message}); using the sensor-only draft`);
           gapReason = `${why}; Claude was also unavailable (${(ce as Error).message})`;
           gap = unanalysedSentence(gapReason);
+          }
         }
+      }
       }
     }
   }

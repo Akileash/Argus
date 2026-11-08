@@ -152,15 +152,18 @@ describe("worker overrides win over the model", () => {
 });
 
 describe("spend cap", () => {
-  it("refuses a paid call at the cap and marks the event failed, without retrying", async () => {
+  it("refuses a paid call at the cap and writes a free sensor-only draft instead", async () => {
     const store = seed("struck_by_near_miss");
     store.baseCostUsd = 25;
     const gemini = mockGemini(() => evilLlmOutput());
     await run(store, cfg({ mode: "gemini", spendCapUsd: 25 }), { gemini });
     const ev = store.events.get(id)!;
-    expect(ev.status).toBe("failed");
-    expect(ev.error).toContain("LLM_SPEND_CAP_USD");
+    expect(ev.status).toBe("ready");
     expect(gemini.calls).toHaveLength(0);
+    const gaps = store.reports.get(id)!.report_json.confidence_and_gaps as string;
+    expect(gaps).toMatch(/^AI spend cap reached \(.*LLM_SPEND_CAP_USD.*\); this draft is from sensor data only\. Review the video/);
+    expect(store.analyses.every((a) => a.cost_usd === 0)).toBe(true);
+    expect(store.analyses.some((a) => a.model === "sensor-only")).toBe(true);
   });
 
   it("hybrid: stops before stage 2 when stage 1 exhausts the cap", async () => {
@@ -168,10 +171,10 @@ describe("spend cap", () => {
     const gemini = mockGemini(() => OBS, { inputTokens: 1_000_000, outputTokens: 0 }); // $1.50
     const claude = mockClaude(() => evilLlmOutput());
     await run(store, cfg({ mode: "hybrid", spendCapUsd: 1 }), { gemini, claude });
-    expect(store.events.get(id)!.status).toBe("failed");
-    expect(store.events.get(id)!.error).toContain("spend cap");
+    expect(store.events.get(id)!.status).toBe("ready");
     expect(claude.calls).toHaveLength(0);
-    expect(store.analyses).toHaveLength(1);
+    expect(store.reports.get(id)!.report_json.confidence_and_gaps).toMatch(/^AI spend cap reached/);
+    expect(store.analyses.filter((a) => a.cost_usd > 0)).toHaveLength(1); // only stage 1 was paid
   });
 
   it("fixture mode is free and ignores the cap", async () => {

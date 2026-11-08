@@ -111,7 +111,7 @@ Put keys in a `.env` file at the repo root. It is git-ignored, so keys never get
 | `REPORT_MODE` | `fixture` (canned report, no keys), `gemini` (Gemini watches the clip and writes the report), or `hybrid` (Gemini describes the clip, Claude writes the report) |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | Google AI Studio key and model name |
 | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | Anthropic key and model (hybrid mode) |
-| `LLM_SPEND_CAP_USD` | stops paid calls past this total |
+| `LLM_SPEND_CAP_USD` | stops paid calls past this total; events then get a sensor-only draft |
 | `GEMINI_PROCESSING_TIMEOUT_S` | how long to wait for Gemini to process a clip (default 120) |
 
 Events without usable video get a report written from sensor data alone. All worker settings: [docs/README.md](docs/README.md#report-worker-settings).

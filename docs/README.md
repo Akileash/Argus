@@ -28,7 +28,7 @@ The worker (`worker/`) reads these from the environment (`.env.example` lists th
 | Variable | Default | What it does |
 | --- | --- | --- |
 | `REPORT_MODE` | `fixture` | `fixture` (no keys, no video model), `gemini`, or `hybrid` (Gemini watches, Claude writes). |
-| `LLM_SPEND_CAP_USD` | `25` | Hard stop for total LLM spend recorded in `analyses`. |
+| `LLM_SPEND_CAP_USD` | `25` | Hard stop for total LLM spend recorded in `analyses`. Past it, events get a free sensor-only draft that says the cap was reached. |
 | `WORKER_MIN_CLIP_BYTES` | `50000` | A clip counts only if its `media` row is `confirmed` and at least this big (and the downloaded file too). Otherwise the report is written from sensor data only and says why in "Confidence and gaps". A real 30 s 720p clip is megabytes; the mock camera's 2 s clips are about 130 KB. |
 | `GEMINI_PROCESSING_TIMEOUT_S` | `120` | How long to wait for Gemini to finish processing an uploaded video. On a timeout or a `FAILED` file the video is not retried: sensor-only report, reason recorded in the report and in an `analyses` row (`video_skipped`). The uploaded file is always deleted. |
 | `LLM_CALL_TIMEOUT_S` | `180` | Time limit for each single provider step (Gemini upload, Gemini generate, Claude request). A call that hangs is not retried. For Gemini (and for Claude in hybrid) a timeout does not fail the event: the report is written from sensor data and says why. |
