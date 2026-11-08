@@ -1,0 +1,152 @@
+{
+  "summary": "Worker fell from a raised platform after stepping off the edge, with the hard hat recording a 12.4 g impact during the 450 ms free fall. The fall was fully visible in video and confirmed by sensor data.",
+  "sequence_of_events": [
+    {
+      "offset_s": -6.0,
+      "description": "Scene is an indoor construction area with a raised platform and lower level.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "Worker standing on platform, holding a long object, preparing to move.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.8,
+      "description": "Worker begins stepping down from platform toward lower level.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.6,
+      "description": "Worker mid-step, descending platform edge with one leg extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.4,
+      "description": "Worker’s body leans forward while descending platform edge.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.3,
+      "description": "Worker fully in process of falling, both legs dangling over edge.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "Worker falling downward, arms extended as if bracing or stabilizing.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Worker in mid-fall, body oriented downward, arms still extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Worker continues falling, mostly out of frame’s upper view.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Fall detected: 450 ms free fall (estimated drop 0.99 m) ending in 12.4 g impact.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Confirmation buzz on both motors (1.5 s) to notify wearer event was recorded.",
+      "source": "sensor"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -0.3,
+        "observation": "Worker fully in process of falling, both legs dangling over edge."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Worker in mid-fall, body oriented downward, arms still extended."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "Worker continues falling, mostly out of frame’s upper view."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "12.4 g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "gravitational potential energy from height of 0.99 m"
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 4,
+    "severity_justification": "The fall resulted in a 12.4 g impact, which could cause injury to the head or spine, but the drop height was low (0.99 m).",
+    "likelihood_justification": "The worker was on a raised platform and stepped off without apparent warning or fall protection, indicating a foreseeable hazard."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "Worker stepped off the platform edge without using fall protection or securing their position."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "No fall protection systems (e.g., guardrails, harnesses) were visible or in use at the platform edge."
+      }
+    ],
+    "root_five_whys": [
+      "Why did the worker step off the platform? Because they were not using fall protection.",
+      "Why was fall protection not used? Because it was not provided or required at the platform edge.",
+      "Why was it not provided? Because the site’s fall protection policy was not enforced or communicated.",
+      "Why was the policy not enforced? Because there was no visible signage or supervisor oversight.",
+      "Why was there no supervisor oversight? Because the supervisor was not monitoring the area in real-time."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Install guardrails or temporary fall protection systems at all platform edges.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Require all workers to use fall protection when working at heights, even low ones.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Provide training on fall hazards and PPE use for all crew members.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Implement real-time monitoring of high-risk areas with supervisors or automated alerts.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    }
+  ],
+  "regulatory_note": "This event may meet a provincial serious-incident or dangerous-occurrence notification threshold. Verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "Location not specified (unknown). No video gaps; all fall sequence visible. Environment values are near-wearer conditions (indicative).",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

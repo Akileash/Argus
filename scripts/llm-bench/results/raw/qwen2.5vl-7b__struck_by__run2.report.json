@@ -1,0 +1,238 @@
+{
+  "summary": "The worker was striking a piece of wood with a tool, and the ARGUS-001 smart hard hat detected a near miss event with the rear sensor R2, indicating an approaching object at a closing rate of 4.2 m/s, about 0.8 seconds to contact, and 3.40 meters away. The worker continued to strike the material throughout the event.",
+  "sequence_of_events": [
+    {
+      "offset_s": -0.9,
+      "description": "The worker is holding a tool, possibly a hammer, with their right hand.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.8,
+      "description": "The worker is using the tool to strike a piece of wood or similar material.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.7,
+      "description": "The rear sensor R2 warned of an approaching object 4 times, with the first reading indicating a closing rate of 4.2 m/s, about 0.9 seconds to contact, and 3.40 meters away.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.6,
+      "description": "The worker continues to strike the material with the tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.5,
+      "description": "The closest echo from sensor R2 is at 0.10 meters.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.4,
+      "description": "The worker maintains the action of striking the material.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.3,
+      "description": "The worker continues to strike the material with the tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.2,
+      "description": "The rear sensor R2 confirmed a near miss event: an object was closing at 4.2 m/s, about 0.8 seconds to contact and 3.40 meters away with no impact detected.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "The worker is still engaged in the task of striking the material.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "The worker is actively using the tool to strike the material.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "The worker continues to strike the material with the tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.3,
+      "description": "The worker is still engaged in the task of striking the material.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.4,
+      "description": "The worker continues to strike the material with the tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.6,
+      "description": "The worker is still actively using the tool to strike the material.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.8,
+      "description": "The worker continues to strike the material with the tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.9,
+      "description": "The worker is still engaged in the task of striking the material.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "The worker has stopped striking the material and is holding the tool in a relaxed position.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -0.9,
+        "observation": "The worker is holding a tool, possibly a hammer, with their right hand."
+      },
+      {
+        "offset_s": -0.8,
+        "observation": "The worker is using the tool to strike a piece of wood or similar material."
+      },
+      {
+        "offset_s": -0.7,
+        "observation": "The rear sensor R2 warned of an approaching object 4 times, with the first reading indicating a closing rate of 4.2 m/s, about 0.9 seconds to contact, and 3.40 meters away."
+      },
+      {
+        "offset_s": -0.6,
+        "observation": "The worker continues to strike the material with the tool."
+      },
+      {
+        "offset_s": -0.5,
+        "observation": "The closest echo from sensor R2 is at 0.10 meters."
+      },
+      {
+        "offset_s": -0.4,
+        "observation": "The worker maintains the action of striking the material."
+      },
+      {
+        "offset_s": -0.3,
+        "observation": "The worker continues to strike the material with the tool."
+      },
+      {
+        "offset_s": -0.2,
+        "observation": "The rear sensor R2 confirmed a near miss event: an object was closing at 4.2 m/s, about 0.8 seconds to contact and 3.40 meters away with no impact detected."
+      },
+      {
+        "offset_s": -0.1,
+        "observation": "The worker is still engaged in the task of striking the material."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "The worker is actively using the tool to strike the material."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "The worker continues to strike the material with the tool."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "The worker is still engaged in the task of striking the material."
+      },
+      {
+        "offset_s": 0.4,
+        "observation": "The worker continues to strike the material with the tool."
+      },
+      {
+        "offset_s": 0.6,
+        "observation": "The worker is still actively using the tool to strike the material."
+      },
+      {
+        "offset_s": 0.8,
+        "observation": "The worker continues to strike the material with the tool."
+      },
+      {
+        "offset_s": 0.9,
+        "observation": "The worker is still engaged in the task of striking the material."
+      },
+      {
+        "offset_s": 6.0,
+        "observation": "The worker has stopped striking the material and is holding the tool in a relaxed position."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Closing rate",
+        "value": "{4.2} m/s"
+      },
+      {
+        "name": "Time to contact",
+        "value": "{0.8} s"
+      },
+      {
+        "name": "Range at trigger",
+        "value": "{3.40} m"
+      },
+      {
+        "name": "Triggering sensor",
+        "value": "R2"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative; the sensor is biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%"
+  },
+  "hazard": {
+    "category": "struck_by",
+    "energy_source": "tool strike"
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 3,
+    "severity_justification": "The worker was actively striking a piece of wood with a tool, which could have resulted in a near miss with the hard hat.",
+    "likelihood_justification": "The worker was engaged in a task that involved striking a piece of wood, which could have led to a near miss with the hard hat."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "The worker was actively striking a piece of wood with a tool, which could have resulted in a near miss with the hard hat."
+      }
+    ],
+    "root_five_whys": [
+      "The worker was striking a piece of wood with a tool.",
+      "The tool was not designed for the task.",
+      "The worker was not using the correct tool for the task.",
+      "The worker was not following the correct procedures.",
+      "The worker was not aware of the potential hazards."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Ensure that workers are using the correct tools for the task.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Conduct regular tool inspections and maintenance.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Equipment operator"
+    },
+    {
+      "description": "Provide training on the correct use of tools and the potential hazards associated with the task.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Implement a system for reporting and addressing near misses.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    }
+  ],
+  "regulatory_note": "The event may meet the criteria for a serious-incident or dangerous-occurrence notification under provincial regulations. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "The video is slightly blurred, making it difficult to discern fine details of the worker's actions. No video was available to confirm if there was physical contact with the hat.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

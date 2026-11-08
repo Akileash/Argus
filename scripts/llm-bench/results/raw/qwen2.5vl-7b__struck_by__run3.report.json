@@ -1,0 +1,202 @@
+{
+  "summary": "A worker, J. Smith, was near-miss struck by a tool while performing repetitive strikes on a surface. The tool was in motion throughout the sequence, indicating ongoing use.",
+  "sequence_of_events": [
+    {
+      "offset_s": -0.9,
+      "description": "The worker is holding a tool, possibly a hammer, and appears to be preparing to strike a surface.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.8,
+      "description": "The worker is seen moving the tool, likely preparing to strike the surface again.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.6,
+      "description": "The worker has struck the surface, and the tool is in motion, indicating the completion of the strike.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.4,
+      "description": "The worker is seen holding the tool, possibly preparing for another strike.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.3,
+      "description": "The worker is in the process of striking the surface again, with the tool in motion.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Near-miss confirmed: an object was closing at 4.2 m/s, about 0.8 s to contact and 3.40 m away with no impact detected.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "The worker is seen holding the tool, possibly preparing for another strike.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.3,
+      "description": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.4,
+      "description": "The worker is seen holding the tool, possibly preparing for another strike.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.6,
+      "description": "The worker is in the process of striking the surface again, with the tool in motion.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.8,
+      "description": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.9,
+      "description": "The worker is seen holding the tool, possibly preparing for another strike.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "The worker is seen holding the tool, possibly preparing for another strike.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -0.9,
+        "observation": "The worker is holding a tool, possibly a hammer, and appears to be preparing to strike a surface."
+      },
+      {
+        "offset_s": -0.8,
+        "observation": "The worker is seen moving the tool, likely preparing to strike the surface again."
+      },
+      {
+        "offset_s": -0.6,
+        "observation": "The worker has struck the surface, and the tool is in motion, indicating the completion of the strike."
+      },
+      {
+        "offset_s": -0.4,
+        "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+      },
+      {
+        "offset_s": -0.3,
+        "observation": "The worker is in the process of striking the surface again, with the tool in motion."
+      },
+      {
+        "offset_s": -0.1,
+        "observation": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Near-miss confirmed: an object was closing at 4.2 m/s, about 0.8 s to contact and 3.40 m away with no impact detected."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use."
+      },
+      {
+        "offset_s": 0.4,
+        "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+      },
+      {
+        "offset_s": 0.6,
+        "observation": "The worker is in the process of striking the surface again, with the tool in motion."
+      },
+      {
+        "offset_s": 0.8,
+        "observation": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use."
+      },
+      {
+        "offset_s": 0.9,
+        "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+      },
+      {
+        "offset_s": 6.0,
+        "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Closing rate",
+        "value": "4.2 m/s"
+      },
+      {
+        "name": "Time to contact",
+        "value": "0.8 s"
+      },
+      {
+        "name": "Range at trigger",
+        "value": "3.40 m"
+      },
+      {
+        "name": "Triggering sensor",
+        "value": "R2"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative; the sensor is biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%"
+  },
+  "hazard": {
+    "category": "struck_by",
+    "energy_source": "tool in motion"
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 3,
+    "severity_justification": "The worker was near-miss struck by a tool, which could have resulted in injury.",
+    "likelihood_justification": "The worker was repeatedly striking a surface with the tool, indicating a high likelihood of repeated near-miss strikes."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "The worker was repeatedly striking a surface with a tool, indicating a substandard condition of tool use."
+      }
+    ],
+    "root_five_whys": [
+      "Why was the worker using the tool? -> The worker was performing repetitive strikes on a surface."
+      ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Ensure workers are properly trained on the safe use of tools.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Implement a tool inspection program to ensure tools are in good condition.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Equipment operator"
+    },
+    {
+      "description": "Establish clear guidelines for tool usage and storage.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    }
+  ],
+  "regulatory_note": "This incident may meet the threshold for a serious-incident or dangerous-occurrence notification under provincial regulations. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "The video does not show any dynamic motion or contact, and the tool was in motion throughout the sequence, indicating ongoing use. The lack of video makes it difficult to determine if the tool was in contact with the worker's head.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

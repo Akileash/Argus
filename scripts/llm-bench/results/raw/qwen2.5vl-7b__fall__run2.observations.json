@@ -1,0 +1,81 @@
+{
+  "observations": [
+    {
+      "video_time_s": 19.00,
+      "category": "person",
+      "observation": "A person is seen standing on a staircase, holding a tool in their right hand."
+    },
+    {
+      "video_time_s": 19.10,
+      "category": "person",
+      "observation": "The person is seen stepping down the staircase, still holding the tool."
+    },
+    {
+      "video_time_s": 19.25,
+      "category": "person",
+      "observation": "The person is now at the bottom of the staircase, still holding the tool."
+    },
+    {
+      "video_time_s": 19.40,
+      "category": "person",
+      "observation": "The person is seen standing at the bottom of the staircase, now without the tool."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "person",
+      "observation": "The person is seen walking away from the staircase, turning slightly to the right."
+    },
+    {
+      "video_time_s": 19.70,
+      "category": "person",
+      "observation": "The person is now walking further away from the staircase, their back to the camera."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "person",
+      "observation": "The person is seen walking away from the staircase, their back to the camera."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "person",
+      "observation": "The person is now out of frame, indicating they have walked away from the staircase."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "person",
+      "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "person",
+      "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "person",
+      "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "person",
+      "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "person",
+      "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "person",
+      "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+    },
+    {
+      "video_time_s": 26.00,
+      "category": "person",
+      "observation": "The person is no longer in the frame, indicating they have completely walked away from the staircase."
+    }
+  ],
+  "contact_visible": "no",
+  "visibility_notes": "The person is clearly visible until 20.00 s, then they are out of frame."
+}

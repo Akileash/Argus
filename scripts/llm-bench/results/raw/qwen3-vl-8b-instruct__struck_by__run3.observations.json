@@ -1,0 +1,86 @@
+{
+  "observations": [
+    {
+      "video_time_s": 5.0,
+      "category": "environment",
+      "observation": "The camera view shows a test pattern with vertical color bars and a rainbow gradient line crossing the frame."
+    },
+    {
+      "video_time_s": 14.0,
+      "category": "environment",
+      "observation": "The rainbow gradient line is visible, and a small gray square appears on the left side of the green bar."
+    },
+    {
+      "video_time_s": 19.1,
+      "category": "environment",
+      "observation": "A large gray square appears on the left side of the green bar, partially obscuring it."
+    },
+    {
+      "video_time_s": 19.25,
+      "category": "environment",
+      "observation": "The large gray square remains in the same position on the left side of the green bar."
+    },
+    {
+      "video_time_s": 19.4,
+      "category": "environment",
+      "observation": "The large gray square is still visible on the left side of the green bar."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "environment",
+      "observation": "The large gray square remains in place on the left side of the green bar."
+    },
+    {
+      "video_time_s": 19.7,
+      "category": "environment",
+      "observation": "The large gray square is still visible on the left side of the green bar."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "environment",
+      "observation": "The large gray square remains in the same position on the left side of the green bar."
+    },
+    {
+      "video_time_s": 20.0,
+      "category": "environment",
+      "observation": "The large gray square is still visible on the left side of the green bar."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "environment",
+      "observation": "The large gray square remains in place on the left side of the green bar."
+    },
+    {
+      "video_time_s": 20.3,
+      "category": "environment",
+      "observation": "The large gray square is still visible on the left side of the green bar."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "environment",
+      "observation": "The large gray square remains in the same position on the left side of the green bar."
+    },
+    {
+      "video_time_s": 20.6,
+      "category": "environment",
+      "observation": "The large gray square is still visible on the left side of the green bar."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "environment",
+      "observation": "The large gray square remains in place on the left side of the green bar."
+    },
+    {
+      "video_time_s": 20.9,
+      "category": "environment",
+      "observation": "The large gray square is still visible on the left side of the green bar."
+    },
+    {
+      "video_time_s": 26.0,
+      "category": "environment",
+      "observation": "The large gray square is still visible on the left side of the green bar."
+    }
+  ],
+  "contact_visible": "unclear",
+  "visibility_notes": "The camera view is a test pattern with no real-world environment visible. There are no people, vehicles, or equipment visible. The only observable elements are the test pattern and the rainbow gradient line. The trigger moment t0 is not associated with any visible contact or impact."
+}

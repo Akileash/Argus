@@ -1,0 +1,178 @@
+{
+  "summary": "Worker J. Smith fell from a raised platform, impacting the ground after a 450 ms free fall from an estimated height of 0.99 m. The fall was detected by the ARGUS-001 hard hat, which recorded 12.4 g peak acceleration and triggered a confirmation buzz. The worker was not wearing fall protection equipment during the fall.",
+  "sequence_of_events": [
+    {
+      "offset_s": -15.0,
+      "description": "Worker standing on a raised platform, holding a long object.",
+      "source": "video"
+    },
+    {
+      "offset_s": -6.0,
+      "description": "Worker still standing on the platform, holding the object with both hands.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "Worker begins to move forward and bend knees, preparing to descend.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.8,
+      "description": "Worker steps off the platform and begins to fall downward.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.6,
+      "description": "Worker is in mid-fall, arms extended, body falling toward the lower level.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.4,
+      "description": "Worker continues to fall, body now mostly below the platform level.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.3,
+      "description": "Worker is falling with arms outstretched, body angled downward.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "Worker is still falling, body now almost fully below the platform.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Worker is in the process of falling, body now clearly below the platform, arms extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Worker is falling, body now mostly below the platform, arms extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.3,
+      "description": "Worker is still falling, body now almost fully below the platform, arms extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.4,
+      "description": "Worker is falling, body now mostly below the platform, arms extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.6,
+      "description": "Worker is falling, body now mostly below the platform, arms extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.8,
+      "description": "Worker is falling, body now mostly below the platform, arms extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.9,
+      "description": "Worker is falling, body now mostly below the platform, arms extended.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "Worker is no longer visible in the frame, indicating he has fallen out of view.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": 0.0,
+        "observation": "Fall detected: 450 ms of free fall (estimated drop 0.99 m) ending in an impact of 12.4 g."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "Confirmation buzz on both motors (1.5 s) to tell the wearer the event was recorded."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "12.4 g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "gravitational potential energy converted to kinetic energy during free fall"
+  },
+  "risk": {
+    "severity": 5,
+    "likelihood": 4,
+    "severity_justification": "The worker fell from a height of 0.99 m, which is sufficient to cause serious injury or death if impact forces are not mitigated.",
+    "likelihood_justification": "The worker was observed preparing to descend the platform, indicating a foreseeable risk, but no fall protection was used."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "Worker did not use fall protection equipment while working on an elevated surface."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "No fall protection system or guardrails were visible on the platform."
+      }
+    ],
+    "root_five_whys": [
+      "Why did the worker fall? Because he stepped off the platform without fall protection.",
+      "Why was fall protection not used? Because it was not provided or required by site procedures.",
+      "Why was it not provided? Because the site supervisor did not enforce fall protection requirements.",
+      "Why did the supervisor not enforce it? Because there was no documented fall protection policy or training.",
+      "Why was there no policy or training? Because the site safety plan was not fully implemented or reviewed."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Implement and enforce a fall protection policy for all elevated work.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Install guardrails or fall arrest systems on all elevated platforms.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Provide mandatory fall protection training for all workers and supervisors.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Conduct regular inspections to ensure fall protection systems are in place and functional.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Review and update the site safety plan to include fall protection requirements.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This incident may meet a provincial serious-incident or dangerous-occurrence notification threshold. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "Location unknown. No video was available to confirm the exact platform or surface. Environment values are near-wearer conditions and may not reflect site-wide conditions. No evidence of prior incidents or near-misses at this location.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

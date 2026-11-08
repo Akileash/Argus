@@ -1,0 +1,86 @@
+{
+  "observations": [
+    {
+      "video_time_s": 19.10,
+      "category": "worker_activity",
+      "observation": "A worker is standing on a raised platform, holding a long object, and appears to be preparing to move."
+    },
+    {
+      "video_time_s": 19.25,
+      "category": "worker_activity",
+      "observation": "The worker begins to step down from the platform, moving toward the lower level."
+    },
+    {
+      "video_time_s": 19.40,
+      "category": "worker_activity",
+      "observation": "The worker is mid-step, descending the platform edge with one leg extended."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "worker_activity",
+      "observation": "The worker's body is leaning forward as they continue to descend the platform edge."
+    },
+    {
+      "video_time_s": 19.70,
+      "category": "worker_activity",
+      "observation": "The worker is now fully in the process of falling, with both legs dangling over the edge."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "worker_activity",
+      "observation": "The worker is falling downward, arms extended as if trying to brace or stabilize."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "worker_activity",
+      "observation": "The worker is in mid-fall, body oriented downward, arms still extended."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "worker_activity",
+      "observation": "The worker is continuing to fall, now mostly out of the frame's upper view."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "worker_activity",
+      "observation": "The worker is now mostly below the platform, arms still extended as they fall."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "worker_activity",
+      "observation": "The worker is still falling, body mostly below the platform edge."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "worker_activity",
+      "observation": "The worker is still falling, body mostly below the platform edge."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "worker_activity",
+      "observation": "The worker is still falling, body mostly below the platform edge."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is still falling, body mostly below the platform edge."
+    },
+    {
+      "video_time_s": 26.00,
+      "category": "worker_activity",
+      "observation": "The worker is no longer visible in the frame, indicating they have fallen out of view."
+    },
+    {
+      "video_time_s": 14.00,
+      "category": "environment",
+      "observation": "The scene is an indoor construction area with a raised platform and a lower level."
+    },
+    {
+      "video_time_s": 19.10,
+      "category": "environment",
+      "observation": "There are two wooden boxes on the floor near the platform."
+    }
+  ],
+  "contact_visible": "yes",
+  "visibility_notes": "The worker is visible throughout the fall sequence. The camera's view is unobstructed, and the fall is clearly visible from the moment the worker steps off the platform until they are out of frame."
+}

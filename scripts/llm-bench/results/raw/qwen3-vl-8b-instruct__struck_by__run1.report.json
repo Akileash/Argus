@@ -1,0 +1,145 @@
+{
+  "summary": "The device recorded a near miss triggered by sensor R2 detecting an object closing at 4.2 m/s with 0.8 s to contact at 3.40 m. Video analysis confirms no physical contact occurred, as the camera displayed a test pattern with no real-world environment. The event was correctly classified as a near miss by the device.",
+  "sequence_of_events": [
+    {
+      "offset_s": -0.9,
+      "description": "Rear sensor R2 detected an approaching object with a closing rate of 4.2 m/s, time to contact of 0.9 s, and range of 3.40 m. A warning pulse was triggered on the back motor.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Near miss confirmed on sensor R2: object closing at 4.2 m/s, 0.8 s to contact, 3.40 m away, with no impact detected.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.5,
+      "description": "Range sensor R2 recorded a closest echo at 0.10 m, indicating the object passed within 0.10 m of the hat.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -15.0,
+      "description": "Camera view showed a test pattern with vertical color bars and a rainbow gradient line.",
+      "source": "video"
+    },
+    {
+      "offset_s": -6.0,
+      "description": "Rainbow gradient line visible; gray square appeared in lower-left area.",
+      "source": "video"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "Large gray square visible in lower-left area, partially obscuring green bar.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Rainbow gradient line continues moving; gray square remains in lower-left area.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "Rainbow gradient line continues moving; gray square remains in lower-left area.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -0.9,
+        "observation": "Sensor R2 detected object closing at 4.2 m/s with 0.9 s to contact and 3.40 m away."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Near miss confirmed: object closing at 4.2 m/s, 0.8 s to contact, 3.40 m away, no impact."
+      },
+      {
+        "offset_s": -0.5,
+        "observation": "Closest echo at 0.10 m, indicating object passed within 0.10 m of the hat."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Video shows test pattern with no real-world environment, no physical contact or impact."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Closing rate",
+        "value": "4.2 m/s"
+      },
+      {
+        "name": "Time to contact",
+        "value": "0.8 s"
+      },
+      {
+        "name": "Range at trigger",
+        "value": "3.40 m"
+      },
+      {
+        "name": "Triggering sensor",
+        "value": "R2"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "kinetic energy from an object moving at 4.2 m/s (≈15.12 km/h) at 3.40 m range, with closest approach at 0.10 m."
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 4,
+    "severity_justification": "The object passed within 0.10 m of the head, which could have caused injury if it had struck the worker, but no impact occurred.",
+    "likelihood_justification": "The object was detected and warned about by the sensor, but the worker was not able to avoid the object due to the proximity and speed."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "The object was not visible to the worker due to the test pattern on the camera, which may have been used for calibration or testing."
+      },
+      {
+        "kind": "substandard_act",
+        "description": "The worker was not aware of the approaching object due to the test pattern on the camera, which may have been used for calibration or testing."
+      }
+    ],
+    "root_five_whys": [
+      "Why was the object not visible to the worker? Because the camera was displaying a test pattern.",
+      "Why was the camera displaying a test pattern? Because the camera was being used for calibration or testing.",
+      "Why was the camera being used for calibration or testing? Because the site was not fully operational or the camera was not properly configured for real-world use.",
+      "Why was the camera not properly configured for real-world use? Because there was no procedure or training for configuring the camera for real-world use.",
+      "Why was there no procedure or training for configuring the camera for real-world use? Because the site safety manager did not establish or enforce such procedures."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Establish and enforce a procedure for configuring the camera for real-world use.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Provide training for workers on how to configure the camera for real-world use.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Ensure that the camera is configured for real-world use before any work is performed.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Install a backup camera system that is not dependent on the test pattern.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Site supervisor"
+    }
+  ],
+  "regulatory_note": "This event may meet a provincial serious-incident or dangerous-occurrence notification threshold. Verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "No video was available to confirm the real-world environment. The test pattern on the camera may have been used for calibration or testing, which may have contributed to the near miss. The location is unknown. The device correctly classified the event as a near miss, and no evidence contradicts that classification.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

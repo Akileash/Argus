@@ -1,0 +1,86 @@
+{
+  "observations": [
+    {
+      "video_time_s": 5.0,
+      "category": "environment",
+      "observation": "The camera view shows a test pattern with vertical color bars and a rainbow gradient line crossing the frame."
+    },
+    {
+      "video_time_s": 14.0,
+      "category": "environment",
+      "observation": "The rainbow gradient line is still present, and a gray square appears in the lower-left area."
+    },
+    {
+      "video_time_s": 19.1,
+      "category": "environment",
+      "observation": "A gray square is visible in the lower-left area, and the rainbow gradient line continues across the frame."
+    },
+    {
+      "video_time_s": 19.25,
+      "category": "environment",
+      "observation": "The gray square remains in the lower-left, and the rainbow gradient line is still visible."
+    },
+    {
+      "video_time_s": 19.4,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "environment",
+      "observation": "The gray square remains in the lower-left, and the rainbow gradient line is still visible."
+    },
+    {
+      "video_time_s": 19.7,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "environment",
+      "observation": "The gray square remains in the lower-left, and the rainbow gradient line is still visible."
+    },
+    {
+      "video_time_s": 20.0,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 20.3,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 20.6,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 20.9,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    },
+    {
+      "video_time_s": 26.0,
+      "category": "environment",
+      "observation": "The gray square is still visible in the lower-left, and the rainbow gradient line continues."
+    }
+  ],
+  "contact_visible": "unclear",
+  "visibility_notes": "The camera view is a test pattern with no real-world environment visible. The trigger moment t0 at 20.0 s is within the clip, but no actual contact or impact is visible in the frames provided. The scene is a static test pattern with no people, equipment, or materials to observe."
+}

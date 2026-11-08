@@ -1,0 +1,76 @@
+{
+  "observations": [
+    {
+      "video_time_s": 19.10,
+      "category": "worker_activity",
+      "observation": "The worker is holding a tool, possibly a hammer or a similar object, and appears to be in the process of striking a surface."
+    },
+    {
+      "video_time_s": 19.25,
+      "category": "worker_activity",
+      "observation": "The worker is seen moving the tool, likely preparing to strike the surface again."
+    },
+    {
+      "video_time_s": 19.40,
+      "category": "worker_activity",
+      "observation": "The worker has struck the surface, and the tool is in motion, indicating the completion of the strike."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "worker_activity",
+      "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+    },
+    {
+      "video_time_s": 19.70,
+      "category": "worker_activity",
+      "observation": "The worker is in the process of striking the surface again, with the tool in motion."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "worker_activity",
+      "observation": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "worker_activity",
+      "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "worker_activity",
+      "observation": "The worker is in the process of striking the surface again, with the tool in motion."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "worker_activity",
+      "observation": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "worker_activity",
+      "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "worker_activity",
+      "observation": "The worker is in the process of striking the surface again, with the tool in motion."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "worker_activity",
+      "observation": "The worker has completed another strike, and the tool is in motion, indicating the tool is still in use."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+    },
+    {
+      "video_time_s": 26.00,
+      "category": "worker_activity",
+      "observation": "The worker is seen holding the tool, possibly preparing for another strike."
+    }
+  ],
+  "contact_visible": "no",
+  "visibility_notes": "The images are static and do not show any dynamic motion or contact."
+}

@@ -1,0 +1,184 @@
+{
+  "summary": "Worker J. Smith was near-missed by an object while moving an arm with a tool, as indicated by the ARGUS-001 device and visual observations.",
+  "sequence_of_events": [
+    {
+      "offset_s": -0.9,
+      "description": "Rear sensor R2 warned of an approaching object 4 times between -0.9s and -0.7s, with closing rate of 4.2 m/s, about 0.9 s to contact and 3.40 m away.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "Warning pulse on the back motor.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Near miss confirmed on rear sensor R2: an object was closing at 4.2 m/s, about 0.8 s to contact and 3.40 m away with no impact detected.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.1,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.1,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.3,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.4,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.6,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.8,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0.9,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6.0,
+      "description": "Worker is moving the arm with a tool.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -0.9,
+        "observation": "Rear sensor R2 warned of an approaching object 4 times between -0.9s and -0.7s, with closing rate of 4.2 m/s, about 0.9 s to contact and 3.40 m away."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Near miss confirmed on rear sensor R2: an object was closing at 4.2 m/s, about 0.8 s to contact and 3.40 m away with no impact detected."
+      },
+      {
+        "offset_s": -0.1,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 0.4,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 0.6,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 0.8,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 0.9,
+        "observation": "Worker is moving the arm with a tool."
+      },
+      {
+        "offset_s": 6.0,
+        "observation": "Worker is moving the arm with a tool."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Closing rate",
+        "value": "4.2 m/s"
+      },
+      {
+        "name": "Time to contact",
+        "value": "0.8 s"
+      },
+      {
+        "name": "Range at trigger",
+        "value": "3.40 m"
+      },
+      {
+        "name": "Triggering sensor",
+        "value": "R2"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative; the sensor is biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%"
+  },
+  "hazard": {
+    "category": "struck_by",
+    "energy_source": "object in motion"
+  },
+  "risk": {
+    "severity": 3,
+    "likelihood": 2,
+    "severity_justification": "The worker was near-missed by an object, which could have resulted in injury.",
+    "likelihood_justification": "The worker was actively moving an arm with a tool, increasing the likelihood of an object striking the head."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "The worker was actively moving an arm with a tool, increasing the likelihood of an object striking the head."
+      }
+    ],
+    "root_five_whys": [
+      "Why was the worker moving the arm with a tool? Because the worker was performing a task.",
+      "Why was the worker performing the task? Because the worker was following instructions.",
+      "Why were the instructions given? Because the supervisor was directing the worker.",
+      "Why was the supervisor directing the worker? Because the supervisor was managing the crew.",
+      "Why was the supervisor managing the crew? Because the supervisor was responsible for the project."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Ensure workers are aware of the risks associated with moving arms with tools near the head.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Implement a system to ensure workers are trained on safe practices when using tools near the head.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Review and update the site-specific safe work procedures to include specific guidance on the use of tools near the head.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This event may meet the threshold for a serious-incident or dangerous-occurrence notification under provincial regulations. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "No video was available for review.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

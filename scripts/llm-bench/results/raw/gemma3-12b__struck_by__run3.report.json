@@ -1,0 +1,163 @@
+{
+  "summary": "On 2026-06-12 at 15:42:07 UTC, J. Smith experienced a near miss while working with Framing A. A rectangular object approached at a closing rate of 4.2 m/s, with an estimated time to contact of 0.8 s and a range of 3.40 m at the time of trigger. No impact was detected, and the video shows a consistent obstruction of the view by a grey rectangular shape.",
+  "sequence_of_events": [
+    {
+      "offset_s": -0.9,
+      "description": "Rear sensor R2 warned of an approaching object closing at 4.2 m/s, with approximately 0.9 s to contact and 3.40 m away, with readings ranging from 2.65 m away. ",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.9,
+      "description": "A warning pulse was emitted on the back motor.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": 0.0,
+      "description": "Near miss confirmed on rear sensor R2: an object was closing at 4.2 m/s, with approximately 0.8 s to contact and 3.40 m away, with no impact detected.",
+      "source": "sensor"
+    },
+    {
+      "offset_s": -0.5,
+      "description": "Range sensor R2 detected the closest echo at 0.10 m.",
+      "source": "sensor"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -15.0,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": -6.0,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": -0.9,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": -0.8,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": -0.6,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": -0.4,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": -0.3,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": -0.1,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 0.0,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 0.1,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 0.3,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 0.4,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 0.6,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 0.8,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 0.9,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      },
+      {
+        "offset_s": 6.0,
+        "observation": "The view is obstructed by a grey rectangular shape."
+      }
+    ],"key_sensor_values": [
+      {
+        "name": "closing_rate",
+        "value": "4.2 m/s"
+      },
+      {
+        "name": "time_to_contact",
+        "value": "0.8 s"
+      },
+      {
+        "name": "range_at_trigger",
+        "value": "3.40 m"
+      }
+    ],"environment": "Near-wearer conditions (indicative): CO2 612 ppm, temperature 21.4 C, relative humidity 38%."
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "kinetic energy of falling object"
+  },
+  "risk": {
+    "severity": 4,
+    "likelihood": 3,
+    "severity_justification": "A direct strike could have resulted in serious injury.",
+    "likelihood_justification": "The closing rate and short time to contact indicate a high probability of impact if corrective actions had not been taken."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_act",
+        "description": "The object was not properly secured or handled."
+      },
+      {
+        "kind": "substandard_condition",
+        "description": "The work area was not adequately cleared of potential falling hazards."
+      }
+    ],
+    "root_five_whys": [
+      "Why was the object not properly secured?",
+      "Because procedures for securing materials were not consistently followed.",
+      "Why were procedures not consistently followed?",
+      "Because workers were rushing to meet deadlines.",
+      "Why were workers rushing?",
+      "Because of inadequate staffing levels and pressure from management to increase production."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Review and reinforce procedures for securing materials and objects on site.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Conduct a site-wide hazard assessment to identify and mitigate potential falling object hazards.",
+      "control_level": "engineering",
+      "suggested_owner_role": "Health and safety coordinator"
+    },
+    {
+      "description": "Evaluate staffing levels and workload to ensure workers are not pressured to rush and can perform tasks safely.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site manager"
+    },
+    {
+      "description": "Provide additional training on safe work practices and hazard awareness.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Health and safety coordinator"
+    }
+  ],
+  "regulatory_note": "This event may meet the criteria for a provincial serious-incident or dangerous-occurrence notification. Verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "The video consistently showed a grey rectangular shape obstructing the view, making it difficult to fully assess the object's characteristics and trajectory. The exact nature of the object and its origin are unknown. No video was available. The environmental readings are indicative only due to their proximity to the wearer.","classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

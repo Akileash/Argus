@@ -1,0 +1,329 @@
+{
+  "summary": "Worker J. Smith experienced a fall, as indicated by the ARGUS-001 device, which detected a free-fall duration of 450 ms and an estimated drop height of 0.99 m. The peak acceleration recorded was 12.4 g, which is indicative of a significant impact. The worker was wearing the ARGUS-001 device at the time of the incident.",
+  "sequence_of_events": [
+    {
+      "offset_s": -20,
+      "description": "The worker is descending a staircase.",
+      "source": "video"
+    },
+    {
+      "offset_s": -19,
+      "description": "The worker continues to descend the staircase.",
+      "source": "video"
+    },
+    {
+      "offset_s": -18,
+      "description": "The worker is closer to the bottom of the staircase.",
+      "source": "video"
+    },
+    {
+      "offset_s": -17,
+      "description": "The worker is at the bottom of the staircase, appearing to fall.",
+      "source": "video"
+    },
+    {
+      "offset_s": -16,
+      "description": "The worker is on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -15,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -14,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -13,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -12,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -11,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -10,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -9,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -8,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -7,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -6,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -5,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -4,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -3,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -2,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": -1,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": 0,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": 1,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": 2,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": 3,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": 4,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": 5,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    },
+    {
+      "offset_s": 6,
+      "description": "The worker is lying on the ground, having fallen.",
+      "source": "video"
+    }
+  ],
+  "evidence": {
+    "clip_refs": [
+      {
+        "offset_s": -20,
+        "observation": "The person is seen walking down a staircase."
+      },
+      {
+        "offset_s": -19,
+        "observation": "The person continues to descend the staircase."
+      },
+      {
+        "offset_s": -18,
+        "observation": "The person is closer to the bottom of the staircase."
+      },
+      {
+        "offset_s": -17,
+        "observation": "The person is at the bottom of the staircase, appearing to fall."
+      },
+      {
+        "offset_s": -16,
+        "observation": "The person is on the ground, having fallen."
+      },
+      {
+        "offset_s": -15,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -14,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -13,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -12,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -11,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -10,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -9,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -8,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -7,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -6,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -5,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -4,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -3,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -2,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": -1,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": 0,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": 1,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": 2,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": 3,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": 4,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": 5,
+        "observation": "The person is lying on the ground, having fallen."
+      },
+      {
+        "offset_s": 6,
+        "observation": "The person is lying on the ground, having fallen."
+      }
+    ],
+    "key_sensor_values": [
+      {
+        "name": "Peak acceleration",
+        "value": "12.4 g"
+      },
+      {
+        "name": "Free-fall duration",
+        "value": "450 ms"
+      },
+      {
+        "name": "Estimated drop height",
+        "value": "0.99 m"
+      },
+      {
+        "name": "Hat on at trigger",
+        "value": "yes"
+      }
+    ],
+    "environment": "Near-wearer conditions (indicative; the sensor is biased by the wearer's breath and head heat): CO2 612 ppm, temperature 21.4 C, relative humidity 38%"
+  },
+  "hazard": {
+    "category": "falling_object",
+    "energy_source": "gravity"
+  },
+  "risk": {
+    "severity": 5,
+    "likelihood": 5,
+    "severity_justification": "The worker experienced a significant impact with a peak acceleration of 12.4 g, which is indicative of a severe injury.",
+    "likelihood_justification": "The worker was descending a staircase, which is a common workplace activity, and the fall resulted in a significant impact, indicating a high likelihood of the worst credible outcome."
+  },
+  "causes": {
+    "immediate": [
+      {
+        "kind": "substandard_condition",
+        "description": "The worker was descending a staircase, which is a common workplace activity, and the fall resulted in a significant impact, indicating a high likelihood of the worst credible outcome."
+      }
+    ],
+    "root_five_whys": [
+      "The worker was descending a staircase.",
+      "The worker was not wearing any protective gear.",
+      "The worker was not following the fall protection protocol.",
+      "The worker was not aware of the potential hazards associated with descending a staircase.",
+      "The worker was not trained on the proper use of fall protection equipment."
+    ]
+  },
+  "corrective_actions": [
+    {
+      "description": "Ensure all workers are properly trained on the use of fall protection equipment and the proper procedures for descending stairs.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Implement a fall protection protocol for all workers, especially when descending stairs.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Provide personal protective equipment (PPE) to all workers, including fall protection gear, and ensure it is used correctly.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    },
+    {
+      "description": "Regularly inspect and maintain fall protection equipment to ensure it is in good working order.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Equipment operator"
+    },
+    {
+      "description": "Ensure all workers are aware of the potential hazards associated with descending stairs and the importance of using fall protection equipment.",
+      "control_level": "administrative",
+      "suggested_owner_role": "Site supervisor"
+    }
+  ],
+  "regulatory_note": "This incident may meet the threshold for a serious-incident or dangerous-occurrence notification under provincial regulations. Please verify with your provincial OHS regulator.",
+  "confidence_and_gaps": "The video is blurry, making it difficult to discern specific details, which limits the ability to confirm the exact nature of the fall and the worker's actions. No video was available.",
+  "classification_review": {
+    "suggested_class": null,
+    "reason": null
+  }
+}

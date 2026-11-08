@@ -1,0 +1,491 @@
+{
+  "observations": [
+    {
+      "video_time_s": 19.25,
+      "category": "worker_activity",
+      "observation": "The worker is holding a tool in his right hand and appears to be in the process of using it, possibly to fix or adjust something."
+    },
+    {
+      "video_time_s": 19.40,
+      "category": "worker_activity",
+      "observation": "The worker is stepping forward with his left foot, indicating he is moving towards the area where he is working."
+    },
+    {
+      "video_time_s": 19.55,
+      "category": "worker_activity",
+      "observation": "The worker has now stepped forward with his right foot, suggesting he is continuing his movement towards the work area."
+    },
+    {
+      "video_time_s": 19.70,
+      "category": "worker_activity",
+      "observation": "The worker is now in a crouched position, leaning forward, which might indicate he is about to perform a task that requires him to be low to the ground."
+    },
+    {
+      "video_time_s": 19.85,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.00,
+      "category": "worker_activity",
+      "observation": "The worker is now in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.15,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.30,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.45,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.60,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.75,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position, leaning forward, with his hands positioned as if he is about to reach for something on the ground."
+    },
+    {
+      "video_time_s": 20.90,
+      "category": "worker_activity",
+      "observation": "The worker is in a crouched position
