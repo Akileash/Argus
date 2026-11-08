@@ -3,14 +3,15 @@
 #
 #   hat (mock hardware, real device stack) -> uploader -> web API -> Supabase -> worker -> report
 #
-# Runs the three pitch scenarios (spec section 7) against local Supabase, a production build of the web
+# Runs the demo scenarios (a fall and a hat removal; add --with-struck-by for the board swing) against local Supabase, a production build of the web
 # app and the report worker, then asserts the resulting database/storage state through the REST API.
 #
-# Usage: scripts/demo-e2e.sh [--reset] [--keep-running] [--ui] [--port N] [--no-build]
+# Usage: scripts/demo-e2e.sh [--reset] [--keep-running] [--ui] [--with-struck-by] [--port N] [--no-build]
 #   --reset         `supabase db reset` first (wipes local data, re-seeds)
 #   --keep-running  leave web + worker up afterwards so you can watch the dashboard; Ctrl-C to stop
 #   --port N        web port (default: first free port from 3400)
-#   --ui            also open the struck-by incident in Playwright, save web/tests/e2e/__screenshots__/e2e-struck-by.png
+#   --ui            also open the fall incident in Playwright, save web/tests/e2e/__screenshots__/e2e-struck-by.png
+#   --with-struck-by  also run the board-swing struck-by near miss (off by default)
 #   --no-build      reuse the existing web/.next build
 # Env: REPORT_MODE (default fixture), ARGUS_DEMO_SERIAL (default ARG-0002), ARGUS_DEMO_TOKEN
 set -uo pipefail
@@ -21,6 +22,7 @@ export PATH="/opt/homebrew/opt/node@22/bin:/opt/homebrew/opt/postgresql@16/bin:/
 RESET=0
 KEEP=0
 UI=0
+STRUCK=0
 BUILD=1
 PORT=""
 while [ $# -gt 0 ]; do
@@ -28,9 +30,10 @@ while [ $# -gt 0 ]; do
     --reset) RESET=1 ;;
     --keep-running) KEEP=1 ;;
     --ui) UI=1 ;;
+    --with-struck-by) STRUCK=1 ;;
     --no-build) BUILD=0 ;;
     --port) shift; PORT="${1:-}" ;;
-    -h|--help) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option: $1 (try --help)" >&2; exit 2 ;;
   esac
   shift
@@ -166,7 +169,9 @@ SINCE="$(python3 -c 'from datetime import datetime,timezone,timedelta;print((dat
 # camera ring holds the full 20 s pre-roll (a real hat has been running for minutes); run time =
 # lead-in + time to the event + 10 s post-roll + clip encode margin.
 LEAD=21
-SCENARIOS=("board_swing_rear:struck_by_near_miss:39" "hat_drop_1m:fall:40" "hat_removed_table:hat_removed:33")
+# The demo runs the fall (with the real ledge-fall video) and the hat removal. The struck-by near miss is opt-in.
+SCENARIOS=("hat_drop_1m:fall:40" "hat_removed_table:hat_removed:33")
+[ "$STRUCK" = 1 ] && SCENARIOS=("board_swing_rear:struck_by_near_miss:39" "${SCENARIOS[@]}")
 EXPECT=()
 for spec in "${SCENARIOS[@]}"; do
   IFS=: read -r name etype secs <<<"$spec"
@@ -189,8 +194,8 @@ uv run --project device python scripts/demo_assert.py --url "$SB_URL" --key "$SB
 RC=$?
 
 if [ "$RC" = 0 ] && [ "$UI" = 1 ]; then
-  log "UI check: opening the struck-by incident in Playwright"
-  EID="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["board_swing_rear"]["event_id"])' "$DEMO_DIR/summary.json")"
+  log "UI check: opening the fall incident in Playwright"
+  EID="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["hat_drop_1m"]["event_id"])' "$DEMO_DIR/summary.json")"
   (cd web && WEB_BASE_URL="$BASE" E2E_INCIDENT_ID="$EID" pnpm exec playwright test -c tests/e2e/playwright.config.ts e2e-struck-by) \
     >"$LOG_DIR/playwright.log" 2>&1 || { tail -30 "$LOG_DIR/playwright.log" >&2; RC=1; }
   [ "$RC" = 0 ] && log "UI check passed (screenshot: web/tests/e2e/__screenshots__/e2e-struck-by.png)"

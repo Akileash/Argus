@@ -68,7 +68,7 @@ pnpm install
 ./scripts/demo-e2e.sh --reset --keep-running
 ```
 
-This starts the database, builds the dashboard, runs a simulated hat through three demo events and checks the results (about 3 minutes). When it prints `RESULT: PASS`, open **http://127.0.0.1:3400** and log in with `demo@argus.local` / `argus-demo-2026`. Press Ctrl+C to stop.
+This starts the database, builds the dashboard, runs a simulated hat through two demo events (a fall, using a real fall video, and a hat removal) and checks the results (about 3 minutes). When it prints `RESULT: PASS`, open **http://127.0.0.1:3400** and log in with `demo@argus.local` / `argus-demo-2026`. Press Ctrl+C to stop.
 
 > `--reset` wipes the local database and reloads the demo data. Leave it out to keep your data.
 
