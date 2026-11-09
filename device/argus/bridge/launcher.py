@@ -22,7 +22,7 @@ from pathlib import Path
 log = logging.getLogger("argus.bridge.launcher")
 
 # Their format: f"[tof] HELMET {'ON' if worn else 'OFF'}  mm={snap.distance_mm} near={snap.near}"  (hat/main.py)
-TOF_RE = re.compile(r"\[tof\] HELMET (ON|OFF)\b(?:\s+mm=(\S+))?(?:\s+near=(\S+))?")
+TOF_RE = re.compile(r"\[tof\] HELMET (ON|OFF)\b(?:\s+mm=(\w+))?(?:\s+near=(True|False|None))?")
 
 
 @dataclass(frozen=True)
@@ -32,21 +32,28 @@ class TofLine:
     near: str | None
 
 
-def parse_tof(line: str) -> TofLine | None:
-    """Parse one console line (a ``\\r``-joined progress line may hold several statements; the last tof wins)."""
-    hit = None
+def parse_tof_all(line: str) -> list[TofLine]:
+    """Every ``[tof] HELMET`` statement in one console chunk. Their ultrasonic debug prints carriage-return fragments
+    with no newline, so the text is split on both newline and CR and the pattern is searched unanchored."""
+    out = []
     for part in line.replace("\r", "\n").splitlines():
-        m = TOF_RE.search(part)
-        if m:
-            hit = TofLine(m.group(1) == "ON", m.group(2), m.group(3))
-    return hit
+        for m in TOF_RE.finditer(part):
+            out.append(TofLine(m.group(1) == "ON", m.group(2), m.group(3)))
+    return out
+
+
+def parse_tof(line: str) -> TofLine | None:
+    """The last ``[tof] HELMET`` statement in the chunk, or None."""
+    hits = parse_tof_all(line)
+    return hits[-1] if hits else None
 
 
 class HatLauncher:
-    def __init__(self, cmd: list[str], cwd: Path, on_tof: Callable[[TofLine], None], *,
+    def __init__(self, cmd: list[str], cwd: Path, on_tof: Callable[[TofLine], None] | None = None, *,
+                 name: str = "hat.main",
                  out: Callable[[str], None] | None = None, backoff_s: tuple[float, float] = (1.0, 30.0),
                  healthy_after_s: float = 60.0, kill_after_s: float = 10.0) -> None:
-        self.cmd, self.cwd, self.on_tof = cmd, cwd, on_tof
+        self.cmd, self.cwd, self.on_tof, self.name = cmd, cwd, on_tof, name
         self.out = out or (lambda s: (sys.stdout.write(s), sys.stdout.flush()))
         self.backoff_s, self.healthy_after_s, self.kill_after_s = backoff_s, healthy_after_s, kill_after_s
         self._stop = threading.Event()
@@ -64,7 +71,7 @@ class HatLauncher:
         p = subprocess.Popen(self.cmd, cwd=self.cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env,
                              start_new_session=True)  # own process group: killpg reaches anything it spawned
         self.starts += 1
-        log.info("started hat.main pid %d: %s (cwd %s)", p.pid, " ".join(self.cmd), self.cwd)
+        log.info("started %s pid %d: %s (cwd %s)", self.name, p.pid, " ".join(self.cmd), self.cwd)
         return p
 
     def _pump(self, p: subprocess.Popen[bytes]) -> None:
@@ -73,9 +80,9 @@ class HatLauncher:
             line = raw.decode("utf-8", "replace")
             self.out(line)
             try:
-                t = parse_tof(line)
-                if t:
-                    self.on_tof(t)
+                if self.on_tof:
+                    for t in parse_tof_all(line):
+                        self.on_tof(t)
             except Exception:
                 log.exception("tof handler failed")
 
@@ -94,7 +101,7 @@ class HatLauncher:
                 self.exits.append(rc)
                 if self._stop.is_set():
                     return
-                log.error("hat.main exited with code %s; restarting in %.0fs", rc, delay)
+                log.error("%s exited with code %s; restarting in %.0fs", self.name, rc, delay)
             if time.monotonic() - t_start >= self.healthy_after_s:
                 delay = self.backoff_s[0]
             if self._stop.wait(delay):
@@ -109,7 +116,7 @@ class HatLauncher:
             try:
                 p.wait(self.kill_after_s)
             except subprocess.TimeoutExpired:
-                log.warning("hat.main ignored SIGTERM for %.0fs; killing its process group", self.kill_after_s)
+                log.warning("%s ignored SIGTERM for %.0fs; killing its process group", self.name, self.kill_after_s)
                 self._signal(p, signal.SIGKILL)
                 p.wait()
         if self._thread:

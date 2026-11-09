@@ -14,6 +14,8 @@ from typing import Any
 
 # Their event types the bridge turns into events; everything else (e.g. ``impact``) is ignored.
 HAT_EVENT_TYPES = ("fall", "line_of_fire")
+# Legacy imu_fall.py output in the same file: skipped and counted. hat_removed comes only from `[tof]` lines.
+LEGACY_TYPES = ("impact", "near_fall", "hat_removed")
 OUR_TYPE = {"fall": "fall", "line_of_fire": "struck_by_near_miss"}
 OUR_CLASS = {"fall": "incident", "struck_by_near_miss": "near_miss", "hat_knocked_off": "incident",
              "hat_removed": "ppe_log"}
@@ -21,8 +23,6 @@ NEAR_MISS_LINK_S = 2.0  # D4: a fall within this after a near miss links back to
 SATURATION_G = 15.9
 G = 9.81
 FIRMWARE_VERSION = "bridge-0.1"
-CLIP_PRE_S = 20.0  # hat/config.py CAM_PRE_S / CAM_POST_S: the clip they cut around a fall
-CLIP_POST_S = 10.0
 METRIC_KEYS = ("peak_g", "peak_g_saturated", "closing_rate_mps", "ttc_s", "range_m", "sensor_id", "free_fall_ms",
                "drop_height_m", "hat_on")
 
@@ -51,6 +51,12 @@ class Mapped:
     trace: dict[str, Any] | None
     wants_clip: bool
     notes: list[str] = field(default_factory=list)  # integration problems seen on this event (logged by the caller)
+
+
+def reported_worn(raw: dict[str, Any]) -> bool | None:
+    """``sensor.helmet_worn_at_onset`` of a fall (None when absent). Callers fall back to the last ToF state."""
+    w = (raw.get("sensor") or {}).get("helmet_worn_at_onset")
+    return w if isinstance(w, bool) else None
 
 
 def is_hat_event(raw: Any) -> bool:
@@ -84,8 +90,7 @@ def _base(event_id: str, typ: str, t0: datetime, detected: datetime, serial: str
         "merged_triggers": [],
         "media": [],
         "firmware": {"version": FIRMWARE_VERSION,
-                     "impls": {"imu": "team", "range": "team", "hat_on": "team", "haptics": "team",
-                               "camera": "team", **({"env": "team"} if env else {})},
+                     "impls": {m: "team" for m in ("imu", "range", "hat_on", "env", "haptics", "camera")},
                      "fallbacks_active": []},
     }
 
@@ -98,15 +103,14 @@ def _metrics(**kw: Any) -> dict[str, Any]:
     return m
 
 
-def fall_metrics(raw: dict[str, Any]) -> dict[str, Any]:
+def fall_metrics(raw: dict[str, Any], hat_on: bool = True) -> dict[str, Any]:
     s = raw.get("sensor") or {}
     peak, ff = _num(s.get("peak_accel_g")), _num(s.get("freefall_ms"))
     worn = s.get("helmet_worn_at_onset")
     return _metrics(
         peak_g=peak, peak_g_saturated=bool(peak is not None and peak >= SATURATION_G),
         free_fall_ms=ff, drop_height_m=None if ff is None else round(0.5 * G * (ff / 1000.0) ** 2, 3),
-        # Their fall is wear-gated, so a fall that reached us was worn; absent means "not reported".
-        hat_on=worn if isinstance(worn, bool) else True)
+        hat_on=worn if isinstance(worn, bool) else hat_on)
 
 
 def _lof_metrics(raw: dict[str, Any], side_map: dict[str, str], hat_on: bool) -> dict[str, Any]:
@@ -141,7 +145,7 @@ def build_trace(event_id: str, typ: str, raw: dict[str, Any], metrics: dict[str,
     """contracts/sensor_trace.schema.json from what their event really holds.
 
     IMU: their ``imu_trace`` is ``[t_ms, ax, ay, az]`` relative to the event time. Gyro is not in it, so gx/gy/gz are
-    empty arrays (the schema requires the keys; faking zeros would be inventing data). ``offset_s`` shifts times when
+    arrays of null (not measured; contract amended to allow null; zeros would be invented data). ``offset_s`` shifts times when
     the trace is reused by an event whose t0 differs (hat_knocked_off). Range: the single reading their event holds.
     """
     s = raw.get("sensor") or {}
@@ -157,6 +161,12 @@ def build_trace(event_id: str, typ: str, raw: dict[str, Any], metrics: dict[str,
         v = metrics.get(k)
         if v is not None and v is not False:
             det[k] = v
+    for k in ("confidence", "wear_on_fraction", "helmet_worn_at_onset", "helmet_worn_lookback_s", "trigger_reason"):
+        v = s.get(k, raw.get(k))
+        if v is not None:
+            det[k] = v
+    if isinstance(s.get("detail"), dict):
+        det["team_detail"] = s["detail"]
     rate = imu_rate_hz(rows)
     if rate is not None:
         det["imu_rate_hz"] = rate
@@ -170,7 +180,8 @@ def build_trace(event_id: str, typ: str, raw: dict[str, Any], metrics: dict[str,
     t_all = t + [round(-offset_s, 4)]
     return {
         "schema_version": "1", "event_id": event_id, "t_start_s": min(t_all), "t_end_s": max(t_all),
-        "imu": {"t": t, "a_mag_g": mag, "ax": ax, "ay": ay, "az": az, "gx": [], "gy": [], "gz": []},
+        "imu": {"t": t, "a_mag_g": mag, "ax": ax, "ay": ay, "az": az, "gx": [None] * len(t), "gy": [None] * len(t),
+                "gz": [None] * len(t)},
         "imu_peaks": peaks, "ranges": ranges, "tof": {"t": [], "range_mm": []},
         "hat_on": [{"t": min(t_all), "on": bool(metrics.get("hat_on", True))}],
         "haptics": [], "detections": [det], "env": _env(air),
@@ -186,7 +197,7 @@ def map_hat_event(raw: dict[str, Any], *, serial: str, side_map: dict[str, str],
     ev = _base(raw["event_id"], typ, t0, t0, serial, _env(air))
     notes: list[str] = []
     if raw["type"] == "fall":
-        ev["metrics"] = fall_metrics(raw)
+        ev["metrics"] = fall_metrics(raw, hat_on)
         for _eid, nm_t in recent_near_misses or []:
             if 0 <= (t0 - nm_t).total_seconds() <= NEAR_MISS_LINK_S:  # D4
                 ev["merged_triggers"].append({"type": "struck_by_near_miss", "offset_s": round((nm_t - t0).total_seconds(), 3)})
@@ -203,14 +214,19 @@ def map_hat_event(raw: dict[str, Any], *, serial: str, side_map: dict[str, str],
     return Mapped(ev, trace, True, notes)
 
 
-def with_clip(ev: dict[str, Any], clip_s: float | None, *, offset_s: float = 0.0) -> None:
-    """Fill ``window`` from the real clip: it starts CLIP_PRE_S (+offset) before t0 and is ``clip_s`` long.
-    ``offset_s`` = seconds t0 lies after the event the clip was cut for (shared clip of hat_knocked_off)."""
-    if clip_s is None:
+def clip_window(t0: datetime, clip_end: datetime, clip_s: float) -> dict[str, float]:
+    """Where t0 sits in the REAL clip. The clip ends when their camera finished (file mtime), so the part after t0 is
+    ``clip_end - t0`` clamped into the clip; the rest is pre-roll. Nothing is assumed about 20 s + 10 s."""
+    post = min(max((clip_end - t0).total_seconds(), 0.0), clip_s)
+    return {"pre_s": round(clip_s - post, 3), "post_s": round(post, 3)}
+
+
+def with_clip(ev: dict[str, Any], t0: datetime, clip_end: datetime | None, clip_s: float | None) -> None:
+    """Fill ``window`` from the actual file. Unknown length (no ffprobe) or end time: 0 / 0 and the caller logs it."""
+    if clip_s is None or clip_end is None or clip_s <= 0:
         ev["window"] = {"pre_s": 0.0, "post_s": 0.0}
-        return
-    pre = min(max(0.0, CLIP_PRE_S + offset_s), clip_s)
-    ev["window"] = {"pre_s": round(pre, 3), "post_s": round(max(0.0, clip_s - pre), 3)}
+    else:
+        ev["window"] = clip_window(t0, clip_end, clip_s)
 
 
 def map_hat_off(*, event_id: str, off_start: datetime, detected: datetime, serial: str, fall: dict[str, Any] | None,

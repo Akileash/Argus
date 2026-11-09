@@ -68,7 +68,7 @@ class EventsTailer:
         except OSError:
             return None
         nl = first.find(b"\n")
-        return None if nl < 0 else hashlib.sha1(first[:nl]).hexdigest()  # noqa: S324 - a fingerprint, not security
+        return None if nl < 0 else hashlib.sha1(first[:nl]).hexdigest()
 
     def poll(self) -> list[dict[str, Any]]:
         try:

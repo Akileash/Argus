@@ -19,14 +19,13 @@ from typing import Any
 from argus.bridge import mapper
 from argus.bridge.air import latest_air
 from argus.bridge.clips import ClipPolicy, probe_duration_s, wait_for_clip
-from argus.bridge.launcher import HatLauncher, TofLine, parse_tof
+from argus.bridge.launcher import HatLauncher, TofLine, parse_tof_all
 from argus.bridge.tail import EventsTailer, StateFile
 from argus.config import ArgusConfig
 from argus.events.queue import DEVICE_DIR, EventQueue, SchemaError, validate_trace
 
 log = logging.getLogger("argus.bridge")
 ISSUE = "INTEGRATION ISSUE"  # grep-able marker in the journal for things the PR should raise
-DEFAULT_CLIP_S = mapper.CLIP_PRE_S + mapper.CLIP_POST_S
 KEEP_S = 600.0  # how long a fall stays eligible for a hat_knocked_off link / shared clip
 TOF_SETTLE_S = 0.5  # decide a HELMET OFF this long after it arrives (the events file is polled first)
 
@@ -64,6 +63,7 @@ class Bridge:
     poll_s: float = 0.5
     wall_fn: Callable[[], datetime] = lambda: datetime.now(UTC)
     mono_fn: Callable[[], float] = time.monotonic
+    probe_fn: Callable[[Path], float | None] = probe_duration_s
     queue: EventQueue = field(init=False)
 
     def __post_init__(self) -> None:
@@ -87,7 +87,10 @@ class Bridge:
         self._falls: dict[str, _Fall] = {}
         self._near_misses: deque[tuple[str, datetime]] = deque(maxlen=50)
         self._offs: list[_Off] = []
-        self._hat_on = True
+        self._hat_on: bool | None = None  # last parsed `[tof] HELMET` state; None until one is seen
+        self._last_lof: datetime | None = None  # t0 of the last line_of_fire let through
+        self.skipped: dict[str, int] = {}
+        self.air_launcher: HatLauncher | None = None
         self.tof_lines = 0
         self._tof_warned = False
         self._started = self.mono_fn()
@@ -103,14 +106,21 @@ class Bridge:
             cmd = [str(expand(b.python)), "-m", "hat.main", *b.hat_args]
             self.launcher = HatLauncher(cmd, expand(b.argus_dir), self.on_tof)
             self.launcher.start()
+            if b.air_launch:
+                sensors = expand(b.argus_dir) / "pi_sensors"
+                py = expand(b.air_python) if b.air_python else sensors / ".venv" / "bin" / "python"
+                self.air_launcher = HatLauncher([str(py), "-m", "argus_sensors", *b.air_args], sensors,
+                                                name="argus_sensors(scd41)")
+                self.air_launcher.start()
         for raw in list(self.state.pending.values()):  # events that were mid-wait when we last stopped
             log.info("resuming pending event %s", raw.get("event_id"))
             self._dispatch(raw)
 
     def stop(self) -> None:
         self._stop.set()
-        if self.launcher:
-            self.launcher.stop()
+        for ln in (self.launcher, self.air_launcher):
+            if ln:
+                ln.stop()
         self._pool.shutdown(wait=True)
         self.state.save()
 
@@ -133,16 +143,40 @@ class Bridge:
     # ------------------------------------------------------------ their events
     def _accept(self, raw: dict[str, Any]) -> None:
         if not mapper.is_hat_event(raw):
-            log.debug("ignoring %r event", raw.get("type"))
+            typ = str(raw.get("type"))
+            if typ in mapper.LEGACY_TYPES:
+                self._skip(f"legacy:{typ}", f"skipped legacy imu_fall.py {typ!r} line")
+            else:
+                log.debug("ignoring %r line", typ)
             return
         eid = raw["event_id"]
         with self._lock:
+            if raw["type"] == "line_of_fire" and eid not in self._inflight and eid not in self.state.seen:
+                t0 = mapper.parse_ts(raw["timestamp"])
+                last = self._last_lof
+                if last is not None and 0 <= (t0 - last).total_seconds() < self.cfg.bridge.lof_min_interval_s:
+                    self._skip("lof_throttled", f"line_of_fire {eid} within {self.cfg.bridge.lof_min_interval_s:.0f}s "
+                               "of the last one: not uploaded (their camera skips a capture while one runs)")
+                    self._mark_seen(eid)
+                    return
+                self._last_lof = t0
             if eid in self._inflight or eid in self.state.seen:
                 log.info("duplicate event %s ignored", eid)
                 return
             self.state.pending[eid] = raw
             self.state.save()
         self._dispatch(raw)
+
+    def _skip(self, key: str, msg: str) -> None:
+        self.skipped[key] = self.skipped.get(key, 0) + 1
+        log.info("%s (total %d)", msg, self.skipped[key])
+
+    def _mark_seen(self, eid: str) -> None:
+        with self._lock:
+            self.state.pending.pop(eid, None)
+            if eid not in self.state.seen:
+                self.state.seen.append(eid)
+            self.state.save()
 
     def _dispatch(self, raw: dict[str, Any]) -> None:
         eid = raw["event_id"]
@@ -157,17 +191,35 @@ class Bridge:
                 self._falls[eid] = _Fall(raw, t0, fut)
             else:
                 self._near_misses.append((eid, t0))
-            hat_on = self._hat_on
+            last_tof = self._hat_on
             self._prune(t0)
-        self.futures.append(self._pool.submit(self._handle, raw, fut, nms, hat_on))
+        self.futures.append(self._pool.submit(self._handle, raw, fut, nms, last_tof))
 
     def _prune(self, now: datetime) -> None:
         for k in [k for k, f in self._falls.items() if (now - f.t0).total_seconds() > KEEP_S]:
             del self._falls[k]
 
-    def _handle(self, raw: dict[str, Any], clip_fut: Future, near_misses: list, hat_on: bool) -> None:
+    def _resolve_hat_on(self, raw: dict[str, Any], last_tof: bool | None) -> bool | None:
+        """fall: their helmet_worn_at_onset; line_of_fire: the last `[tof] HELMET` state. Unknown -> bridge.hat_on_unknown."""
+        if raw["type"] == "fall":
+            w = mapper.reported_worn(raw)
+            if w is not None:
+                return w
+        if last_tof is not None:
+            return last_tof
+        return {"skip": None, "on": True, "off": False}[self.cfg.bridge.hat_on_unknown]
+
+    def _handle(self, raw: dict[str, Any], clip_fut: Future, near_misses: list, last_tof: bool | None) -> None:
         eid = raw["event_id"]
         try:
+            hat_on = self._resolve_hat_on(raw, last_tof)
+            if hat_on is None:
+                log.error("%s (contract): %s %s dropped: hat state unknown (no `[tof] HELMET` line seen yet) and "
+                          "metrics.hat_on is a required boolean", ISSUE, raw["type"], eid)
+                self._skip("hat_on_unknown", f"{raw['type']} {eid} not uploaded: hat state unknown")
+                clip_fut.set_result(None)
+                self._done(eid)
+                return
             clip = wait_for_clip(eid, self.clips_dir, self.staging, self.policy, stop=self._stop.is_set)
             if clip is None and self._stop.is_set():
                 log.info("stopping: %s stays pending and is retried on the next start", eid)
@@ -183,7 +235,7 @@ class Bridge:
             if clip is None:
                 log.warning("%s (timing): no clip for %s within %.0fs; enqueueing without video", ISSUE, eid,
                             self.policy.wait_s)
-            self._enqueue(m, clip)
+            self._enqueue(m, clip, t0, self._clip_end(eid, clip))
             self._done(eid)
         except Exception:
             if not clip_fut.done():
@@ -201,7 +253,18 @@ class Bridge:
             self._inflight.discard(eid)
             self.state.save()
 
-    def _enqueue(self, m: mapper.Mapped, clip: Path | None, clip_offset_s: float = 0.0) -> None:
+    def _clip_end(self, eid: str, clip: Path | None) -> datetime | None:
+        """When the clip was finished: mtime of the file their camera wrote (the .h264 if we remuxed a copy)."""
+        if clip is None:
+            return None
+        src = self.clips_dir / f"{eid}.h264" if clip.parent == self.staging else clip
+        try:
+            return datetime.fromtimestamp(src.stat().st_mtime, UTC)
+        except OSError:
+            return None
+
+    def _enqueue(self, m: mapper.Mapped, clip: Path | None, t0: datetime | None = None,
+                 clip_end: datetime | None = None) -> None:
         ev = m.event
         eid = ev["event_id"]
         if (self.queue.root / eid).exists():
@@ -211,12 +274,12 @@ class Bridge:
         clip_s: float | None = None
         if clip is not None:
             shutil.copyfile(clip, tmp / "clip.mp4")
-            clip_s = probe_duration_s(tmp / "clip.mp4")
+            clip_s = self.probe_fn(tmp / "clip.mp4")
             if clip_s is None:
-                clip_s = DEFAULT_CLIP_S
-                log.warning("no ffprobe: assuming a %.0fs clip for %s", clip_s, eid)
-        if m.wants_clip:
-            mapper.with_clip(ev, clip_s, offset_s=clip_offset_s)
+                log.warning("%s (timing): cannot read the length of the clip for %s (ffprobe missing or file "
+                            "unreadable); window left at 0/0", ISSUE, eid)
+        if m.wants_clip and t0 is not None:
+            mapper.with_clip(ev, t0, clip_end, clip_s)
         if m.trace is not None:
             try:
                 validate_trace(m.trace)
@@ -262,8 +325,7 @@ class Bridge:
             return
         self._tof_log_pos += cut + 1
         for line in data[: cut + 1].decode("utf-8", "replace").splitlines():
-            t = parse_tof(line)
-            if t:
+            for t in parse_tof_all(line):
                 self.on_tof(t)
 
     def _warn_if_no_tof(self) -> None:
@@ -300,9 +362,10 @@ class Bridge:
 
     def _finish_off(self, m: mapper.Mapped, fall: _Fall | None, off_start: datetime) -> None:
         try:
-            clip = None
+            clip, end = None, None
             if fall is not None:  # share the fall's clip: wait for the fall's own worker, then copy the same file
                 clip = fall.clip.result(timeout=self.policy.wait_s + 120)
-            self._enqueue(m, clip, clip_offset_s=(off_start - fall.t0).total_seconds() if fall else 0.0)
+                end = self._clip_end(fall.raw["event_id"], clip)
+            self._enqueue(m, clip, off_start, end)
         except Exception:
             log.exception("%s event failed", m.event["type"])

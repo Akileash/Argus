@@ -18,7 +18,7 @@ def qdir(cfg, eid) -> Path:
 
 def test_fall_with_clip_is_queued_with_clip_and_trace(cfg, hat):
     ev = hat.fall()
-    hat.mp4(ev["event_id"])
+    hat.mp4(ev["event_id"], end=T0 + timedelta(seconds=5))
     b = make_bridge(cfg)
     b.state.offset = 0  # (first run would start at the end)
     settle(b)
@@ -30,7 +30,9 @@ def test_fall_with_clip_is_queued_with_clip_and_trace(cfg, hat):
     assert doc["device_serial"] == "ARG-0001" and doc["type"] == "fall"
     assert (qdir(cfg, ev["event_id"]) / "clip.mp4").stat().st_size == 5000
     validate_trace(json.loads((qdir(cfg, ev["event_id"]) / "trace.json").read_text()))
-    assert doc["window"]["pre_s"] == 20.0  # clip length falls back to 30 s when ffprobe cannot read it
+    assert doc["window"] == {"pre_s": 3.7, "post_s": 5.0}  # from the real 8.7 s clip, not 20 + 10
+    tr = json.loads((qdir(cfg, ev["event_id"]) / "trace.json").read_text())
+    assert tr["imu"]["gx"] == [None] * len(tr["imu"]["t"])  # no gyro in their trace: null, never zeros
 
 
 def test_late_clip_is_waited_for(cfg, hat):
@@ -94,7 +96,7 @@ def test_line_of_fire_gets_a_clip_and_near_miss_type(cfg, hat):
     hat.mp4(ev["event_id"])
     settle(b)
     doc = queued(cfg)[ev["event_id"]]
-    assert (doc["type"], doc["device_class"], doc["metrics"]["sensor_id"]) == ("struck_by_near_miss", "near_miss", "R3")
+    assert (doc["type"], doc["device_class"], doc["metrics"]["sensor_id"]) == ("struck_by_near_miss", "near_miss", "R2")
     assert "clip" in [m["kind"] for m in doc["media"]]
 
 
@@ -304,3 +306,71 @@ def test_one_fall_is_knocked_off_at_most_once(cfg, hat):
     b.on_tof(TofLine(False, None, "False"))
     types = sorted(d["type"] for d in queued(cfg).values())
     assert types.count("hat_knocked_off") == 1
+
+
+# ---------------------------------------------------------------- PM decisions
+def test_zero_byte_clip_counts_as_no_clip(tmp_path):
+    cfg = make_cfg(tmp_path)
+    from .conftest import Hat
+    hat = Hat(cfg)
+    b = make_bridge(cfg, from_start=True)
+    b.policy = ClipPolicy(wait_s=0.3, poll_s=0.02, stable_s=0.1)
+    ev = hat.fall()
+    hat.mp4(ev["event_id"], size=0)
+    settle(b)
+    assert [m["kind"] for m in queued(cfg)[ev["event_id"]]["media"]] == ["sensor_trace"]
+
+
+def test_line_of_fire_inside_the_min_interval_is_not_uploaded(cfg, hat):
+    b = make_bridge(cfg, from_start=True)
+    first = hat.lof(T0)
+    second = hat.lof(T0 + timedelta(seconds=10))
+    third = hat.lof(T0 + timedelta(seconds=31))
+    for e in (first, second, third):
+        hat.mp4(e["event_id"])
+    settle(b)
+    assert set(queued(cfg)) == {first["event_id"], third["event_id"]}
+    assert b.skipped["lof_throttled"] == 1
+
+
+def test_legacy_lines_are_skipped_and_counted(cfg, hat):
+    b = make_bridge(cfg, from_start=True)
+    with hat.events.open("a") as f:
+        for t in ("impact", "near_fall", "hat_removed"):
+            f.write(json.dumps({"event_id": f"x-{t}", "type": t, "timestamp": T0.isoformat()}) + "\n")
+    settle(b)
+    assert queued(cfg) == {}
+    assert b.skipped == {"legacy:impact": 1, "legacy:near_fall": 1, "legacy:hat_removed": 1}
+
+
+def test_unknown_hat_state_is_not_guessed(cfg, hat):
+    b = make_bridge(cfg, from_start=True, hat_on=None)
+    ev = hat.lof(T0)
+    hat.mp4(ev["event_id"])
+    settle(b)
+    assert queued(cfg) == {} and b.skipped["hat_on_unknown"] == 1
+    from argus.bridge.launcher import TofLine
+    b.on_tof(TofLine(False, None, "False"))  # now the state is known
+    ev2 = hat.lof(T0 + timedelta(seconds=60))
+    hat.mp4(ev2["event_id"])
+    settle(b)
+    assert queued(cfg)[ev2["event_id"]]["metrics"]["hat_on"] is False
+
+
+def test_hat_on_unknown_policy_can_be_set(tmp_path):
+    cfg = make_cfg(tmp_path, hat_on_unknown="on")
+    from .conftest import Hat
+    hat = Hat(cfg)
+    b = make_bridge(cfg, from_start=True, hat_on=None)
+    ev = hat.lof(T0)
+    hat.mp4(ev["event_id"])
+    settle(b)
+    assert queued(cfg)[ev["event_id"]]["metrics"]["hat_on"] is True
+
+
+def test_line_of_fire_hat_on_follows_the_last_tof_line(cfg, hat):
+    b = make_bridge(cfg, from_start=True, hat_on=False)
+    ev = hat.lof(T0)
+    hat.mp4(ev["event_id"])
+    settle(b)
+    assert queued(cfg)[ev["event_id"]]["metrics"]["hat_on"] is False

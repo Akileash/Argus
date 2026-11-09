@@ -117,5 +117,9 @@ bridge:                 # `argus-cli bridge run`: cloud bridge for the teammates
   air_max_age_s: 300    # newest air sample older than this is not attached
   knock_window_s: 2.0   # HELMET OFF within this after a fall = hat_knocked_off, otherwise hat_removed
   tof_off_dwell_s: 3.0  # their ToF prints OFF this long after the hat left the head
-  side_sensor: { left: R2, right: R3 }   # NEEDS CONFIRMATION on the hat: their left/right -> our sensor_id
+  side_sensor: { left: R3, right: R2 }   # needs-teammate: confirm physical sides (never TOP)
+  lof_min_interval_s: 30  # a line_of_fire this soon after the last queued one is logged, not uploaded
+  hat_on_unknown: skip    # skip | on | off: what to do with an event when no `[tof] HELMET` state is known yet
+  air_launch: true        # also start their pi_sensors (SCD41 only, never --tof-bus) so air_log gets samples
+  air_python: ""          # blank -> <argus_dir>/pi_sensors/.venv/bin/python
   state_dir: var/bridge # saved tail offset + staging for remuxed clips (relative paths resolve against device/)

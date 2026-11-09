@@ -1,0 +1,30 @@
+# Argus cloud bridge (systemd unit template).
+# install-bridge.sh replaces __DEVICE_DIR__ (absolute path of device/ inside ~/argus-cloud) and __ARGUS_USER__.
+# Do not edit the installed copy in /etc/systemd/system. Re-run install-bridge.sh instead.
+#
+# What it runs: `argus-cli bridge run`, which starts the teammates' `python -m hat.main` (from ~/argus, their tree,
+# untouched) as a child and, as a second child, their pi_sensors for the SCD41 air sensor (bridge.air_launch).
+# So do NOT also enable their argus-sensors.service (it passes --tof-bus 3 and would fight hat.main for the
+# VL6180X) or run hat.main yourself while this unit is active (two owners of I2C bus 3, the GPIO pins and the camera).
+# Stopping this unit stops both children (KillMode=control-group) so nothing keeps holding the buses.
+
+[Unit]
+Description=Argus cloud bridge (teammates' hat.main -> Argus cloud)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=__ARGUS_USER__
+WorkingDirectory=__DEVICE_DIR__
+Environment=PYTHONUNBUFFERED=1
+ExecStart=__DEVICE_DIR__/.venv/bin/argus-cli bridge run --config /etc/argus/config.yaml
+Restart=always
+RestartSec=2
+KillMode=control-group
+# SIGTERM: the bridge stops hat.main (up to 10 s), and finishes the events it holds.
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

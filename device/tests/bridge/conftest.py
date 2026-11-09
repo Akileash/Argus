@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 import uuid
@@ -59,9 +60,12 @@ class Hat:
             f.write(json.dumps(ev) + "\n")
         return ev
 
-    def mp4(self, event_id: str, size: int = 5000) -> Path:
+    def mp4(self, event_id: str, size: int = 5000, end: datetime | None = None) -> Path:
+        """A finished clip; ``end`` sets its mtime (when their camera finished it)."""
         p = self.clips / f"{event_id}.mp4"
         p.write_bytes(b"\x00" * size)
+        if end is not None:
+            os.utime(p, (end.timestamp(), end.timestamp()))
         return p
 
     def mp4_late(self, event_id: str, after_s: float) -> threading.Thread:
@@ -98,11 +102,15 @@ class Clock:
         self.mono += s
 
 
-def make_bridge(cfg: ArgusConfig, clock: Clock | None = None, **kw: Any) -> Bridge:
-    extra: dict[str, Any] = {}
+def make_bridge(cfg: ArgusConfig, clock: Clock | None = None, hat_on: bool | None = True, **kw: Any) -> Bridge:
+    """``hat_on``: the last `[tof] HELMET` state to pretend was seen (None = no line seen yet)."""
+    extra: dict[str, Any] = {"probe_fn": lambda p: 8.7}  # their real clips are ~8.7 s; ffprobe is tested separately
     if clock:
-        extra = {"wall_fn": lambda: clock.wall, "mono_fn": lambda: clock.mono}
-    return Bridge(cfg, launch=False, policy=FAST, poll_s=0.02, **extra, **kw)
+        extra |= {"wall_fn": lambda: clock.wall, "mono_fn": lambda: clock.mono}
+    b = Bridge(cfg, launch=False, policy=FAST, poll_s=0.02, **extra, **kw)
+    if hat_on is not None:
+        b._hat_on = hat_on
+    return b
 
 
 def settle(b: Bridge, timeout: float = 15.0) -> None:
