@@ -275,7 +275,7 @@ def test_fall_settling_after_2_5_s_keeps_its_pre_fall_reference():
 
 def test_short_freefall_is_not_enough():
     st = Stream(FallImpactDetector())
-    real_fall(st, ff_s=0.02, impact=(0.0, 0.0, -2.5))  # under the 3 g hit path
+    real_fall(st, ff_s=0.02, impact=(0.0, 0.0, -2.2))  # under the 2.5 g hit path
     assert st.hits == []
 
 
