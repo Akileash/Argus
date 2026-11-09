@@ -15,12 +15,12 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["t", "a_mag_g", "ax", "ay", "az", "gx", "gy", "gz"],
-      "description": "Parallel arrays, equal length. accel g, gyro deg/s, hat frame x fwd / y left / z up.",
+      "description": "Parallel arrays, equal length. accel g, gyro deg/s, hat frame x fwd / y left / z up. gx/gy/gz entries are null when the IMU source reports no gyro (the teammates' hat code logs accel only): null means not measured, never zero.",
       "properties": {
         "t": { "$ref": "#/$defs/nums" },
         "a_mag_g": { "$ref": "#/$defs/nums" },
         "ax": { "$ref": "#/$defs/nums" }, "ay": { "$ref": "#/$defs/nums" }, "az": { "$ref": "#/$defs/nums" },
-        "gx": { "$ref": "#/$defs/nums" }, "gy": { "$ref": "#/$defs/nums" }, "gz": { "$ref": "#/$defs/nums" }
+        "gx": { "$ref": "#/$defs/nullable_nums" }, "gy": { "$ref": "#/$defs/nullable_nums" }, "gz": { "$ref": "#/$defs/nullable_nums" }
       }
     },
     "imu_peaks": {
