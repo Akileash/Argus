@@ -188,3 +188,18 @@ CAM_PRE_S = 20.0                # rolling buffer kept continuously
 CAM_POST_S = 10.0               # keep recording this long after a fall
 # IMU types that save a Pi Cam clip (and end --until-fall)
 CAM_CLIP_TYPES = ("fall",)
+
+# ---------------------------------------------------------------------------
+# Live telemetry (hat/telemetry.py) - read by `python -m hat.tools.live_view`
+# ---------------------------------------------------------------------------
+# Env ARGUS_LIVE_TELEMETRY=0 / ARGUS_LIVE_RECORD=0 override these for one run.
+LIVE_TELEMETRY = True            # publish a ~20 Hz snapshot as a UDP datagram to 127.0.0.1 (nobody listening = no effect)
+LIVE_UDP_HOST = "127.0.0.1"
+LIVE_UDP_PORT = 47321
+LIVE_HZ = 20.0
+LIVE_RECORD = True               # raw per-sample rows for later analysis, in RAM (/dev/shm), never the SD card
+LIVE_REC_DIR = "/dev/shm/argus-live"
+LIVE_REC_QUEUE = 20000           # rows buffered for the writer thread (~100 s at 200 Hz); full = drop, never block
+LIVE_REC_SEGMENT_MB = 4.0        # start a new file after this much
+LIVE_REC_MAX_MB = 48.0           # hard cap over ALL files in the directory (oldest deleted first)
+LIVE_REC_KEEP_S = 1800.0         # also delete files not written for this long (~30 min)

@@ -91,6 +91,8 @@ class Haptics:
         self._q: queue.Queue = queue.Queue()
         self._stop = threading.Event()
         self._devs: Dict[str, DRV2605L] = {}
+        # Read-only for telemetry: perf_counter of the last effect fired per side (never read here).
+        self.last_fire: Dict[str, float] = {"left": 0.0, "right": 0.0}
 
         if not dry_run:
             self._open_devices()
@@ -135,6 +137,11 @@ class Haptics:
     def _fire(self, side: str, effect_id: int) -> None:
         if self.on_buzz:
             self.on_buzz()
+        now = time.perf_counter()
+        if side in ("left", "both"):
+            self.last_fire["left"] = now
+        if side in ("right", "both"):
+            self.last_fire["right"] = now
         if self.dry_run:
             print(f"[haptics dry-run] {side} effect={effect_id}")
             return

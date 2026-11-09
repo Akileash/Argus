@@ -26,6 +26,7 @@ from gpiozero.pins.lgpio import LGPIOFactory
 Device.pin_factory = LGPIOFactory()
 
 from hat import config as cfg
+from hat import telemetry
 from hat.camera import ClipRecorder
 from hat.events import build_event, emit
 from hat.haptics import Haptics
@@ -71,6 +72,8 @@ class HatRuntime:
         self.motion = MotionState()
 
         self._threads: list[threading.Thread] = []
+        # Live view + RAM recording (hat/telemetry.py). Hooks never block or raise.
+        self.tele = telemetry.create(self)
 
     def _log_err(self, msg: str) -> None:
         now = time.perf_counter()
@@ -83,6 +86,20 @@ class HatRuntime:
         if buzz_side:
             side = "both" if cfg.HAPTIC_WARN_BOTH else buzz_side
             self.haptics.warn(side)
+
+        # Telemetry (after the buzz; queue.put_nowait only)
+        try:
+            et = event.get("type")
+            if et == "line_of_fire":
+                s = event.get("sensor", {})
+                self.tele.event("near_miss", event.get("side"),
+                                f"{s.get('distance_m')}m {s.get('closing_speed_mps')}m/s {s.get('trigger_reason', '')}")
+                if buzz_side:
+                    self.tele.event("buzz", buzz_side, s.get("trigger_reason", "approach"))
+            elif et == "fall":
+                self.tele.event("fall", None, f"peak {event.get('sensor', {}).get('peak_accel_g')}g")
+        except Exception:
+            pass
 
         # Fall → Pi Cam clip (pre + post)
         clip_types = getattr(cfg, "CAM_CLIP_TYPES", ("fall",))
@@ -141,6 +158,7 @@ class HatRuntime:
             )
         for t in self._threads:
             t.start()
+        self.tele.start()
         us_bits = []
         if cfg.US_ENABLE_LEFT:
             us_bits.append("LEFT")
@@ -184,18 +202,22 @@ class HatRuntime:
                     last_cfg_check = now
                     if not self.imu.check_config():
                         self.detector.config_lost(now)
+                        self.tele.event("config_lost", None, f"loss #{self.imu.config_losses}")
                         continue
                 sample = self.imu.read(now)
+                self.tele.imu(sample)
                 self.motion.push(now, sample.ax, sample.ay, sample.az,
                                  sample.gx, sample.gy, sample.gz)
                 det = self.detector.push(sample)
                 if det is not None and not self.imu.check_config():
                     # Config was wrong while this event was being built.
                     self.detector.config_lost(now)
+                    self.tele.event("config_lost", None, "fall discarded")
                     print("[imu] fall discarded: sensor config was lost", flush=True)
                     det = None
                 if det is not None:
                     if det.suppressed:
+                        self.tele.event("fall_suppressed", None, det.suppress_reason)
                         print(
                             f"*** SUPPRESSED {det.type.upper()} "
                             f"(wear gate: {det.suppress_reason}) "
@@ -226,6 +248,7 @@ class HatRuntime:
                     # Fall: log only, no haptic (per spec)
                     self._handle(event, buzz_side=None)
             except OSError as e:
+                self.tele.i2c_error()
                 self._log_err(f"IMU I2C: {e}")
 
             next_t += period
@@ -241,6 +264,7 @@ class HatRuntime:
         while not self._stop.is_set():
             try:
                 snap = self.tof.poll_once()
+                self.tele.wear(snap)
                 if snap.changed or snap.helmet_worn != last_worn:
                     print(
                         f"[tof] HELMET {'ON' if snap.helmet_worn else 'OFF'}  "
@@ -249,6 +273,7 @@ class HatRuntime:
                     )
                     last_worn = snap.helmet_worn
             except Exception as e:
+                self.tele.i2c_error()
                 self._log_err(f"ToF: {e}")
             time.sleep(cfg.TOF_POLL_GAP_S)
 
@@ -277,6 +302,7 @@ class HatRuntime:
             try:
                 dist = sensor.distance_m()
                 ev = detector.update(t0, dist, self.motion)
+                self.tele.us(t0, sensor.name, dist, detector, self.motion)
                 if rec is not None:
                     rec.write(f"{t0:.4f},{sensor.name},{'' if dist is None else f'{dist:.4f}'},"
                               f"{self.motion.gyro_dps:.1f},{self.motion.dyn_rms_g:.3f},"
@@ -314,6 +340,7 @@ class HatRuntime:
         self._stop.set()
         for t in self._threads:
             t.join(timeout=2.0)
+        self.tele.stop()
         self.camera.stop()
         self.haptics.close()
         if self.imu is not None:

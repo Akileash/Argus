@@ -115,6 +115,17 @@ class FallImpactDetector:
     def note_buzz(self) -> None:
         self._last_buzz_holder["t"] = time.perf_counter()
 
+    def status(self, now: float) -> dict:
+        """Read-only snapshot of the detector state for telemetry (called from another thread; racy but harmless)."""
+        st = self._state
+        return {
+            "armed": bool(self._armed),
+            "candidate": st != "idle",
+            "waiting_still": st == "wait_still",
+            "cooldown": now < self._cooldown_until,
+            "state": st,
+        }
+
     # -- config-loss handling -------------------------------------------
     def config_lost(self, now: Optional[float] = None) -> None:
         """Driver found/repaired a wrong sensor config: distrust recent data."""
