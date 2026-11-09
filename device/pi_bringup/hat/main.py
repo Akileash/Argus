@@ -170,11 +170,24 @@ class HatRuntime:
         assert self.mpu is not None
         period = 1.0 / cfg.IMU_SAMPLE_HZ
         next_t = time.perf_counter()
+        last_cfg_check = next_t
         while not self._stop.is_set():
             now = time.perf_counter()
             try:
+                # Cheap periodic read-back: chip may silently reset to ±2 g
+                # (readings 8x too big). On loss: re-init + drop recent data.
+                if now - last_cfg_check >= cfg.IMU_CONFIG_CHECK_S:
+                    last_cfg_check = now
+                    if not self.mpu.check_config():
+                        self.detector.config_lost(now)
+                        continue
                 sample = self.mpu.read(now)
                 det = self.detector.push(sample)
+                if det is not None and not self.mpu.check_config():
+                    # Config was wrong while this event was being built.
+                    self.detector.config_lost(now)
+                    print("[imu] fall discarded: sensor config was lost", flush=True)
+                    det = None
                 if det is not None:
                     if det.suppressed:
                         print(

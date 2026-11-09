@@ -90,15 +90,34 @@ GYRO_LSB_PER_DPS = 32.8         # ±1000 dps
 FREEFALL_G = 0.45              # catch 0.34 g weightlessness dips
 FREEFALL_MIN_S = 0.050         # ~50 ms — brief unload still counts as fall
 IMPACT_AFTER_FF_G = 1.6        # soft landing spike after freefall
-IMPACT_AFTER_FF_WINDOW_S = 2.0
+IMPACT_AFTER_FF_WINDOW_S = 1.0 # impact must follow freefall within ~1 s
 STILL_BAND_G = 0.20
-STILL_HOLD_S = 0.300
-FALL_STILL_DEADLINE_S = 3.0
+STILL_HOLD_S = 0.300           # lie still this long after impact/landing
+FALL_STILL_DEADLINE_S = 3.0    # no stillness by then → not a fall (kept moving)
 FALL_MIN_PEAK_G = 1.0          # soft catch returns ~1 g; don't require 5 g spike
-IMPACT_G = 3.0                 # hard hit w/o freefall → still emit fall (no impact type)
+IMPACT_G = 3.0                 # hard hit w/o freefall: candidate only; needs stillness + tilt
 # Soft path: freefall long enough then back near 1 g with no hard spike
 SOFT_LANDING_AFTER_FF_S = 0.080
-IMU_COOLDOWN_S = 2.0
+# Orientation check: angle between gravity before onset and while lying still.
+# Jumps, nods, bumps while upright stay below this; falls onto a mat do not.
+FALL_TILT_MIN_DEG = 30.0
+FALL_TILT_EXEMPT_FF_S = 0.300  # >=300 ms true freefall (drop from height): skip tilt
+FALL_REF_WINDOW_S = 1.0
+# True: no orientation change → not a fall. False: still emit, confidence=low
+# (use if acted falls end upright; more false positives from jumps/bumps).
+FALL_REQUIRE_TILT = True
+# One fall = one event: after an event wait for cooldown AND this much quiet.
+IMU_COOLDOWN_S = 3.0
+REARM_QUIET_S = 1.0
+REARM_BAND_G = 0.30
+
+# Sensor-config guard (chip can silently fall back to ±2 g → readings 8x big)
+MPU6500_FAMILY_IDS = (0x70, 0x71, 0x73)   # WHO_AM_I of MPU-6500/9250/9255
+IMU_CONFIG_CHECK_S = 0.25      # read back config registers this often
+IMU_CONFIG_LOSS_PURGE_S = 0.6  # discard this much recent data on loss (> check period)
+IMU_SETTLE_AFTER_REINIT_S = 0.3
+IMU_IMPLAUSIBLE_G = 3.0        # a window mostly above this is not a resting head
+IMU_IMPLAUSIBLE_WINDOW_S = 1.0
 IMU_IGNORE_AFTER_BUZZ_S = 0.250
 
 # Wear gate: only emit fall if ToF said helmet ON beforehand.

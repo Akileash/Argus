@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 
 from hat.imu import FallImpactDetector, ImuSample
+from hat.tests.test_imu_config_and_fall import SIDE, UP, Stream, real_fall
 from hat.wear_state import WearState
 
 
@@ -34,93 +35,49 @@ def test_wear_gate_blocks_when_off_beforehand():
     assert g.reason in ("helmet_off_at_onset", "helmet_off_lookback")
 
 
+def _worn_wear(on: bool, t0: float) -> WearState:
+    wear = WearState(history_s=30.0)
+    for i in range(200):
+        wear.update(on, t=t0 + i * 0.05)
+    return wear
+
+
 def test_fall_emitted_when_worn():
-    wear = WearState(history_s=10.0)
     t0 = time.perf_counter()
-    for i in range(30):
-        wear.update(True, t=t0 + i * 0.1)
-    det = FallImpactDetector(wear_state=wear)
-    # idle gravity
-    t = t0 + 3.0
-    for _ in range(5):
-        det.push(_sample(t, 1.0))
-        t += 0.005
-    # freefall ~120 ms below FREEFALL_G
-    for _ in range(30):
-        out = det.push(_sample(t, 0.15))
-        t += 0.005
-        assert out is None or out.suppressed  # shouldn't complete yet
-    # soft land near 1 g
-    hit = None
-    for _ in range(40):
-        hit = det.push(_sample(t, 1.0))
-        t += 0.005
-        if hit is not None:
-            break
-    assert hit is not None
+    st = Stream(FallImpactDetector(wear_state=_worn_wear(True, t0)), t0=t0 + 2.0)
+    real_fall(st)
+    assert len(st.hits) == 1
+    hit = st.hits[0]
     assert hit.type == "fall"
     assert hit.suppressed is False
     assert hit.helmet_worn_at_onset is True
 
 
 def test_fall_suppressed_when_helmet_off():
-    wear = WearState(history_s=10.0)
     t0 = time.perf_counter()
-    for i in range(30):
-        wear.update(False, t=t0 + i * 0.1)
-    det = FallImpactDetector(wear_state=wear)
-    t = t0 + 3.0
-    for _ in range(5):
-        det.push(_sample(t, 1.0))
-        t += 0.005
-    for _ in range(30):
-        det.push(_sample(t, 0.15))
-        t += 0.005
-    hit = None
-    for _ in range(40):
-        hit = det.push(_sample(t, 1.0))
-        t += 0.005
-        if hit is not None:
-            break
-    assert hit is not None
-    assert hit.type == "fall"
-    assert hit.suppressed is True
+    det = FallImpactDetector(wear_state=_worn_wear(False, t0))
+    st = Stream(det, t0=t0 + 2.0)
+    real_fall(st)
+    assert len(st.hits) == 1
+    assert st.hits[0].suppressed is True
     assert det.suppressed_falls >= 1
 
 
 def test_no_wear_state_still_allows_fall():
     """Backward-compat: detector without WearState still emits."""
-    det = FallImpactDetector(wear_state=None)
-    t = time.perf_counter()
-    for _ in range(5):
-        det.push(_sample(t, 1.0))
-        t += 0.005
-    for _ in range(30):
-        det.push(_sample(t, 0.15))
-        t += 0.005
-    hit = None
-    for _ in range(40):
-        hit = det.push(_sample(t, 1.0))
-        t += 0.005
-        if hit is not None:
-            break
-    assert hit is not None
-    assert hit.suppressed is False
+    st = Stream(FallImpactDetector(wear_state=None))
+    real_fall(st)
+    assert len(st.hits) == 1
+    assert st.hits[0].suppressed is False
 
 
-def test_hard_hit_without_freefall_is_fall_not_impact():
-    wear = WearState(history_s=10.0)
+def test_hard_hit_without_freefall_needs_stillness_and_tilt():
+    """Old rule emitted instantly on >=3 g. Now a bare spike is not a fall."""
     t0 = time.perf_counter()
-    for i in range(30):
-        wear.update(True, t=t0 + i * 0.1)
-    det = FallImpactDetector(wear_state=wear)
-    t = t0 + 3.0
-    for _ in range(5):
-        det.push(_sample(t, 1.0))
-        t += 0.005
-    hit = det.push(_sample(t, 3.2))
-    assert hit is not None
-    assert hit.type == "fall"
-    assert hit.suppressed is False
-    assert hit.freefall_ms == 0.0
-
+    det = FallImpactDetector(wear_state=_worn_wear(True, t0))
+    st = Stream(det, t0=t0 + 2.0)
+    st.hold(UP, 1.0)
+    st.push((0.0, 0.0, -3.2))
+    assert st.hits == []
+    st.hold(SIDE, 1.0)  # then lies still on its side → candidate fall
+    assert len(st.hits) == 1 and st.hits[0].freefall_ms == 0.0
