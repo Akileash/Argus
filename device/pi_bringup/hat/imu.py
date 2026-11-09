@@ -339,6 +339,10 @@ class FallImpactDetector:
         if self._peak < min_peak:
             self._reset_state()
             return None
+        # No free fall = a hit or jolt, not a fall (the knocked-off path has its own evidence).
+        if self._knock_t is None and self._ff_ms < cfg.FALL_MIN_FREEFALL_MS:
+            self._reset_state()
+            return None
         onset = self._onset_t if self._onset_t is not None else now
         allow, worn_at, frac, reason = self._wear_gate(onset)
         lookback = getattr(cfg, "WEAR_GATE_LOOKBACK_S", 3.0)

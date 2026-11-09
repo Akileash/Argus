@@ -71,13 +71,13 @@ def test_no_wear_state_still_allows_fall():
     assert st.hits[0].suppressed is False
 
 
-def test_hard_hit_without_freefall_needs_stillness_and_tilt():
-    """Old rule emitted instantly on >=3 g. Now a bare spike is not a fall."""
+def test_hard_hit_without_freefall_is_not_a_fall():
+    """A hit with no free fall is not logged as a fall (FALL_MIN_FREEFALL_MS)."""
     t0 = time.perf_counter()
     det = FallImpactDetector(wear_state=_worn_wear(True, t0))
     st = Stream(det, t0=t0 + 2.0)
     st.hold(UP, 1.0)
     st.push((0.0, 0.0, -3.2))
     assert st.hits == []
-    st.hold(SIDE, 1.0)  # then lies still on its side → candidate fall
-    assert len(st.hits) == 1 and st.hits[0].freefall_ms == 0.0
+    st.hold(SIDE, 1.0)  # lies still on its side, but no free fall happened
+    assert st.hits == []

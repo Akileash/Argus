@@ -100,7 +100,11 @@ US_DEBUG = True
 # IMU (Pololu MinIMU-9 v3: L3GD20H gyro + LSM303D accel)
 # ---------------------------------------------------------------------------
 IMU_SAMPLE_HZ = 200.0
-IMU_BUFFER_S = 2.0
+# Was 2.0 until 2026-11-08: too short, because a fall can take up to FALL_STILL_DEADLINE_S (3 s) to
+# settle and the tilt check then needs the 1 s before onset. Falls settling after ~2.4 s were lost.
+# To go back, set this to IMU_BUFFER_S_ORIGINAL.
+IMU_BUFFER_S_ORIGINAL = 2.0
+IMU_BUFFER_S = 5.0
 # Scaling per the ST datasheets (typ. sensitivity). NOT round numbers:
 ACCEL_G_PER_LSB = 0.000732      # LSM303D ±16 g: 0.732 mg/LSB (1 g = ~1366 LSB)
 GYRO_DPS_PER_LSB = 0.0175       # L3GD20H ±500 dps: 17.5 mdps/LSB (saturates at ~±573 dps)
@@ -124,7 +128,8 @@ IMPACT_AFTER_FF_WINDOW_S = 1.0 # impact must follow freefall within ~1 s
 STILL_BAND_G = 0.20
 STILL_HOLD_S = 0.300           # lie still this long after impact/landing
 FALL_STILL_DEADLINE_S = 3.0    # no stillness by then → not a fall (kept moving)
-FALL_MIN_PEAK_G = 1.0          # soft catch returns ~1 g; don't require 5 g spike
+FALL_MIN_PEAK_G = 2.0          # real falls in the 2026-11-08 test peaked 2.4-4.0 g; false ones 1.5-1.7 g (was 1.0)
+FALL_MIN_FREEFALL_MS = 100.0   # a fall needs at least this much free fall; hits without one are not logged as falls
 IMPACT_G = 3.0                 # hard hit w/o freefall: candidate only; needs stillness + tilt
 # Soft path: freefall long enough then back near 1 g with no hard spike
 SOFT_LANDING_AFTER_FF_S = 0.080

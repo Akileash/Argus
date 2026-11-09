@@ -71,14 +71,14 @@ def test_real_fall_shape_emits_one_high_confidence_event():
     assert h.freefall_ms >= 100
 
 
-def test_soft_landing_onto_mat_is_caught():
+def test_soft_landing_below_min_peak_is_not_a_fall():
     st = Stream(FallImpactDetector())
     st.hold(UP, 1.2)
     st.ramp(UP, (0.0, 0.0, -0.3), 0.04)
     st.hold((0.0, 0.0, -0.3), 0.10)
     st.ramp((0.0, 0.0, -0.3), SIDE, 0.1)
     st.hold(SIDE, 1.0)
-    assert len(st.hits) == 1 and st.hits[0].confidence == "high"
+    assert st.hits == []  # peak under FALL_MIN_PEAK_G
 
 
 def test_event_during_wear_gate_off_is_suppressed():
@@ -153,13 +153,13 @@ def test_bump_then_keep_moving_is_not_a_fall():
     assert st.hits == []
 
 
-def test_hard_hit_then_lying_still_tilted_is_a_fall():
+def test_hard_hit_without_freefall_is_not_a_fall():
     st = Stream(FallImpactDetector())
     st.hold(UP, 1.2)
     st.spike((2.0, 0.0, -3.5))        # no freefall at all
     st.ramp((1.0, 0.0, -1.0), SIDE, 0.1)
     st.hold(SIDE, 1.0)
-    assert len(st.hits) == 1 and st.hits[0].confidence == "high"
+    assert st.hits == []  # no free fall (FALL_MIN_FREEFALL_MS)
 
 
 def test_hat_set_down_on_table_while_not_worn_is_gated():
@@ -238,11 +238,7 @@ def test_every_emitted_fall_is_high_confidence():
     st = Stream(FallImpactDetector())
     real_fall(st)
     st.hold(UP, 6.0)
-    st.hold(UP, 1.2)
-    st.ramp(UP, (0.0, 0.0, -0.3), 0.04)
-    st.hold((0.0, 0.0, -0.3), 0.10)
-    st.ramp((0.0, 0.0, -0.3), SIDE, 0.1)
-    st.hold(SIDE, 1.0)
+    real_fall(st)
     assert len(st.hits) == 2 and {h.confidence for h in st.hits} == {"high"}
 
 
@@ -253,4 +249,24 @@ def test_acted_fall_ending_upright_is_rejected_not_low():
     st.hold((0.0, 0.0, -0.3), 0.15)
     st.spike((0.0, 0.0, -2.0))
     st.hold(UP, 3.5)
+    assert st.hits == []
+
+
+def test_fall_settling_after_2_5_s_keeps_its_pre_fall_reference():
+    """Regression, 2026-11-08 test: a 2 s buffer lost the pre-fall angle and rejected these."""
+    st = Stream(FallImpactDetector())
+    st.hold(UP, 1.2)
+    st.ramp(UP, FF, 0.04)
+    st.hold(FF, 0.12)
+    st.spike((0.0, 0.0, -3.4))
+    for _ in range(5):  # keeps moving about 2.5 s, never inside the stillness band
+        st.hold((0.0, 0.5, -1.6), 0.25)
+        st.hold((1.5, 0.0, -0.3), 0.25)
+    st.hold(SIDE, 1.0)
+    assert len(st.hits) == 1
+
+
+def test_short_freefall_is_not_enough():
+    st = Stream(FallImpactDetector())
+    real_fall(st, ff_s=0.02)
     assert st.hits == []
