@@ -157,6 +157,7 @@ class MiniIMU9:
         self.bus = SMBus(bus_id)
         self.i2c_errors = 0
         self.config_losses = 0
+        self.config_glitches = 0
         self.last_recovery_t = 0.0
         # Gyro zero-rate bias (deg/s). None = not calibrated yet: read() reports gx/gy/gz as
         # None until a quiet window has been seen. Pass a tuple to skip calibration.
@@ -305,6 +306,17 @@ class MiniIMU9:
         bad_a = self._check_block(self.accel_addr, _A_BLOCK, _A_EXPECT, "accel")
         bad = bad_g + bad_a
         if not bad:
+            return True
+        # A corrupted read looks like a loss but the chip is fine (seen on the hat: nonsense values with
+        # perfectly continuous data). A real reset still reads wrong a moment later, so confirm first;
+        # acting on a false alarm disarms the fall detector and can cost a real fall.
+        first = bad
+        bad_g = self._check_block(self.gyro_addr, _G_BLOCK, _G_EXPECT, "gyro")
+        bad_a = self._check_block(self.accel_addr, _A_BLOCK, _A_EXPECT, "accel")
+        bad = bad_g + bad_a
+        if not bad:
+            self.config_glitches += 1
+            print(f"[imu] config read glitch ignored (#{self.config_glitches}: {', '.join(first)})", flush=True)
             return True
         self.config_losses += 1
         print(

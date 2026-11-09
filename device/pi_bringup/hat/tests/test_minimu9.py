@@ -614,3 +614,28 @@ def test_calibration_costs_no_extra_i2c(uncal):
     _run(imu, bus, st, 3.6)
     n = int(3.6 / DT)
     assert bus.transactions == {GYRO: n, ACCEL: n} and bus.writes == []
+
+
+def test_one_corrupted_config_read_is_a_glitch_not_a_loss(rig, capsys):
+    imu, bus, _ = rig
+    real = bus.read_i2c_block_data
+    corrupted = []
+
+    def corrupt_once(addr, reg, n):
+        data = real(addr, reg, n)
+        if n > 3 and not corrupted:  # the config block, not a 6-byte sample
+            corrupted.append(reg)
+            return [0xFF] * n
+        return data
+
+    bus.read_i2c_block_data = corrupt_once
+    assert imu.check_config() is True
+    assert corrupted and imu.config_losses == 0 and imu.config_glitches == 1
+    assert "glitch ignored" in capsys.readouterr().out
+
+
+def test_a_real_loss_is_still_a_loss_after_the_confirming_read(rig):
+    imu, bus, _ = rig
+    bus.power_loss(ACCEL)
+    assert imu.check_config() is False
+    assert imu.config_losses == 1 and imu.config_glitches == 0
