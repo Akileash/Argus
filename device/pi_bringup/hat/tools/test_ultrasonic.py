@@ -100,7 +100,7 @@ def cmd_detect(log_path: str | None) -> int:
 
     print(
         f"Approach detect  warn <{cfg.US_WARN_DISTANCE_M} m "
-        f"and >{cfg.US_WARN_CLOSING_MPS} m/s. Ctrl+C to stop."
+        f"and >{cfg.US_MIN_OBJ_MPS} m/s (no IMU gating here). Ctrl+C to stop."
     )
     sensors = [(left, det_l, "left"), (right, det_r, "right")]
     idx = 0

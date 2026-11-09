@@ -56,18 +56,30 @@ US_MIN_RANGE_M = 0.05
 US_ECHO_TIMEOUT_S = 0.024
 # Chirp every 40 ms; dual mode alternates → ~12.5 Hz per sensor
 US_PING_GAP_S = 0.040
-US_MEDIAN_N = 1
-US_SPEED_WINDOW = 2
-US_MIN_SPEED_DT_S = 0.020
-US_MIN_SAMPLES_TO_FIRE = 2
-US_CLOSING_VOTES = 1
 US_TRACK_BREAK_S = 0.20
 US_MAX_PLAUSIBLE_MPS = 8.0
-US_WARN_DISTANCE_M = 1.80
-US_WARN_CLOSING_MPS = 0.40
-US_NEAR_DISTANCE_M = 0.70
-US_NEAR_CLOSING_MPS = 0.15
-US_INSTANT_DROP_M = 0.12
+US_MIN_SPEED_DT_S = 0.020
+US_IGNORE_BELOW_M = 0.25        # wearer's own shoulders/collar/brim: never a threat track
+# --- approach rule (2026-11-08 rewrite; see hat/ultrasonic.py docstring) ---
+US_WARN_DISTANCE_M = 1.80       # normal path: only this close
+US_TRACK_SAMPLES = 4            # consecutive samples in the fit (~0.24 s per sensor)
+US_MIN_OBJ_MPS = 1.0            # least-squares closing speed needed (was 0.40 on a 2-sample difference)
+US_MOVING_MIN_MPS = 2.0         # same, while the wearer is walking/moving (bar raised, not subtracted)
+US_MIN_STEP_FRACTION = 0.5      # every step must itself close at >= this fraction of the required speed
+US_MIN_NET_DROP_M = 0.15        # total range drop across the window
+US_MAX_RESID_M = 0.04           # RMS residual about the straight-line fit (rejects spikes / sweeps)
+US_TTC_MAX_S = 1.5              # range / closing speed
+US_FAST_MPS = 3.0               # swung/thrown object path: two consecutive steps each this fast
+US_FAST_RANGE_M = 2.5
+US_FAST_TTC_MAX_S = 1.2
+# --- wearer motion (from the IMU; suppress/raise the bar, never integrate) ---
+US_GYRO_GATE_DPS = 40.0         # head turning faster than this: beam is sweeping, drop the track
+US_GYRO_HOLDOFF_S = 0.25
+US_MOVING_DYN_G = 0.06          # RMS of | |a|-1g | over ~0.3 s above this = wearer walking/moving
+US_MOVING_GYRO_DPS = 20.0       # |gyro| above this also counts as moving ...
+US_MOVING_HOLD_S = 0.5          # ... for this long afterwards
+US_MOTION_TAU_S = 0.3
+US_MOTION_STALE_S = 0.5         # IMU data older than this is ignored (no gating)
 US_COOLDOWN_S = 1.5
 US_ENABLE_LEFT = True
 US_ENABLE_RIGHT = True

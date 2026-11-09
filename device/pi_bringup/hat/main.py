@@ -10,6 +10,7 @@ Usage (from ~/argus):
 from __future__ import annotations
 
 import argparse
+import os
 import signal
 import sys
 import threading
@@ -29,7 +30,7 @@ from hat.events import build_event, emit
 from hat.haptics import Haptics
 from hat.imu import FallImpactDetector, MPU6050
 from hat.tof import TofWearMonitor
-from hat.ultrasonic import ApproachDetector, HCSR04
+from hat.ultrasonic import ApproachDetector, HCSR04, MotionState
 from hat.wear_state import WearState
 
 
@@ -64,6 +65,8 @@ class HatRuntime:
         self.us_right: Optional[HCSR04] = None
         self.approach_left = ApproachDetector("left")
         self.approach_right = ApproachDetector("right")
+        # Read-only wearer-motion summary (gyro rate, body-motion RMS) for the US detectors.
+        self.motion = MotionState()
 
         self._threads: list[threading.Thread] = []
 
@@ -182,6 +185,8 @@ class HatRuntime:
                         self.detector.config_lost(now)
                         continue
                 sample = self.mpu.read(now)
+                self.motion.push(now, sample.ax, sample.ay, sample.az,
+                                 sample.gx, sample.gy, sample.gz)
                 det = self.detector.push(sample)
                 if det is not None and not self.mpu.check_config():
                     # Config was wrong while this event was being built.
@@ -250,6 +255,12 @@ class HatRuntime:
         if not sensors:
             return
 
+        # Optional raw recording for tuning: ARGUS_US_RECORD=/path/us.csv  (t,side,raw_m,gyro_dps,dyn_rms_g,moving)
+        rec_path = os.environ.get("ARGUS_US_RECORD")
+        rec = open(rec_path, "a", buffering=1) if rec_path else None
+        if rec is not None and rec.tell() == 0:
+            rec.write("t,side,raw_m,gyro_dps,dyn_rms_g,moving\n")
+
         idx = 0
         while not self._stop.is_set():
             t0 = time.perf_counter()
@@ -258,7 +269,11 @@ class HatRuntime:
                 idx = (idx + 1) % len(sensors)
             try:
                 dist = sensor.distance_m()
-                ev = detector.update(t0, dist)
+                ev = detector.update(t0, dist, self.motion)
+                if rec is not None:
+                    rec.write(f"{t0:.4f},{sensor.name},{'' if dist is None else f'{dist:.4f}'},"
+                              f"{self.motion.gyro_dps:.1f},{self.motion.dyn_rms_g:.3f},"
+                              f"{int(self.motion.moving(t0))}\n")
                 if cfg.US_DEBUG:
                     d = detector.last_distance
                     d_s = f"{d:5.2f}" if d is not None else " ----"
