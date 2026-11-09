@@ -2,59 +2,67 @@
 
 A retrofit kit that turns a standard hard hat into a dash cam for construction workers.
 
-- **Senses danger:** two rear ultrasonic sensors watch for objects closing in from behind, an IMU detects falls and head impacts, and a time-of-flight sensor knows when the hat comes off.
-- **Warns the wearer:** vibration motors buzz on the back of the head before a struck-by hazard reaches them.
-- **Records what happened:** the hat keeps a rolling video buffer and saves a clip (20 s before, 10 s after) plus the sensor data for every incident or near miss.
+- **Senses danger:** two rear ultrasonic sensors watch for objects closing in from behind, an IMU detects falls, and a time-of-flight sensor knows when the hat comes off.
+- **Warns the wearer:** left and right vibration motors buzz on the side the hazard is coming from, before it reaches them.
+- **Records what happened:** the hat keeps a rolling video buffer and saves a clip (20 s before, 10 s after) for every fall, and uploads the sensor data for every event.
 - **Writes the report:** an AI drafts a Canada-generic incident / near-miss investigation report, which a site safety manager reviews, edits and signs off in a web dashboard.
 
-> **Status:** built and verified end to end with simulated sensors. The real hardware drivers exist but have not yet run on a real Pi. See [What's proven and what isn't](#whats-proven-and-what-isnt).
+> **Status:** running end to end on a real hat: sensors, haptics, camera, cloud upload, AI reports and the dashboard. Detection thresholds are tuned from real test sessions and are still prototype-grade. See [What's proven and what isn't](#whats-proven-and-what-isnt).
 
 ## How it works
 
 ```
- Hard hat (Raspberry Pi 4)                         Laptop or cloud
- ┌───────────────────────────────┐                 ┌─────────────────────────────┐
- │ sensors → drivers → detectors │   event.json    │ Next.js dashboard + API     │
- │ → haptic buzz                 │  clip.mp4  ───► │ Supabase (database, files)  │
- │ → clip + trace → upload queue │  trace.json     │ report worker (Gemini/Claude)│
- └───────────────────────────────┘                 └─────────────────────────────┘
+ Hard hat (Raspberry Pi 4)                               Cloud
+ ┌───────────────────────────────────┐                   ┌──────────────────────────────┐
+ │ hat.main: sensors, detection,     │                   │ Next.js dashboard + API      │
+ │ haptic buzz, video clips          │   event.json      │ (Vercel)                     │
+ │        │ events + clips           │   clip.mp4   ───► │ Supabase (database, files)   │
+ │        ▼                          │   trace.json      │ report worker (Gemini/Claude)│
+ │ cloud bridge: pairing, mapping,   │                   └──────────────────────────────┘
+ │ on-disk queue, retrying upload    │
+ └───────────────────────────────────┘
 ```
 
-1. Each sensor driver runs in its own thread and turns raw readings into standard units (mm, g, deg/s).
-2. A supervisor watches every sensor's health and can hot-swap a sensor's code, or fall back to a backup, while the hat runs.
-3. Detectors decide what happened: struck-by (with the wearer's own motion subtracted), fall, head impact, hat knocked off or removed.
-4. The event manager buzzes the motors, cuts the clip and sensor trace, and queues the event on disk.
-5. The uploader sends it to the backend and keeps retrying until it gets through.
-6. The report worker drafts the report. The dashboard shows it live, with the video synced to the sensor chart.
+1. `hat.main` (`device/pi_bringup/hat/`) owns every sensor. It detects near misses and falls, buzzes the motors and saves video clips.
+2. The cloud bridge (`device/argus/bridge/`) runs `hat.main` as a child process and reads its events, clips and hat-on/off lines. It never opens a sensor itself.
+3. The bridge converts each event to the shared format in `contracts/` and hands it to the upload queue, which keeps retrying until it gets through, so a Wi-Fi drop loses nothing.
+4. The report worker drafts the report. A near miss within 6 s before a fall is linked to it, and the report names it as the most likely cause.
+5. The dashboard shows the incident live, with the video and sensor chart. A safety manager edits and signs off the report.
+
+**Detection rules (hat):**
+- **Near miss:** an object closing on a rear sensor, confirmed over several readings, at 1 m/s or faster (2 m/s while the wearer is moving), or a very fast approach. Fast head turns are ignored.
+- **Fall:** the hat must be worn. Then either free fall of 100 ms or more with a 2 g peak and at least 30° of head tilt, or a hit of 2.5 g or more with at least 45° of tilt, followed by lying still. Readings above 15 g are treated as bad data.
+- **Hat off:** the time-of-flight sensor reads outside 50 to 254 mm for 3 s.
 
 ## Hardware
 
-| Part | Job | Driver |
+| Part | Job | Connection |
 |---|---|---|
-| Raspberry Pi 4 | runs everything on the hat | — |
-| MPU-6050 (I2C 0x68) | falls, impacts, head motion | `smbus2`, 1 kHz FIFO |
-| 2× HC-SR04 (R2, R3) | objects approaching from behind | `lgpio` pulse timing |
-| VL53L0X (I2C 0x29) | hat on / off | Adafruit library |
-| SCD41 (I2C 0x62) | CO₂, temperature, humidity (context only) | Adafruit library |
-| L293D + 2 vibration motors | haptic warning | `lgpio` PWM on GPIO12/13 |
-| Pi Camera (front) | video clips | `picamera2` + `ffmpeg` |
+| Raspberry Pi 4 | runs everything on the hat | Raspberry Pi OS |
+| Pololu MinIMU-9 v3 (LSM303D accel, L3GD20H gyro) | falls, head motion | I2C bus 3, `0x1D` and `0x6B` |
+| 2× HC-SR04 | objects approaching from behind | LEFT trig 23 / echo 24, RIGHT trig 20 / echo 21 (GPIO), with echo dividers |
+| VL6180X | hat on / off | I2C bus 3, `0x29` |
+| SCD41 | CO₂, temperature, humidity (context only) | I2C bus 1, `0x62` |
+| 2× DRV2605L + vibration motors | left and right haptic warning | `0x5A`, LEFT on I2C bus 1, RIGHT on I2C bus 3 |
+| Pi Camera (CSI) | video clips | `picamera2` + `ffmpeg` |
 
-Wiring and the full GPIO map: [docs/CONNECT-THE-HAT.md](docs/CONNECT-THE-HAT.md) and spec §2.3.
+I2C bus 3 needs `dtoverlay=i2c3,pins_4_5` in `/boot/firmware/config.txt` (SDA GPIO4, SCL GPIO5). Wiring details: [device/pi_bringup/Argus_Hat_Wiring.md](device/pi_bringup/Argus_Hat_Wiring.md). The earlier MPU-6050 driver is archived in `device/pi_bringup/hat/archive/`.
 
 ## Repo layout
 
 | Folder | What's in it |
 |---|---|
-| `device/` | Python code for the Pi: drivers, supervisor, detectors, event manager, uploader, `argus-cli`, install script |
-| `device/hardware/team/` | One folder per sensor where teammates plug in their own tested scripts |
-| `web/` | Next.js dashboard and the device API |
-| `worker/` | Report worker that drafts reports with Gemini and/or Claude |
-| `supabase/` | Database schema, security rules, demo seed data and SQL tests |
+| `device/pi_bringup/` | The code that runs the real hat: sensors, detection, haptics, camera, tests and tools |
+| `device/argus/bridge/` | Cloud bridge between the hat code and the backend |
+| `device/` (rest) | Upload queue, pairing, `argus-cli`, simulated sensors for laptop demos |
+| `web/` | Next.js dashboard, device API and report worker route |
+| `worker/` | Report pipeline (Gemini and/or Claude) |
+| `supabase/` | Database schema, security rules, seed data and SQL tests |
 | `contracts/` | The data formats shared by the hat, the API and the dashboard |
 | `packages/shared/` | Shared TypeScript types |
 | `scripts/` | Demo, check and helper scripts |
 | `docs/` | Guides for the team |
-| `.plans/` | The product spec and build plan |
+| `.plans/` | Product spec, build plan and bridge spec |
 
 ## Quick start on a laptop (simulated hat)
 
@@ -74,21 +82,28 @@ This starts the database, builds the dashboard, runs a simulated hat through thr
 
 ## Running on the real hat
 
-Step-by-step guide, from a blank SD card to your first real report: **[docs/CONNECT-THE-HAT.md](docs/CONNECT-THE-HAT.md)**. In short:
+The hat code lives in `~/argus` on the Pi (a copy of `device/pi_bringup/`), and the bridge in its own folder, `~/argus-cloud`.
 
-1. Flash Raspberry Pi OS Bookworm 64-bit Lite, then on the Pi:
-   ```bash
-   git clone -b software https://github.com/Akileash/Argus.git ~/argus
-   cd ~/argus/device && ./install.sh && sudo reboot
-   ```
-2. In `/etc/argus/config.yaml`, switch each sensor from `impl: mock` to `impl: argus`, then test each one:
-   ```bash
-   .venv/bin/argus-cli test imu --config /etc/argus/config.yaml
-   ```
-3. Register the hat on the dashboard's **Devices** page and run the pairing command it shows on the Pi.
-4. `sudo systemctl start argus` with the hat resting on a table, then put it on.
+```bash
+# Install the bridge (needs the repo at ~/argus-cloud)
+~/argus-cloud/device/deploy/install-bridge.sh
 
-The dashboard must be reachable from the Pi: use your laptop's network IP, not `127.0.0.1` (see the guide, step e0).
+# Register the hat on the dashboard's Devices page, then pair it with the command shown there
+cd ~/argus-cloud/device && .venv/bin/argus-cli pair --config /etc/argus/config.yaml
+
+# Start it (keep the hat still for a few seconds while the gyro calibrates)
+sudo systemctl start argus-bridge
+```
+
+The bridge starts `hat.main` and the air sensor for you, so don't also start `hat.main` by hand or enable `argus-sensors.service`: only one program can own the sensors. Logs: `journalctl -u argus-bridge -f`.
+
+**Live view** of every sensor, the motors and the fall detector, while the hat runs:
+
+```bash
+cd ~/argus && .venv/bin/python -m hat.tools.live_view
+```
+
+**Test a sensor** with the bridge stopped: `python -m hat.tools.test_imu check`. Full sensor bring-up notes: [docs/PI-BRINGUP.md](docs/PI-BRINGUP.md). Hosting setup: [docs/HOSTED.md](docs/HOSTED.md).
 
 ## Plugging in teammates' sensor code
 
@@ -123,17 +138,21 @@ Events without usable video get a report written from sensor data alone. All wor
 | `scripts/check.sh` | Run every test and check. Run it before merging. |
 | `./scripts/demo-e2e.sh --reset --keep-running` | Full simulated demo, dashboard left running |
 | `scripts/web-e2e.sh` | Browser tests against a running dashboard |
-| `cd device && uv run argus-cli --help` | All hat commands: `run`, `test`, `buzz`, `pair`, `upload`, `record`, `sweep`, `eval`, `trigger`, `reload`, `team` … |
-| `uv run argus-cli record --label <name>` / `argus-cli sweep` | Record real trial runs and tune detection thresholds ([docs/TUNING.md](docs/TUNING.md)) |
+| `cd device && uv run argus-cli --help` | Device commands: `bridge`, `pair`, `upload`, `run`, `test`, `trigger`, `team` … |
+| `cd device/pi_bringup && python -m pytest hat/tests` | Tests for the real hat code |
 
 ## What's proven and what isn't
 
-**Proven on a laptop with simulated sensors:** the whole chain from hat to signed report, live dashboard updates, sign-off and PDF export, hot-swapping sensor code, fallbacks, and teammate script integration (`scripts/check.sh`, the demo and the browser tests all pass).
+**Proven on the real hat:** sensors, haptics and camera working together; events uploading to the hosted backend; AI reports on real events; hat-on/off detection; automatic recovery when the motion sensor loses its settings.
 
-**Not yet proven:**
-- The real hardware drivers on a real Pi (bench checks are in spec §3.2a).
-- Detection thresholds tuned on real recordings.
-- Gemini and Claude reports on real clips.
+**Proven on a laptop:** the full simulated demo, sign-off and PDF export, the bridge's retry and mapping logic, and all automated tests (`scripts/check.sh`).
+
+**Known limits:**
+- Detection thresholds were tuned from a small number of test falls and near misses, so expect some missed events and false alarms.
+- The motion sensor ignores data while the motors buzz, about 1.6 s after a near miss on both sides.
+- A hard landing can press the hat close enough to the time-of-flight sensor to report it as off.
+- Rear coverage is limited to the two sensors' beams, and the hat has no contact sensor, so a linked near miss is reported as the *likely* cause of a fall, not a confirmed strike.
+- The prototype's wiring can drop out under hard knocks; production hardware needs soldered, strain-relieved connections.
 
 ## More documentation
 
