@@ -88,6 +88,7 @@ US_MOVING_DYN_G = 0.06          # RMS of | |a|-1g | over ~0.3 s above this = wea
 US_MOVING_GYRO_DPS = 20.0       # |gyro| above this also counts as moving ...
 US_MOVING_HOLD_S = 0.5          # ... for this long afterwards
 US_MOTION_TAU_S = 0.3
+US_MOTION_BASELINE_TAU_S = 3.0  # slow average of |a|: the accel's static offset (reads ~0.94 g at rest) must not count as motion
 US_MOTION_STALE_S = 0.5         # IMU data older than this is ignored (no gating)
 US_COOLDOWN_S = 1.5
 US_ENABLE_LEFT = True

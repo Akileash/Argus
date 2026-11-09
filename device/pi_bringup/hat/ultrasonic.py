@@ -69,7 +69,7 @@ class MotionState:
     things are extracted:
       * gyro_dps : instantaneous |gyro|. Fast head rotation sweeps the beam over surfaces at
                    different ranges, which looks like a huge closing speed.
-      * moving   : RMS of | |a|-1 g | over ~0.3 s (walking bounce / body motion), or any gyro rate
+      * moving   : RMS of |a| about its slow baseline over ~0.3 s (walking bounce / body motion), or any gyro rate
                    above 20 dps in the last 0.5 s. Used to RAISE the closing-speed bar, not to subtract anything.
     Plain floats; one writer, one reader, so the GIL is enough.
     """
@@ -78,6 +78,7 @@ class MotionState:
         self.last_t: Optional[float] = None
         self.gyro_dps = 0.0
         self._dyn2 = 0.0
+        self._baseline: Optional[float] = None
         self.moving_until = -1e9
         self.gate_until = -1e9
 
@@ -86,7 +87,14 @@ class MotionState:
         dt = 0.005 if self.last_t is None else min(max(t - self.last_t, 0.0), 0.1)
         self.last_t = t
         a = 1.0 - math.exp(-dt / cfg.US_MOTION_TAU_S) if cfg.US_MOTION_TAU_S > 0 else 1.0
-        dyn = math.sqrt(ax * ax + ay * ay + az * az) - 1.0
+        mag = math.sqrt(ax * ax + ay * ay + az * az)
+        # Measure motion against a slow baseline, not a nominal 1 g. This board reads ~0.94 g at rest,
+        # and that 0.06 g offset alone crossed US_MOVING_DYN_G, so the wearer always looked "moving".
+        if self._baseline is None:
+            self._baseline = mag
+        else:
+            self._baseline += (1.0 - math.exp(-dt / cfg.US_MOTION_BASELINE_TAU_S)) * (mag - self._baseline)
+        dyn = mag - self._baseline
         self._dyn2 += a * (dyn * dyn - self._dyn2)
         if gx is None or gy is None or gz is None:
             self.gyro_dps = 0.0  # accel-only IMU: head rotation unobservable

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pytest
 
+import math
+
 from hat import config as cfg
 from hat.tools.replay_us import LegacyDetector, evaluate, run, scenarios
 from hat.ultrasonic import ApproachDetector, MotionState
@@ -122,3 +124,24 @@ def test_dropout_gap_breaks_track():
         d.update(10 + i * 0.08, r)
     d.update(10.5, 1.3)
     assert d._hist and len(d._hist) == 1
+
+
+def test_static_accel_offset_does_not_count_as_moving():
+    """The real board reads ~0.94 g at rest; that offset alone used to look like walking."""
+    m = MotionState()
+    t = 100.0
+    for _ in range(600):
+        m.push(t, 0.0, 0.0, -0.94, 0.0, 0.0, 0.0)
+        t += 0.005
+    assert m.dyn_rms_g < 0.01
+    assert not m.moving(t)
+
+
+def test_walking_bounce_still_counts_as_moving():
+    m = MotionState()
+    t = 100.0
+    for i in range(800):
+        z = -0.94 - 0.2 * math.sin(2 * math.pi * 2.0 * i * 0.005)
+        m.push(t, 0.0, 0.0, z, 0.0, 0.0, 0.0)
+        t += 0.005
+    assert m.moving(t)
