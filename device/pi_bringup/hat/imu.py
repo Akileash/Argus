@@ -99,6 +99,7 @@ class FallImpactDetector:
         self._knock_t: Optional[float] = None
         self._tilt_rejected = False
         self._peak = 0.0
+        self._last_tilt: Optional[float] = None
         self._still_start: Optional[float] = None
         self._cooldown_until = 0.0
         self._armed = True
@@ -305,9 +306,11 @@ class FallImpactDetector:
     def _confirm(self, now: float) -> Optional[Detection]:
         """Stillness reached: accept only if the head ended up re-oriented."""
         assert self._still_start is not None and self._onset_t is not None
+        self._last_tilt = None
         if self._ff_ms >= cfg.FALL_TILT_EXEMPT_FF_S * 1000.0:
             return self._emit_fall(now, confidence="high")
         tilt = self._tilt_change_deg(self._onset_t, self._still_start, now)
+        self._last_tilt = tilt
         if tilt is not None and tilt >= cfg.FALL_TILT_MIN_DEG:
             return self._emit_fall(now, confidence="high")
         # Same orientation / unverifiable: jump, bump, nod. Not a fall by the
@@ -339,10 +342,15 @@ class FallImpactDetector:
         if self._peak < min_peak:
             self._reset_state()
             return None
-        # No free fall = a hit or jolt, not a fall (the knocked-off path has its own evidence).
-        if self._knock_t is None and self._ff_ms < cfg.FALL_MIN_FREEFALL_MS:
-            self._reset_state()
+        # Short/no free fall: needs a hard hit plus a large re-orientation (knocked-off path has its own evidence).
+        if self._peak > cfg.FALL_MAX_PEAK_G:
+            self._reset_state()  # physically implausible here: bad bus data
             return None
+        if self._knock_t is None and self._ff_ms < cfg.FALL_MIN_FREEFALL_MS:
+            tilt = self._last_tilt
+            if self._peak < cfg.FALL_HIT_MIN_PEAK_G or tilt is None or tilt < cfg.FALL_HIT_MIN_TILT_DEG:
+                self._reset_state()
+                return None
         onset = self._onset_t if self._onset_t is not None else now
         allow, worn_at, frac, reason = self._wear_gate(onset)
         lookback = getattr(cfg, "WEAR_GATE_LOOKBACK_S", 3.0)

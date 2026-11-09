@@ -153,13 +153,20 @@ def test_bump_then_keep_moving_is_not_a_fall():
     assert st.hits == []
 
 
-def test_hard_hit_without_freefall_is_not_a_fall():
+def test_hard_hit_without_freefall_needs_a_large_tilt():
     st = Stream(FallImpactDetector())
     st.hold(UP, 1.2)
     st.spike((2.0, 0.0, -3.5))        # no freefall at all
     st.ramp((1.0, 0.0, -1.0), SIDE, 0.1)
     st.hold(SIDE, 1.0)
-    assert st.hits == []  # no free fall (FALL_MIN_FREEFALL_MS)
+    assert len(st.hits) == 1  # no free fall, but >=3 g and about 90 deg re-orientation
+    st2 = Stream(FallImpactDetector())
+    st2.hold(UP, 1.2)
+    st2.spike((2.0, 0.0, -3.5))
+    tilted = (-0.5, 0.0, -0.866)  # 30 deg: passes the normal tilt limit, not the 45 deg hit limit
+    st2.ramp((1.0, 0.0, -1.0), tilted, 0.1)
+    st2.hold(tilted, 1.0)
+    assert st2.hits == []
 
 
 def test_hat_set_down_on_table_while_not_worn_is_gated():
@@ -268,5 +275,11 @@ def test_fall_settling_after_2_5_s_keeps_its_pre_fall_reference():
 
 def test_short_freefall_is_not_enough():
     st = Stream(FallImpactDetector())
-    real_fall(st, ff_s=0.02)
+    real_fall(st, ff_s=0.02, impact=(0.0, 0.0, -2.5))  # under the 3 g hit path
+    assert st.hits == []
+
+
+def test_peak_above_max_is_treated_as_bus_garbage():
+    st = Stream(FallImpactDetector())
+    real_fall(st, impact=(0.0, 0.0, -20.0))
     assert st.hits == []

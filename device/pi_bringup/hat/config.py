@@ -130,6 +130,10 @@ STILL_HOLD_S = 0.300           # lie still this long after impact/landing
 FALL_STILL_DEADLINE_S = 3.0    # no stillness by then → not a fall (kept moving)
 FALL_MIN_PEAK_G = 2.0          # real falls in the 2026-11-08 test peaked 2.4-4.0 g; false ones 1.5-1.7 g (was 1.0)
 FALL_MIN_FREEFALL_MS = 100.0   # a fall needs at least this much free fall; hits without one are not logged as falls
+# Collapses with no measurable free fall: accept a hard hit only with a large head re-orientation.
+FALL_HIT_MIN_PEAK_G = 3.0
+FALL_HIT_MIN_TILT_DEG = 45.0
+FALL_MAX_PEAK_G = 15.0         # above this is treated as bus garbage (seen with loose wiring: 18-29 g readings)
 IMPACT_G = 3.0                 # hard hit w/o freefall: candidate only; needs stillness + tilt
 # Soft path: freefall long enough then back near 1 g with no hard spike
 SOFT_LANDING_AFTER_FF_S = 0.080

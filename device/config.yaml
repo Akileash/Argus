@@ -114,6 +114,7 @@ bridge:                 # `argus-cli bridge run`: cloud bridge for the teammates
   clips_dir: ""         # blank -> <argus_dir>/clips
   air_log: ~/argus/pi_sensors/logs/air_events.jsonl
   clip_wait_s: 45       # fall / line_of_fire wait this long for the clip, then go up without video
+  lof_clip_wait_s: 0    # near misses have no clip on this hat; set to clip_wait_s if CAM_CLIP_TYPES adds line_of_fire
   air_max_age_s: 300    # newest air sample older than this is not attached
   knock_window_s: 2.0   # HELMET OFF within this after a fall = hat_knocked_off, otherwise hat_removed
   tof_off_dwell_s: 3.0  # their ToF prints OFF this long after the hat left the head

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from datetime import timedelta
 from pathlib import Path
 
@@ -499,3 +500,15 @@ def test_fall_links_to_a_throttled_near_miss_and_only_the_closest(cfg, hat):
     q = queued(cfg)
     assert q[fall["event_id"]]["merged_triggers"] == [{"type": "struck_by_near_miss", "offset_s": -2.0}]
     assert len([e for e in q.values() if e["type"] == "struck_by_near_miss"]) == 1
+
+
+def test_near_miss_does_not_wait_for_a_clip_by_default(tmp_path, hat):
+    cfg0 = make_cfg(tmp_path, lof_clip_wait_s=0)
+    assert cfg0.bridge.clip_wait_s == 3.0
+    b = make_bridge(cfg0, from_start=True)
+    hat2 = type(hat)(cfg0)
+    nm = hat2.lof(T0)
+    start = time.monotonic()
+    settle(b)
+    assert time.monotonic() - start < 2.5
+    assert nm["event_id"] in queued(cfg0)

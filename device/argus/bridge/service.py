@@ -18,6 +18,8 @@ from typing import Any
 
 from argus.bridge import mapper
 from argus.bridge.air import latest_air
+import dataclasses
+
 from argus.bridge.clips import ClipPolicy, probe_duration_s, wait_for_clip
 from argus.bridge.launcher import HatLauncher, TofLine, parse_tof_all
 from argus.bridge.tail import EventsTailer, StateFile
@@ -239,7 +241,10 @@ class Bridge:
                 clip_fut.set_result(None)
                 self._done(eid)
                 return
-            clip = wait_for_clip(eid, self.clips_dir, self.staging, self.policy, stop=self._stop.is_set)
+            policy = self.policy
+            if raw["type"] == "line_of_fire":
+                policy = dataclasses.replace(policy, wait_s=self.cfg.bridge.lof_clip_wait_s)
+            clip = wait_for_clip(eid, self.clips_dir, self.staging, policy, stop=self._stop.is_set)
             if clip is None and self._stop.is_set():
                 log.info("stopping: %s stays pending and is retried on the next start", eid)
                 clip_fut.set_result(None)

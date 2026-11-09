@@ -31,7 +31,7 @@ def make_cfg(tmp_path: Path, **bridge: Any) -> ArgusConfig:
     raw["device"]["serial"] = "ARG-0001"
     raw["bridge"].update({"argus_dir": str(argus), "air_log": str(argus / "air.jsonl"),
                           "state_dir": str(tmp_path / "state"), "launch": False, "clip_wait_s": 3.0,
-                          "max_event_age_s": 0, **bridge})  # 0 = off: the fixtures' fixed T0 is not "now"
+                          "lof_clip_wait_s": 3.0, "max_event_age_s": 0, **bridge})  # 0 = off: the fixtures' fixed T0 is not "now"
     return parse_config(raw)
 
 

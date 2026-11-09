@@ -198,6 +198,7 @@ class BridgeCfg(_Strict):
     clips_dir: str = ""  # blank -> <argus_dir>/clips
     air_log: str = "~/argus/pi_sensors/logs/air_events.jsonl"
     clip_wait_s: float = 45.0  # how long a fall / line_of_fire waits for its clip before going up without video
+    lof_clip_wait_s: float = 0.0  # line_of_fire: 0 = do not wait, the hat records no clip for it (CAM_CLIP_TYPES)
     air_max_age_s: float = 300.0  # newest air sample older than this is not attached
     knock_window_s: float = 2.0  # HELMET OFF this soon after a fall = hat_knocked_off (spec D6)
     tof_off_dwell_s: float = 3.0  # their ToF prints OFF this long after the hat left (hat/config.py TOF_OFF_DWELL_MS)
