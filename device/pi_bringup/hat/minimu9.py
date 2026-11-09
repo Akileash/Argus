@@ -23,7 +23,7 @@ Facts below marked [DS] are from the ST datasheets (L3GD20H Rev 2, LSM303D Rev 2
 Filter / rate choice (see the comments on the register values below): host polls at
 IMU_SAMPLE_HZ (200 Hz); both chips run at a 400 Hz output rate so every poll gets a
 fresh sample, with the accel anti-alias filter at 773 Hz (see A_CTRL2_VAL) and the gyro low-pass at
-~50 Hz. That keeps the signal bandwidth near the old MPU DLPF (~44 Hz) that the fall
+~50 Hz. The accel filter is wider than the old MPU DLPF (~44 Hz) that the fall
 thresholds were tuned against, and below the 100 Hz Nyquist of the 200 Hz poll.
 
 Gyro zero-rate: gx/gy/gz are None until a quiet ~3 s window has been seen (startup

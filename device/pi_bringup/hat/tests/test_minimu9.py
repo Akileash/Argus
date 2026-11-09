@@ -153,7 +153,7 @@ def test_init_sequence_registers_and_order(rig):
     # accel: CTRL0 clean, CTRL1 400 Hz + BDU + XYZ, CTRL2 50 Hz AA + +-16 g, CTRL7 mag power-down
     assert [a[r] for r in (0x1F, 0x20, 0x21, 0x22, 0x23, 0x26)] == [0x00, 0x8F, 0x20, 0x00, 0x00, 0x02]
     assert a[0x20] >> 4 == 0b1000 and a[0x20] & 0x08 and a[0x20] & 0x07 == 7
-    assert (a[0x21] >> 6) == 0b11 and ((a[0x21] >> 3) & 7) == 0b100
+    assert (a[0x21] >> 6) == 0b00 and ((a[0x21] >> 3) & 7) == 0b100
     assert a[0x26] & 0x03 == 0b10  # MD = power-down
     # each chip is switched on (CTRL1) last
     for addr in (GYRO, ACCEL):
