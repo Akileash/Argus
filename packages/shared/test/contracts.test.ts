@@ -37,6 +37,14 @@ describe("zod and JSON Schema agree on valid fixtures", () => {
       expect(validateTrace(tr), JSON.stringify(validateTrace.errors)).toBe(true);
     });
   }
+  it("trace with null gyro (accel-only IMU source)", () => {
+    const tr = makeTrace("fall");
+    const n = tr.imu.t.length;
+    const nulls = Array.from({ length: n }, () => null);
+    const t = { ...tr, imu: { ...tr.imu, gx: nulls, gy: nulls, gz: nulls } };
+    expect(SensorTraceSchema.safeParse(t).success).toBe(true);
+    expect(validateTrace(t), JSON.stringify(validateTrace.errors)).toBe(true);
+  });
   it("report", () => {
     const r = makeReport();
     expect(ArgusReportSchema.safeParse(r).success).toBe(true);

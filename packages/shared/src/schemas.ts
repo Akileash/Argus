@@ -92,9 +92,10 @@ export const SensorTraceSchema = z
         ax: nums,
         ay: nums,
         az: nums,
-        gx: nums,
-        gy: nums,
-        gz: nums,
+        // null = not measured (the teammates' hat code logs accel only); never zero
+        gx: nullableNums,
+        gy: nullableNums,
+        gz: nullableNums,
       })
       .strict(),
     imu_peaks: z
