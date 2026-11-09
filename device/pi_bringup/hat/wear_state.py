@@ -36,15 +36,6 @@ class WearState:
         self.last_near = False
         self.updates = 0
         self.ready = False  # True after at least one ToF update
-        self._last_impact_t: Optional[float] = None
-
-    def note_impact(self, t: float) -> None:
-        """IMU saw a hard hit (same perf_counter clock as the ToF polls)."""
-        self._last_impact_t = t
-
-    def impact_within(self, now: float, seconds: float) -> bool:
-        t = self._last_impact_t
-        return t is not None and 0.0 <= now - t <= seconds
 
     def update(
         self,
