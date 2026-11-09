@@ -127,7 +127,7 @@ def explain(event: dict) -> Dict[str, Any]:
         verdict = "Unrecognized type."
         action = "Inspect raw JSON."
 
-    # Saturation note (MPU +/-16 g)
+    # Saturation note (IMU +/-16 g)
     notes: List[str] = []
     if peak_g >= 15.5:
         notes.append("Accel saturated near ±16 g — true peak was at least this hard.")

@@ -8,7 +8,7 @@
 Starts in parallel:
   - VL6180X wear (ToF) in-process → shared WearState (fall gate)
   - SCD41 air via pi_sensors subprocess
-  - MPU IMU @ IMU_SAMPLE_HZ with wear-gated FallImpactDetector
+  - MinIMU-9 @ IMU_SAMPLE_HZ with wear-gated FallImpactDetector
   - Dual HC-SR04 pings
   - Periodic LEFT/RIGHT haptic buzzes (ignored by fall detector)
 
@@ -35,7 +35,8 @@ Device.pin_factory = LGPIOFactory()
 from hat import config as cfg
 from hat.events import build_event, emit
 from hat.haptics import Haptics
-from hat.imu import FallImpactDetector, MPU6050
+from hat.imu import FallImpactDetector
+from hat.minimu9 import MiniIMU9
 from hat.tof import TofWearMonitor
 from hat.ultrasonic import HCSR04
 from hat.wear_state import WearState
@@ -161,7 +162,7 @@ def run_scd(stats: Stats, seconds: float) -> None:
 
 def run_imu(stats: Stats, det: FallImpactDetector) -> None:
     try:
-        mpu = MPU6050()
+        imu = MiniIMU9()
     except Exception as exc:  # noqa: BLE001
         with stats.lock:
             stats.notes.append(f"IMU open failed: {exc}")
@@ -172,7 +173,7 @@ def run_imu(stats: Stats, det: FallImpactDetector) -> None:
         while not STOP.is_set():
             now = time.perf_counter()
             try:
-                s = mpu.read(now)
+                s = imu.read(now)
                 hit = det.push(s)
                 with stats.lock:
                     stats.imu_ok += 1
@@ -228,7 +229,7 @@ def run_imu(stats: Stats, det: FallImpactDetector) -> None:
             else:
                 next_t = time.perf_counter()
     finally:
-        mpu.close()
+        imu.close()
 
 
 def run_us(stats: Stats) -> None:

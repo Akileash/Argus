@@ -17,40 +17,83 @@ from pathlib import Path
 
 from hat import config as cfg
 from hat.events import build_event, emit
-from hat.imu import FallImpactDetector, MPU6050
+from hat.imu import FallImpactDetector
+from hat.minimu9 import ImuIdentityError, MiniIMU9
 
 
 def cmd_check() -> int:
-    mpu = MPU6050()
+    """Bring-up check for the MinIMU-9 (stop the bridge / hat service first).
+
+    Only normal init writes happen (config registers); the rest is reads.
+    Prints both WHO_AM_I values, resting |a| and gyro, and the measured rate.
+    """
     try:
-        who = mpu.who_am_i()
-        print(f"WHO_AM_I = 0x{who:02X} (expect 0x68 or 0x70)")
-        if who not in (0x68, 0x70):
-            print("Unexpected id — check wiring.", file=sys.stderr)
+        imu = MiniIMU9()
+    except ImuIdentityError as e:
+        print(f"FAIL: {e}", file=sys.stderr)
+        return 1
+    except OSError as e:
+        print(f"FAIL: I2C error opening IMU: {e}\n  i2cdetect -y {cfg.I2C_BUS} must show "
+              f"{cfg.IMU_GYRO_ADDR:02x} and {cfg.IMU_ACCEL_ADDR:02x}", file=sys.stderr)
+        return 1
+    rc = 0
+    try:
+        print(f"WHO_AM_I: {imu.who_am_i()}")
+        print(f"config read-back: {'OK' if imu.check_config() else 'LOST (re-initialised; see above)'}")
+        time.sleep(0.1)
+        # Poll flat out for long enough to finish the gyro zero-rate calibration
+        # (needs a still window of GYRO_CAL_WINDOW_S: hold the hat still).
+        samples = []
+        errors = 0
+        t0 = time.perf_counter()
+        secs = cfg.GYRO_CAL_WINDOW_S + 1.5
+        while time.perf_counter() - t0 < secs:
+            try:
+                samples.append(imu.read())
+            except OSError:
+                errors += 1
+        hz = len(samples) / max(time.perf_counter() - t0, 1e-6)
+        n = len(samples)
+        if n == 0:
+            print("FAIL: no samples read", file=sys.stderr)
             return 1
-        # Resting |a| near 1 g
-        time.sleep(0.05)
-        mags = []
-        for _ in range(50):
-            s = mpu.read()
-            mags.append(s.mag)
-            time.sleep(0.01)
-        mean = sum(mags) / len(mags)
-        print(f"|a| mean over 0.5 s = {mean:.3f} g  (expect ~1.00 at rest)")
+        mean = sum(s.mag for s in samples) / n
+        print(f"|a| mean over {n} samples = {mean:.3f} g  (expect ~1.00 at rest, within ~0.06)")
+        print(f"axes at rest: a = ({sum(s.ax for s in samples)/n:+.3f}, {sum(s.ay for s in samples)/n:+.3f}, "
+              f"{sum(s.az for s in samples)/n:+.3f}) g")
+        if imu.gyro_bias is None:
+            print("gyro: NOT calibrated (no still window): hold the hat still and re-run", file=sys.stderr)
+            rc = 1
+        else:
+            b = imu.gyro_bias
+            print(f"gyro zero-rate (measured bias) = ({b[0]:+.2f}, {b[1]:+.2f}, {b[2]:+.2f}) dps "
+                  f"(datasheet level up to +-25 dps)")
+            post = [s for s in samples if s.gx is not None]
+            if post:
+                m = [sum(getattr(s, k) for s in post) / len(post) for k in ("gx", "gy", "gz")]
+                print(f"gyro after bias = ({m[0]:+.2f}, {m[1]:+.2f}, {m[2]:+.2f}) dps  (expect ~0)")
+        print(f"poll rate flat-out = {hz:.0f} Hz, i2c_errors = {imu.i2c_errors} (read errors {errors})")
         if abs(mean - 1.0) > 0.25:
-            print("WARNING: |a| far from 1 g — orientation / scale check.", file=sys.stderr)
-        return 0
+            print("FAIL: |a| far from 1 g: scale / range check.", file=sys.stderr)
+            rc = 1
+        if hz < cfg.IMU_SAMPLE_HZ:
+            print(f"FAIL: poll rate below IMU_SAMPLE_HZ={cfg.IMU_SAMPLE_HZ:.0f}", file=sys.stderr)
+            rc = 1
+        if errors or imu.i2c_errors:
+            print("WARNING: I2C errors present", file=sys.stderr)
+        print("PASS" if rc == 0 else "FAIL")
+        return rc
     finally:
-        mpu.close()
+        imu.close()
 
 
 def cmd_live() -> int:
-    mpu = MPU6050()
+    imu = MiniIMU9()
     try:
         print(f"{'ax':>7} {'ay':>7} {'az':>7} {'|a|':>7}   (Ctrl+C to stop)")
         while True:
             try:
-                s = mpu.read()
+                s = imu.read()
             except OSError as e:
                 print(f"\nI2C glitch: {e} (retrying…)", flush=True)
                 time.sleep(0.05)
@@ -65,11 +108,11 @@ def cmd_live() -> int:
         print("\nStopped.")
         return 0
     finally:
-        mpu.close()
+        imu.close()
 
 
 def cmd_rate() -> int:
-    mpu = MPU6050()
+    imu = MiniIMU9()
     errors = 0
     n = 0
     seconds = 2.0
@@ -77,7 +120,7 @@ def cmd_rate() -> int:
     try:
         while time.perf_counter() - t0 < seconds:
             try:
-                mpu.read()
+                imu.read()
                 n += 1
             except OSError:
                 errors += 1
@@ -92,11 +135,11 @@ def cmd_rate() -> int:
         print("PASS")
         return 0
     finally:
-        mpu.close()
+        imu.close()
 
 
 def cmd_detect(log_path: str | None) -> int:
-    mpu = MPU6050()
+    imu = MiniIMU9()
     det = FallImpactDetector()
     writer = None
     fh = None
@@ -113,7 +156,7 @@ def cmd_detect(log_path: str | None) -> int:
         while True:
             now = time.perf_counter()
             try:
-                s = mpu.read(now)
+                s = imu.read(now)
             except OSError:
                 next_t = time.perf_counter() + period
                 time.sleep(period)
@@ -142,13 +185,13 @@ def cmd_detect(log_path: str | None) -> int:
         print("\nStopped.")
         return 0
     finally:
-        mpu.close()
+        imu.close()
         if fh:
             fh.close()
 
 
 def main(argv: list | None = None) -> int:
-    parser = argparse.ArgumentParser(description="MPU-6050 tests")
+    parser = argparse.ArgumentParser(description="MinIMU-9 (L3GD20H + LSM303D) tests")
     parser.add_argument("mode", choices=["check", "live", "rate", "detect"])
     parser.add_argument("--log", default=None, help="CSV path for detect mode")
     args = parser.parse_args(argv)

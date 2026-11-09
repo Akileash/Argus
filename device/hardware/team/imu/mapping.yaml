@@ -1,4 +1,5 @@
-# Argus Pi — MPU-6050 on I2C3 (proven). Units already g / deg/s.
+# Argus Pi — Pololu MinIMU-9 v3 (L3GD20H + LSM303D) on I2C3. Units already g / deg/s.
+# NOT yet run on the new hardware (MPU-6050 it replaces was the proven one).
 command: [python, vendor/stream_imu.py, --hz, "200"]
 format: json
 fields: { ax: ax, ay: ay, az: az, gx: gx, gy: gy, gz: gz }

@@ -1,5 +1,5 @@
 """
-Argus on-hat runtime: dual rear HC-SR04 + MPU-6050 + dual DRV2605L haptics.
+Argus on-hat runtime: dual rear HC-SR04 + Pololu MinIMU-9 v3 + dual DRV2605L haptics.
 
 Usage (from ~/argus):
   python3 -m hat.main
@@ -29,7 +29,8 @@ from hat import config as cfg
 from hat.camera import ClipRecorder
 from hat.events import build_event, emit
 from hat.haptics import Haptics
-from hat.imu import FallImpactDetector, MPU6050
+from hat.imu import FallImpactDetector
+from hat.minimu9 import MiniIMU9
 from hat.tof import TofWearMonitor
 from hat.ultrasonic import ApproachDetector, HCSR04, MotionState
 from hat.wear_state import WearState
@@ -61,7 +62,7 @@ class HatRuntime:
         self.camera = ClipRecorder()
         self.tof: Optional[TofWearMonitor] = None
 
-        self.mpu: Optional[MPU6050] = None
+        self.imu: Optional[MiniIMU9] = None
         self.us_left: Optional[HCSR04] = None
         self.us_right: Optional[HCSR04] = None
         self.approach_left = ApproachDetector("left")
@@ -109,9 +110,8 @@ class HatRuntime:
         on_event(event)
 
     def start(self) -> None:
-        self.mpu = MPU6050()
-        who = self.mpu.who_am_i()
-        print(f"MPU WHO_AM_I=0x{who:02X}  dry_run={self.dry_run}")
+        self.imu = MiniIMU9()
+        print(f"IMU WHO_AM_I {self.imu.who_am_i()}  dry_run={self.dry_run}")
 
         # Start rolling camera buffer before sensor threads
         self.camera.start()
@@ -171,7 +171,7 @@ class HatRuntime:
             )
 
     def _imu_loop(self) -> None:
-        assert self.mpu is not None
+        assert self.imu is not None
         period = 1.0 / cfg.IMU_SAMPLE_HZ
         next_t = time.perf_counter()
         last_cfg_check = next_t
@@ -182,14 +182,14 @@ class HatRuntime:
                 # (readings 8x too big). On loss: re-init + drop recent data.
                 if now - last_cfg_check >= cfg.IMU_CONFIG_CHECK_S:
                     last_cfg_check = now
-                    if not self.mpu.check_config():
+                    if not self.imu.check_config():
                         self.detector.config_lost(now)
                         continue
-                sample = self.mpu.read(now)
+                sample = self.imu.read(now)
                 self.motion.push(now, sample.ax, sample.ay, sample.az,
                                  sample.gx, sample.gy, sample.gz)
                 det = self.detector.push(sample)
-                if det is not None and not self.mpu.check_config():
+                if det is not None and not self.imu.check_config():
                     # Config was wrong while this event was being built.
                     self.detector.config_lost(now)
                     print("[imu] fall discarded: sensor config was lost", flush=True)
@@ -316,8 +316,8 @@ class HatRuntime:
             t.join(timeout=2.0)
         self.camera.stop()
         self.haptics.close()
-        if self.mpu is not None:
-            self.mpu.close()
+        if self.imu is not None:
+            self.imu.close()
         if self.tof is not None:
             self.tof.close()
         for us in (self.us_left, self.us_right):

@@ -14,7 +14,8 @@ Code pins live in `hat/config.py` — same numbers as this sheet.
 | **LEFT DRV2605L** | `/dev/i2c-1` | SDA pin **3** (GPIO2), SCL pin **5** (GPIO3) | **0x5A** | Left haptic |
 | **SCD41** (temp/CO2) | `/dev/i2c-1` | same as LEFT DRV | **0x62** | Air via `pi_sensors/` |
 | **RIGHT DRV2605L** | `/dev/i2c-3` | SDA pin **7** (GPIO4), SCL pin **29** (GPIO5) | **0x5A** | Right haptic |
-| **MPU-6050** | `/dev/i2c-3` | same as RIGHT DRV | **0x68** (WHO_AM_I may be **0x70**) | Wear-gated fall |
+| **MinIMU-9 v3** gyro (L3GD20H) | `/dev/i2c-3` | same as RIGHT DRV | **0x6B** (WHO_AM_I **0xD7**) | Wear-gated fall (gyro) |
+| **MinIMU-9 v3** accel (LSM303D) | `/dev/i2c-3` | same board, same pins | **0x1D** (WHO_AM_I **0x49**) | Wear-gated fall (accel) |
 | **VL6180X** ToF | `/dev/i2c-3` | same as RIGHT DRV | **0x29** | Wear gate (hat ToF) |
 | **LEFT HC-SR04** | GPIO | Trig pin **16** (GPIO23), Echo pin **18** (GPIO24) via divider | — | Rear-left US |
 | **RIGHT HC-SR04** | GPIO | Trig pin **38** (GPIO20), Echo pin **40** (GPIO21) via divider | — | Rear-right US |
@@ -25,7 +26,7 @@ After wiring, expect (verified 2026-11-08):
 
 ```bash
 i2cdetect -y 1   # 5a (L DRV) + 62 (SCD41)
-i2cdetect -y 3   # 5a (R DRV) + 68 (MPU) + 29 (VL6180X)
+i2cdetect -y 3   # 5a (R DRV) + 6b (gyro) + 1d (accel) + 29 (VL6180X)  [MinIMU-9 not yet verified on the Pi]
 ```
 
 **Note:** Physical pins 7/29 are BCM GPIO4/GPIO5 (I2C3). Physical pins 3/5 are BCM GPIO2/GPIO3 (I2C1). `hat/config.py` has `I2C_BUS_IMU = 3`.
@@ -79,12 +80,12 @@ Pin 1 = top-left, nearest the SD-card end. Odd pins left column, even pins right
 | **3** | GPIO2 / SDA1 | LEFT DRV blue |
 | **5** | GPIO3 / SCL1 | LEFT DRV yellow |
 | **6** | GND | GND net: LEFT DRV black, both US GND, both divider 2 kΩ |
-| **7** | GPIO4 / SDA3 | RIGHT DRV blue (SDA) + **MPU SDA** |
-| **9** | GND | RIGHT DRV black (GND) + **MPU GND** |
+| **7** | GPIO4 / SDA3 | RIGHT DRV blue (SDA) + **IMU SDA** |
+| **9** | GND | RIGHT DRV black (GND) + **IMU GND** |
 | **16** | GPIO23 | LEFT ultrasonic Trig |
-| **17** | 3.3V | RIGHT DRV red (power) + **MPU VCC** |
+| **17** | 3.3V | RIGHT DRV red (power) + **IMU VCC** |
 | **18** | GPIO24 | LEFT ultrasonic Echo **after** 1k/2k divider |
-| **29** | GPIO5 / SCL3 | RIGHT DRV yellow (SCL) + **MPU SCL** |
+| **29** | GPIO5 / SCL3 | RIGHT DRV yellow (SCL) + **IMU SCL** |
 | **38** | GPIO20 | RIGHT ultrasonic Trig |
 | **40** | GPIO21 | RIGHT ultrasonic Echo **after** 1k/2k divider |
 
@@ -95,8 +96,8 @@ Unused for this build: many mid-header pins (8, 10–15, 19–28, 30–37, 39, e
 ## Power nets
 
 ### 3.3V net
-- Source: Pi pin **1** (and pin **17** for RIGHT DRV + MPU)
-- Loads: LEFT DRV red, RIGHT DRV red, MPU VCC
+- Source: Pi pin **1** (and pin **17** for RIGHT DRV + IMU)
+- Loads: LEFT DRV red, RIGHT DRV red, IMU VCC
 - Must measure ~**3.3 V**. If you see ~**1.2 V**, something is shorting or overloading 3V3 — fix before anything else.
 
 ### 5V net
@@ -105,8 +106,8 @@ Unused for this build: many mid-header pins (8, 10–15, 19–28, 30–37, 39, e
 - Never feed 5V into a DRV2605L red wire or a GPIO.
 
 ### GND net
-- Source: Pi pin **6** (and pin **9** for RIGHT DRV + MPU)
-- Everything shares ground: MPU, both DRVs, both ultrasonics, both divider 2 kΩ legs.
+- Source: Pi pin **6** (and pin **9** for RIGHT DRV + IMU)
+- Everything shares ground: IMU, both DRVs, both ultrasonics, both divider 2 kΩ legs.
 
 ---
 
@@ -116,8 +117,8 @@ Unused for this build: many mid-header pins (8, 10–15, 19–28, 30–37, 39, e
 |-------------|--------|------------|-------------|
 | **Red** | 3.3V | 3.3V net (Pi pin 1) | Pi pin **17** |
 | **Black** | GND | GND net (Pi pin 6) | Pi pin **9** |
-| **Blue** | SDA | Pi pin **3** | Pi pin **7** (shared with MPU SDA) |
-| **Yellow** | SCL | Pi pin **5** | Pi pin **29** (shared with MPU SCL) |
+| **Blue** | SDA | Pi pin **3** | Pi pin **7** (shared with IMU SDA) |
+| **Yellow** | SCL | Pi pin **5** | Pi pin **29** (shared with IMU SCL) |
 
 - Motor wires go on each board’s **motor pads** (`+` / `-`). Polarity does not matter for ERM discs.
 - Leave EN / IN / INT unconnected.
@@ -159,7 +160,7 @@ LEFT ultrasonic:   Trig 23, Echo 24
 RIGHT ultrasonic:  Trig 20, Echo 21
 LEFT haptic:       I2C bus 1, address 0x5A
 RIGHT haptic:      I2C bus 3, address 0x5A
-MPU-6050:          I2C bus 3, address 0x68
+MinIMU-9 v3:       I2C bus 3, gyro 0x6B + accel/mag 0x1D
 ```
 
 ---
@@ -170,7 +171,7 @@ MPU-6050:          I2C bus 3, address 0x68
 |------|------------|
 | Pi + cooler + power bank | Rear / earmuff-side enclosure |
 | LEFT + RIGHT HC-SR04 | Brim rear, angled in a **V** looking backward |
-| MPU-6050 | Rigid to hat shell (fixed orientation) |
+| MinIMU-9 | Rigid to hat shell (fixed orientation) |
 | LEFT DRV + motor | Left side of shell / padding |
 | RIGHT DRV + motor | Right side of shell / padding |
 | Dividers | Heat-shrink or tiny proto next to each sensor |
@@ -184,7 +185,7 @@ Keep I2C wires short. Strain-relieve every cable so bumps don’t yank headers.
 - [ ] RIGHT DRV: blue→7, yellow→29, red→17, black→9
 - [ ] LEFT DRV: blue/yellow on pins 3/5, red→3.3V, black→GND
 - [ ] No DRV red wire on 5V
-- [ ] MPU VCC on 3.3V (pin 17 ok), GND with RIGHT DRV, SDA/SCL on pins 7/29 (I2C3)
+- [ ] IMU VCC on 3.3V (pin 17 ok), GND with RIGHT DRV, SDA/SCL on pins 7/29 (I2C3)
 - [ ] Each US Echo through its **own** 1k into its **own** junction with its **own** 2k to GND
 - [ ] Both US VCC on 5V, GND on GND
 - [ ] Measure 3.3V rail ≈ 3.3V before trusting haptics
@@ -212,7 +213,7 @@ python3 -m hat.main
 
 ## Notes from bring-up (hackathon)
 
-- IMU WHO_AM_I **0x70** is normal; I2C address is still **0x68**.
+- IMU: expect WHO_AM_I gyro **0xD7** @0x6B and accel **0x49** @0x1D (`python -m hat.tools.test_imu check`). The old MPU-6050 (0x68 / WHO_AM_I 0x70) was damaged 2026-11-08 and is archived.
 - If LEFT never shows `5a` on bus 1, recheck LEFT STEMMA power/SDA/SCL — software cannot buzz a missing board.
 - If RIGHT shows `5a` but the disc does not vibrate, check motor wires on the **motor pads** (chip can be fine while the motor is disconnected/dead).
 - 3.3V reading ~1.2V means a power fault — fix rail before debugging code.

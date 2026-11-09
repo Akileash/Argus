@@ -28,7 +28,7 @@ Team plug-in copies: `device/hardware/team/<module>/`.
 | Bus | Expect (`i2cdetect -y N`) | Devices |
 |-----|---------------------------|---------|
 | 1 | `5a`, `62` | LEFT DRV2605L, SCD41 |
-| 3 | `5a`, `68`, `29` | RIGHT DRV, MPU-6050, VL6180X |
+| 3 | `5a`, `6b`, `1d`, `29` | RIGHT DRV, MinIMU-9 gyro, MinIMU-9 accel/mag, VL6180X |
 
 Overlay: `dtoverlay=i2c3,pins_4_5` in `/boot/firmware/config.txt`.
 
@@ -36,7 +36,7 @@ Overlay: `dtoverlay=i2c3,pins_4_5` in `/boot/firmware/config.txt`.
 
 | Sensor | Code | Output |
 |--------|------|--------|
-| MPU-6050 fall | `hat/imu.py` → `hat/events.py` | `type: fall` in `events.jsonl` / `samples/fall.sample.json` |
+| MinIMU-9 fall | `hat/minimu9.py` + `hat/imu.py` → `hat/events.py` | `type: fall` in `events.jsonl` / `samples/fall.sample.json` |
 | HC-SR04 LoF | `hat/ultrasonic.py` | `type: line_of_fire` / `samples/line_of_fire.sample.json` |
 | VL6180X wear | `hat/tof.py` (+ optional `pi_sensors`) | status lines in hat; NDJSON `wear_event` in `pi_sensors/logs/` / `samples/wear_event.sample.json` |
 | SCD41 air | `pi_sensors` `argus_sensors` | `air_sample` → `pi_sensors/logs/air_events.jsonl` / `samples/air_sample.sample.json` |

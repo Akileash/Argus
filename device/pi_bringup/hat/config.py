@@ -2,7 +2,7 @@
 
 Hardware (current build — DRV2605L, not L293D):
   LEFT DRV2605L on I2C1 (GPIO2/3)
-  RIGHT DRV2605L + MPU-6050 on I2C3 (GPIO4/5) — requires dtoverlay=i2c3,pins_4_5
+  RIGHT DRV2605L + Pololu MinIMU-9 v3 (L3GD20H + LSM303D) on I2C3 (GPIO4/5) — requires dtoverlay=i2c3,pins_4_5
   HC-SR04 LEFT Trig23/Echo24, RIGHT Trig20/Echo21
 """
 
@@ -23,18 +23,27 @@ HAT_ID = "hat-01"
 
 # I2C bus 1 — LEFT DRV2605L (0x5A)
 #   SDA GPIO2 (pin 3), SCL GPIO3 (pin 5), 3V3 (pin 1), GND (pin 6)
-#   (bring-up 2026-11-08: MPU is NOT on bus 1; SCD41 0x62 may also appear)
+#   (bring-up 2026-11-08: the IMU is NOT on bus 1; SCD41 0x62 may also appear)
 I2C_BUS_HAPTIC_LEFT = 1
-MPU_ADDR = 0x68
 DRV_ADDR = 0x5A
 
-# I2C bus 3 — RIGHT DRV2605L (0x5A) + MPU-6050 (0x68) + VL6180X (0x29)
+# I2C bus 3 — RIGHT DRV2605L (0x5A) + MinIMU-9 v3 (gyro 0x6B, accel/mag 0x1D)
+#               + VL6180X (0x29)
 #   SDA GPIO4 (pin 7), SCL GPIO5 (pin 29), 3V3 (pin 17), GND (pin 9)
-#   Verified: MPU WHO_AM_I=0x70 at 0x68 on bus 3 (not bus 1)
+#   MinIMU-9 v3 = two chips on one board (addresses from the Pololu product page;
+#   WHO_AM_I values from the ST datasheets, NOT yet read from this hat's hardware):
+#     L3GD20H gyro   0x6B (SA0 high)  WHO_AM_I (0x0F) = 0xD7
+#     LSM303D accel  0x1D (SA0 high)  WHO_AM_I (0x0F) = 0x49
+#   The old MPU-6050 (0x68, WHO_AM_I 0x68/0x70) was damaged 2026-11-08; its driver
+#   is archived in hat/archive/mpu6050.py.
 I2C_BUS_IMU = 3
 I2C_BUS_HAPTIC_RIGHT = 3
 I2C_BUS_TOF = 3
 TOF_ADDR = 0x29
+IMU_GYRO_ADDR = 0x6B             # L3GD20H
+IMU_ACCEL_ADDR = 0x1D            # LSM303D (accelerometer; magnetometer is powered down)
+L3GD20H_WHO_AM_I = 0xD7
+LSM303D_WHO_AM_I = 0x49
 
 # Back-compat alias used by imu.py
 I2C_BUS = I2C_BUS_IMU
@@ -88,12 +97,21 @@ HAPTIC_WARN_BOTH = False
 US_DEBUG = True
 
 # ---------------------------------------------------------------------------
-# IMU (MPU-6050)
+# IMU (Pololu MinIMU-9 v3: L3GD20H gyro + LSM303D accel)
 # ---------------------------------------------------------------------------
 IMU_SAMPLE_HZ = 200.0
 IMU_BUFFER_S = 2.0
-ACCEL_LSB_PER_G = 2048.0        # ±16 g
-GYRO_LSB_PER_DPS = 32.8         # ±1000 dps
+# Scaling per the ST datasheets (typ. sensitivity). NOT round numbers:
+ACCEL_G_PER_LSB = 0.000732      # LSM303D ±16 g: 0.732 mg/LSB (1 g = ~1366 LSB)
+GYRO_DPS_PER_LSB = 0.0175       # L3GD20H ±500 dps: 17.5 mdps/LSB (saturates at ~±573 dps)
+# Gyro zero-rate calibration (startup only, demo scope). Gyro output is None until a
+# quiet window has been seen; the bias is that window's per-axis mean, subtracted from
+# every later reading. Orientation does not matter (gravity is not in the gyro).
+GYRO_CAL_WINDOW_S = 3.0
+GYRO_CAL_MAX_STD_DPS = 1.5      # per-axis spread allowed in the window (rest noise is ~0.1 dps)
+GYRO_CAL_MAX_HALF_DIFF_DPS = 1.0  # first-half vs second-half mean: rejects a slow steady turn/ramp
+GYRO_CAL_MAX_ACC_STD_G = 0.03   # |a| steady: half of US_MOVING_DYN_G (walking bounce is > 0.06)
+GYRO_CAL_MAX_BIAS_DPS = 30.0    # datasheet zero-rate level is ±25 dps (Table 3, given at ±2000 dps; no ±500 figure) + margin
 # Tuned from 2026-11-08 live misses:
 #   Fall1 ~t=19s: |a| dipped to 0.14g then recovered ~1.05g (soft landing)
 #   Fall2 ~t=39s: |a| dipped to 0.34g then recovered ~1.00g
@@ -127,7 +145,6 @@ REARM_QUIET_S = 1.0
 REARM_BAND_G = 0.30
 
 # Sensor-config guard (chip can silently fall back to ±2 g → readings 8x big)
-MPU6500_FAMILY_IDS = (0x70, 0x71, 0x73)   # WHO_AM_I of MPU-6500/9250/9255
 IMU_CONFIG_CHECK_S = 0.25      # read back config registers this often
 IMU_CONFIG_LOSS_PURGE_S = 0.6  # discard this much recent data on loss (> check period)
 IMU_SETTLE_AFTER_REINIT_S = 0.3

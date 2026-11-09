@@ -19,7 +19,7 @@ from hat.haptics import Haptics
 
 
 def cmd_check() -> int:
-    print("I2C probe (expect 5a on bus 1 LEFT; 5a + 68 MPU on bus 3 RIGHT):\n")
+    print("I2C probe (expect 5a on bus 1 LEFT; 5a + 1d + 6b (MinIMU-9) + 29 on bus 3 RIGHT):\n")
     for bus in (1, 3):
         print(f"--- i2cdetect -y {bus} ---")
         try:
@@ -70,8 +70,8 @@ def main(argv: list | None = None) -> int:
                 )
                 if "left" in missing:
                     print(
-                        "LEFT should be on bus 1 with the MPU: "
-                        "i2cdetect -y 1 must show 5a and 68.\n"
+                        "LEFT should be on bus 1: "
+                        "i2cdetect -y 1 must show 5a.\n"
                         "  red→3.3V  black→GND  blue→SDA (pin 3)  yellow→SCL (pin 5)"
                     )
                 if "right" in missing:

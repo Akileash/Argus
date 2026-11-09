@@ -32,7 +32,7 @@ Fill **Reported** from the `EVENT` JSON (`type`, `priority`, `hat_possibly_set_d
 | 14 | `set_down_gentle` | Gently place hat on a table | 20 | low **impact**, `hat_possibly_set_down: true` | | no free-fall |
 | 15 | `set_down_hard` | Plunk hat onto table | 20 | low **impact**, `hat_possibly_set_down: true` | | |
 | 16 | `knock_off` | Knock hat off head onto soft floor | 20 | **hat_removed** | | large tilt + still |
-| 17 | `tap_sensor` | Finger tap on the MPU module | 10 | no event / near_fall | | sensor-only |
+| 17 | `tap_sensor` | Finger tap on the IMU module | 10 | no event / near_fall | | sensor-only |
 | 18 | `shake_sensor` | Hold board and shake hard | 10 | **near_fall** or **impact** | | sensor-only |
 | 19 | `drop_30cm` | Drop from ~30 cm onto a cushion | 10 | **fall** or **impact** | | sensor-only |
 | 20 | `freefall_catch` | Brief toss upward, catch soft | 10 | **near_fall** / **fall** if caught dead | | free-fall bonus path |

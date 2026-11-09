@@ -2,7 +2,7 @@
 """
 IMU-only fall → Pi Cam clip test.
 
-Keeps a rolling ~20 s camera buffer. When the MPU-6050 reports a FALL,
+Keeps a rolling ~20 s camera buffer. When the IMU reports a FALL,
 saves last 20 s + next 10 s to ~/argus/clips/<event_id>.mp4
 
 No ultrasonics / haptics.
@@ -24,7 +24,8 @@ import uuid
 from hat import config as cfg
 from hat.camera import ClipRecorder
 from hat.events import build_event, emit
-from hat.imu import FallImpactDetector, MPU6050
+from hat.imu import FallImpactDetector
+from hat.minimu9 import MiniIMU9
 
 
 def main(argv=None) -> int:
@@ -60,9 +61,8 @@ def main(argv=None) -> int:
         )
         return 1
 
-    mpu = MPU6050()
-    who = mpu.who_am_i()
-    print(f"MPU WHO_AM_I=0x{who:02X}")
+    imu = MiniIMU9()
+    print(f"IMU WHO_AM_I {imu.who_am_i()}")
     det = FallImpactDetector()
 
     stop = False
@@ -100,7 +100,7 @@ def main(argv=None) -> int:
 
             mag = 0.0
             try:
-                sample = mpu.read(now)
+                sample = imu.read(now)
                 mag = sample.mag
                 hit = det.push(sample)
                 if hit is not None and hit.type == "fall":
@@ -141,7 +141,7 @@ def main(argv=None) -> int:
     finally:
         print("\nStopping…")
         cam.stop()
-        mpu.close()
+        imu.close()
 
     if out_path is not None and out_path.exists() and out_path.stat().st_size > 1000:
         print(f"\nDONE  {out_path}")

@@ -4,7 +4,7 @@ Parse these first. Do **not** ingest the live `~/argus/events.jsonl` or `pi_sens
 
 | File | Sensor / source | Notes |
 |------|-----------------|-------|
-| `fall.sample.json` | MPU-6050 (+ ToF wear gate) | Canonical `type: fall` from `hat/events.py` |
+| `fall.sample.json` | MinIMU-9 IMU (+ ToF wear gate) | Canonical `type: fall` from `hat/events.py` |
 | `line_of_fire.sample.json` | Dual HC-SR04 | Threat from left/right ultrasonic |
 | `wear_event.sample.json` | VL6180X ToF | Helmet ON/OFF from `pi_sensors` or hat ToF status |
 | `air_sample.sample.json` | SCD41 | CO₂ / temp / RH |

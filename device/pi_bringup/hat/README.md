@@ -3,7 +3,7 @@
 Raspberry Pi 4 hardhat stack:
 
 - Dual rear **HC-SR04** (line-of-fire)
-- **MPU-6050** IMU → wear-gated **fall-only** (no separate `impact` type)
+- **Pololu MinIMU-9 v3** IMU (L3GD20H gyro + LSM303D accel; old MPU-6050 archived in `hat/archive/`) → wear-gated **fall-only** (no separate `impact` type)
 - Dual **DRV2605L** ERM haptics
 - **VL6180X** ToF wear (I2C3) — gates falls; dwell 5 s ON / 3 s OFF, near band 50–254 mm
 - Pi Camera clips on fall
@@ -18,10 +18,10 @@ source .venv/bin/activate
 
 | Part | Connection |
 |------|------------|
-| MPU-6050 (0x68) | **I2C3** SDA GPIO4 (7), SCL GPIO5 (29), VCC 3.3V, GND (with RIGHT DRV + ToF) |
-| VL6180X (0x29) | **I2C3** with MPU / RIGHT DRV |
+| MinIMU-9 v3: gyro 0x6B, accel 0x1D | **I2C3** SDA GPIO4 (7), SCL GPIO5 (29), VCC 3.3V, GND (with RIGHT DRV + ToF) |
+| VL6180X (0x29) | **I2C3** with IMU / RIGHT DRV |
 | LEFT DRV2605L (0x5A) | I2C1 SDA GPIO2 (3), SCL GPIO3 (5) |
-| RIGHT DRV2605L (0x5A) | I2C3 with MPU |
+| RIGHT DRV2605L (0x5A) | I2C3 with IMU |
 | SCD41 (0x62) | **I2C1** (same bus as LEFT DRV) — run via `pi_sensors` |
 | HC-SR04 LEFT | Trig GPIO23 (16), Echo GPIO24 (18) via 1k/2k divider |
 | HC-SR04 RIGHT | Trig GPIO20 (38), Echo GPIO21 (40) via 1k/2k divider |
@@ -33,7 +33,7 @@ echo 'dtoverlay=i2c3,pins_4_5' | sudo tee -a /boot/firmware/config.txt
 sudo reboot
 # after reboot:
 i2cdetect -y 1   # expect 5a (LEFT DRV), 62 (SCD41)
-i2cdetect -y 3   # expect 5a (RIGHT DRV), 68 (MPU), 29 (ToF)
+i2cdetect -y 3   # expect 5a (RIGHT DRV), 6b + 1d (MinIMU-9), 29 (ToF)
 ```
 
 ## Fall detection (current)
