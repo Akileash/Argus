@@ -1,6 +1,6 @@
-// Mountain Time. Same rules as Edmonton, but Chromium 158 keeps America/Edmonton on MDT after DST ended
-// in Nov 2026 (one hour wrong on stage), while America/Denver is correct in both Chromium and Node.
-export const DISPLAY_TZ = "America/Denver";
+// Edmonton local time, currently UTC-6 year round ("CST"). Browsers and Node disagree on America/Edmonton
+// (their bundled time zone data ranges from -6 to -7), so use America/Regina: fixed UTC-6 everywhere.
+export const DISPLAY_TZ = "America/Regina";
 
 export function fmtDateTime(iso: string | null | undefined): string {
   if (!iso) return "—";
