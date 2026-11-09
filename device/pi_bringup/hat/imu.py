@@ -162,6 +162,8 @@ class FallImpactDetector:
         mag = sample.mag
 
         self._track_plausibility(now, mag)
+        if mag >= cfg.IMPACT_G and self.wear_state is not None:
+            self.wear_state.note_impact(now)
         if self.implausible:
             # e.g. a resting head cannot read ~8 g: the data is garbage.
             self._reset_state()

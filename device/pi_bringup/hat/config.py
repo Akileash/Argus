@@ -171,6 +171,11 @@ WEAR_GATE_MIN_ON_FRACTION = 0.50
 TOF_ENABLE = True
 TOF_NEAR_MM_MIN = 50
 TOF_NEAR_MM_MAX = 254
+# A fall can press the hat down so the sensor reads under TOF_NEAR_MM_MIN while still on the head (33-50 mm seen).
+# For this long after a hard hit, a worn hat reading this close stays worn. A hat off on a table reads ~30-38 mm,
+# so this can't be fixed by just lowering TOF_NEAR_MM_MIN.
+TOF_POST_IMPACT_GRACE_S = 20.0
+TOF_POST_IMPACT_MIN_MM = 25
 TOF_ON_DWELL_MS = 5000
 TOF_OFF_DWELL_MS = 3000
 TOF_POLL_GAP_S = 0.05

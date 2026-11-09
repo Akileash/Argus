@@ -81,3 +81,39 @@ def test_hard_hit_without_freefall_needs_stillness_and_tilt():
     assert st.hits == []
     st.hold(SIDE, 1.0)  # no free fall, >=3 g, ~90 deg: the hit path accepts it
     assert len(st.hits) == 1 and st.hits[0].freefall_ms == 0.0
+
+
+def _tof_run(mm_series, impact_at=None):
+    """Feed one reading every 0.05 s from worn; return the time OFF fires (or None)."""
+    from hat.tof import WearDetector
+    from hat import config as cfg
+
+    d = WearDetector()
+    now = 0.0
+    while not d.wear_on:
+        d.update(80, 0, now)
+        now += 0.05
+    t0 = now
+    for i, mm in enumerate(mm_series):
+        t = t0 + i * 0.05
+        recent = impact_at is not None and 0 <= i * 0.05 - impact_at <= cfg.TOF_POST_IMPACT_GRACE_S
+        d.update(mm, 0 if mm is not None else 7, t, impact_recent=recent)
+        if not d.wear_on:
+            return i * 0.05
+    return None
+
+
+def test_hat_pressed_down_after_a_fall_stays_worn():
+    assert _tof_run([40] * 300, impact_at=0.0) is None  # 15 s at 40 mm, right after an impact
+
+
+def test_same_reading_with_no_impact_is_still_hat_off():
+    assert _tof_run([35] * 100) is not None
+
+
+def test_no_echo_after_impact_is_still_hat_off():
+    assert _tof_run([None] * 100, impact_at=0.0) is not None
+
+
+def test_grace_expires_and_hat_on_table_goes_off():
+    assert _tof_run([35] * 600, impact_at=0.0) is not None

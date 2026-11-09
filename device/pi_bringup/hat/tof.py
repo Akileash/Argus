@@ -99,9 +99,12 @@ class WearDetector:
         self.last_near = False
         self.last_status = 7
 
-    def update(self, mm: Optional[int], status: int, now: float) -> WearSnapshot:
+    def update(self, mm: Optional[int], status: int, now: float, impact_recent: bool = False) -> WearSnapshot:
         valid = (status == 0) and (mm is not None) and (mm != 255)
         near = bool(valid and mm is not None and self.min_mm <= mm <= self.near_mm)
+        if (impact_recent and self.wear_on and valid and mm is not None
+                and cfg.TOF_POST_IMPACT_MIN_MM <= mm < self.min_mm):
+            near = True  # hat pressed down by a fall, still on the head
         self.last_status = status
         self.last_near = near
         if valid:
@@ -245,7 +248,8 @@ class TofWearMonitor:
             if timed_out:
                 snap = self.detector.update(None, 255, now)
             else:
-                snap = self.detector.update(mm, status, now)
+                snap = self.detector.update(mm, status, now,
+                                      impact_recent=self.wear.impact_within(now, cfg.TOF_POST_IMPACT_GRACE_S))
         except OSError:
             snap = self.detector.update(None, 255, now)
         self.wear.update(
