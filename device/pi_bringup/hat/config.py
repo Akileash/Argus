@@ -135,4 +135,4 @@ CAM_BITRATE = 2_000_000         # bits/s
 CAM_PRE_S = 20.0                # rolling buffer kept continuously
 CAM_POST_S = 10.0               # keep recording this long after a fall
 # IMU types that save a Pi Cam clip (and end --until-fall)
-CAM_CLIP_TYPES = ("fall",)
+CAM_CLIP_TYPES = ("fall", "line_of_fire")
