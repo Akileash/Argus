@@ -177,14 +177,14 @@ def test_real_fall_shape_emits_one_high_confidence_event():
     assert h.freefall_ms >= 100
 
 
-def test_soft_landing_onto_mat_is_caught_low_confidence():
+def test_soft_landing_onto_mat_is_caught():
     st = Stream(FallImpactDetector())
     st.hold(UP, 1.2)
     st.ramp(UP, (0.0, 0.0, -0.3), 0.04)
     st.hold((0.0, 0.0, -0.3), 0.10)
     st.ramp((0.0, 0.0, -0.3), SIDE, 0.1)
     st.hold(SIDE, 1.0)
-    assert len(st.hits) == 1 and st.hits[0].confidence == "low"
+    assert len(st.hits) == 1 and st.hits[0].confidence == "high"
 
 
 def test_event_during_wear_gate_off_is_suppressed():
@@ -259,13 +259,13 @@ def test_bump_then_keep_moving_is_not_a_fall():
     assert st.hits == []
 
 
-def test_hard_hit_then_lying_still_tilted_is_a_fall_candidate():
+def test_hard_hit_then_lying_still_tilted_is_a_fall():
     st = Stream(FallImpactDetector())
     st.hold(UP, 1.2)
     st.spike((2.0, 0.0, -3.5))        # no freefall at all
     st.ramp((1.0, 0.0, -1.0), SIDE, 0.1)
     st.hold(SIDE, 1.0)
-    assert len(st.hits) == 1 and st.hits[0].confidence == "low"
+    assert len(st.hits) == 1 and st.hits[0].confidence == "high"
 
 
 def test_hat_set_down_on_table_while_not_worn_is_gated():
@@ -338,3 +338,25 @@ def test_scaled_8x_resting_after_glitch_is_blocked_until_config_lost_then_recove
     assert not det.implausible
     real_fall(st)
     assert len(st.hits) == 1
+
+
+def test_every_emitted_fall_is_high_confidence():
+    st = Stream(FallImpactDetector())
+    real_fall(st)
+    st.hold(UP, 6.0)
+    st.hold(UP, 1.2)
+    st.ramp(UP, (0.0, 0.0, -0.3), 0.04)
+    st.hold((0.0, 0.0, -0.3), 0.10)
+    st.ramp((0.0, 0.0, -0.3), SIDE, 0.1)
+    st.hold(SIDE, 1.0)
+    assert len(st.hits) == 2 and {h.confidence for h in st.hits} == {"high"}
+
+
+def test_acted_fall_ending_upright_is_rejected_not_low():
+    st = Stream(FallImpactDetector())
+    st.hold(UP, 1.2)
+    st.ramp(UP, (0.0, 0.0, -0.3), 0.04)
+    st.hold((0.0, 0.0, -0.3), 0.15)
+    st.spike((0.0, 0.0, -2.0))
+    st.hold(UP, 3.5)
+    assert st.hits == []

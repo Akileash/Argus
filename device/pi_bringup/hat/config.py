@@ -103,9 +103,12 @@ SOFT_LANDING_AFTER_FF_S = 0.080
 FALL_TILT_MIN_DEG = 30.0
 FALL_TILT_EXEMPT_FF_S = 0.300  # >=300 ms true freefall (drop from height): skip tilt
 FALL_REF_WINDOW_S = 1.0
-# True: no orientation change → not a fall. False: still emit, confidence=low
-# (use if acted falls end upright; more false positives from jumps/bumps).
-FALL_REQUIRE_TILT = True
+# Hat knocked off by the fall (ToF raw not-near run) confirms WITHOUT tilt/stillness.
+KNOCK_OFF_ENABLE = True
+KNOCK_OFF_RUN_S = 0.5          # unbroken not-near run; > impact transient (~0.1-0.2 s),
+                               # well inside the 3 s HELMET OFF dwell so the fall is logged first
+KNOCK_OFF_PRE_S = 0.15         # run may start at most this long before fall onset
+KNOCK_TOF_STALE_S = 0.3        # newest ToF poll older than this = ToF unavailable
 # One fall = one event: after an event wait for cooldown AND this much quiet.
 IMU_COOLDOWN_S = 3.0
 REARM_QUIET_S = 1.0

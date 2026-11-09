@@ -14,6 +14,7 @@ import signal
 import sys
 import threading
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -211,6 +212,12 @@ class HatRuntime:
                         helmet_worn_lookback_s=det.helmet_worn_lookback_s,
                         wear_on_fraction=det.wear_on_fraction,
                     )
+                    # Stamp the event with the fall onset (not the later moment of
+                    # confirmation): the bridge links HELMET OFF to a fall only if
+                    # the hat left within [-0.1 s, +2 s] of the fall timestamp.
+                    event["timestamp"] = (
+                        datetime.now().astimezone() - timedelta(seconds=det.onset_age_s)
+                    ).isoformat(timespec="milliseconds")
                     # Fall: log only, no haptic (per spec)
                     self._handle(event, buzz_side=None)
             except OSError as e:

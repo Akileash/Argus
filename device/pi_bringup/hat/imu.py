@@ -230,6 +230,8 @@ class Detection:
     wear_on_fraction: float = 0.0
     suppressed: bool = False
     suppress_reason: str = ""
+    onset_age_s: float = 0.0  # detection time minus fall onset (event timestamp backdating)
+    knocked_off: bool = False
 
 
 class FallImpactDetector:
@@ -244,6 +246,11 @@ class FallImpactDetector:
       idle --(|a| >= IMPACT_G, no freefall)--> wait_still
       wait_still --(|a|~1 g for STILL_HOLD_S)--> check head tilt vs pre-fall
           gravity (>= FALL_TILT_MIN_DEG unless freefall was long) --> FALL
+      wait_still (after an impact) --(ToF: hat left the head, raw not-near
+          run >= KNOCK_OFF_RUN_S that began at fall onset)--> FALL, no
+          tilt/stillness needed (hat knocked off, lands/rolls anywhere)
+
+    Every emitted fall has confidence "high"; unverifiable candidates are dropped.
 
     Not a fall: a hit/jump after which the wearer keeps moving (no stillness
     within FALL_STILL_DEADLINE_S) or ends up in the same orientation.
@@ -275,6 +282,8 @@ class FallImpactDetector:
         self._impact_t: Optional[float] = None
         self._impacted = False
         self._onset_t: Optional[float] = None
+        self._knock_t: Optional[float] = None
+        self._tilt_rejected = False
         self._peak = 0.0
         self._still_start: Optional[float] = None
         self._cooldown_until = 0.0
@@ -393,7 +402,12 @@ class FallImpactDetector:
         if self._state == "wait_still":
             self._peak = max(self._peak, mag)
             assert self._impact_t is not None
-            if abs(mag - 1.0) <= cfg.STILL_BAND_G:
+            if self._impacted:
+                ks = self._knocked_off(now)
+                if ks is not None:
+                    self._knock_t = ks
+                    return self._emit_fall(now, confidence="high")
+            if abs(mag - 1.0) <= cfg.STILL_BAND_G and not self._tilt_rejected:
                 if self._still_start is None:
                     self._still_start = now
                 elif (now - self._still_start) >= cfg.STILL_HOLD_S:
@@ -440,21 +454,46 @@ class FallImpactDetector:
         dot = sum(a * b for a, b in zip(ref, post)) / (nr * npost)
         return math.degrees(math.acos(max(-1.0, min(1.0, dot))))
 
-    def _confirm(self, now: float) -> Optional[Detection]:
-        assert self._still_start is not None and self._onset_t is not None
-        tilt = self._tilt_change_deg(self._onset_t, self._still_start, now)
-        exempt = self._ff_ms >= cfg.FALL_TILT_EXEMPT_FF_S * 1000.0
-        if tilt is not None and tilt < cfg.FALL_TILT_MIN_DEG and not exempt:
-            if cfg.FALL_REQUIRE_TILT:
-                self._reset_state()  # same orientation afterwards: jump / bump / nod
-                return None
-            return self._emit_fall(now, confidence="low")
-        if tilt is None and not (self._impacted and self._ff_ms > 0.0):
-            self._reset_state()  # can't verify orientation and weak evidence
+    def _knock_possible(self) -> bool:
+        return (
+            cfg.KNOCK_OFF_ENABLE
+            and self.wear_state is not None
+            and getattr(cfg, "WEAR_GATE_ENABLE", True)
+        )
+
+    def _knocked_off(self, now: float) -> Optional[float]:
+        """ToF says the hat left the head right after the fall started."""
+        if (
+            not cfg.KNOCK_OFF_ENABLE
+            or self.wear_state is None
+            or not getattr(cfg, "WEAR_GATE_ENABLE", True)
+            or self._onset_t is None
+        ):
             return None
-        tilt_ok = (tilt is not None and tilt >= cfg.FALL_TILT_MIN_DEG) or exempt
-        high = self._impacted and self._ff_ms > 0.0 and tilt_ok
-        return self._emit_fall(now, confidence="high" if high else "low")
+        return self.wear_state.not_near_run_start(
+            now,
+            since_t=self._onset_t - cfg.KNOCK_OFF_PRE_S,
+            min_run_s=cfg.KNOCK_OFF_RUN_S,
+            max_stale_s=cfg.KNOCK_TOF_STALE_S,
+        )
+
+    def _confirm(self, now: float) -> Optional[Detection]:
+        """Stillness reached: accept only if the head ended up re-oriented."""
+        assert self._still_start is not None and self._onset_t is not None
+        if self._ff_ms >= cfg.FALL_TILT_EXEMPT_FF_S * 1000.0:
+            return self._emit_fall(now, confidence="high")
+        tilt = self._tilt_change_deg(self._onset_t, self._still_start, now)
+        if tilt is not None and tilt >= cfg.FALL_TILT_MIN_DEG:
+            return self._emit_fall(now, confidence="high")
+        # Same orientation / unverifiable: jump, bump, nod. Not a fall by the
+        # orientation rule, but keep the candidate alive until the deadline so a
+        # hat that was knocked off can still be confirmed by the ToF.
+        if self._impacted and self._knock_possible():
+            self._tilt_rejected = True
+            self._still_start = None
+        else:
+            self._reset_state()
+        return None
 
     def _wear_gate(self, onset_t: float) -> Tuple[bool, float, float, str]:
         """Return (allow, worn_at_onset, on_fraction, reason)."""
@@ -489,6 +528,8 @@ class FallImpactDetector:
             wear_on_fraction=frac,
             suppressed=not allow,
             suppress_reason=reason if not allow else "",
+            onset_age_s=max(0.0, now - min(onset, self._knock_t if self._knock_t is not None else onset)),
+            knocked_off=self._knock_t is not None,
         )
         if not allow:
             self.suppressed_falls += 1
@@ -506,6 +547,8 @@ class FallImpactDetector:
         self._impact_t = None
         self._impacted = False
         self._onset_t = None
+        self._knock_t = None
+        self._tilt_rejected = False
         self._peak = 0.0
         self._still_start = None
 

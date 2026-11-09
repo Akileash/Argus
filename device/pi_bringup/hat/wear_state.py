@@ -28,6 +28,8 @@ class WearState:
     def __init__(self, history_s: float = 8.0) -> None:
         self._lock = threading.Lock()
         self._hist: Deque[Tuple[float, bool]] = deque()
+        # Raw (t, near) per ToF poll, NOT dwell-filtered (knock-off detection).
+        self._near_hist: Deque[Tuple[float, bool]] = deque()
         self._history_s = history_s
         self.current_worn = False
         self.last_distance_mm: Optional[int] = None
@@ -41,19 +43,60 @@ class WearState:
         *,
         t: Optional[float] = None,
         distance_mm: Optional[int] = None,
-        near: bool = False,
+        near: Optional[bool] = None,
     ) -> None:
         now = time.perf_counter() if t is None else t
         with self._lock:
             self.current_worn = worn
             self.last_distance_mm = distance_mm
-            self.last_near = near
+            self.last_near = bool(near)
             self.updates += 1
             self.ready = True
             self._hist.append((now, worn))
             cutoff = now - self._history_s
             while self._hist and self._hist[0][0] < cutoff:
                 self._hist.popleft()
+            if near is not None:
+                self._near_hist.append((now, bool(near)))
+                while self._near_hist and self._near_hist[0][0] < cutoff:
+                    self._near_hist.popleft()
+
+    def not_near_run_start(
+        self,
+        now: float,
+        *,
+        since_t: float,
+        min_run_s: float,
+        max_stale_s: float,
+        min_samples: int = 4,
+    ) -> Optional[float]:
+        """Start time of the current unbroken run of raw not-near ToF polls.
+
+        Returns None unless the run (a) began at/after `since_t`, (b) lasted at
+        least `min_run_s` up to the newest poll, (c) holds >= min_samples
+        polls, (d) the newest poll is fresher than `max_stale_s` (else the ToF
+        thread is stalled/unavailable and we know nothing), and (e) was
+        preceded by a near poll (the hat really was on the head). Any single
+        near poll breaks the run, so brief dropouts on a hat that stays on do
+        not count. Invalid readings are not distinguishable from "far" here:
+        the VL6180X reports free air as no-target/invalid.
+        """
+        with self._lock:
+            h = self._near_hist
+            if not h or now - h[-1][0] > max_stale_s or h[-1][1]:
+                return None
+            i = len(h) - 1
+            while i >= 0 and not h[i][1]:
+                i -= 1
+            if i < 0:
+                return None  # never saw it near in the retained history
+            run = list(h)[i + 1:]
+            if len(run) < min_samples:
+                return None
+            start = run[0][0]
+            if start < since_t or run[-1][0] - start < min_run_s:
+                return None
+            return start
 
     def _state_at_locked(self, t_onset: float) -> bool:
         """Last known worn flag at or before t_onset."""
