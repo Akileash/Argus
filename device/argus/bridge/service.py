@@ -113,6 +113,9 @@ class Bridge:
                                                 name="argus_sensors(scd41)")
                 self.air_launcher.start()
         for raw in list(self.state.pending.values()):  # events that were mid-wait when we last stopped
+            if self._stale(raw):
+                self._mark_seen(raw["event_id"])
+                continue
             log.info("resuming pending event %s", raw.get("event_id"))
             self._dispatch(raw)
 
@@ -151,6 +154,9 @@ class Bridge:
             return
         eid = raw["event_id"]
         with self._lock:
+            if eid not in self._inflight and eid not in self.state.seen and self._stale(raw):
+                self._mark_seen(eid)
+                return
             if raw["type"] == "line_of_fire" and eid not in self._inflight and eid not in self.state.seen:
                 t0 = mapper.parse_ts(raw["timestamp"])
                 last = self._last_lof
@@ -166,6 +172,18 @@ class Bridge:
             self.state.pending[eid] = raw
             self.state.save()
         self._dispatch(raw)
+
+    def _stale(self, raw: dict[str, Any]) -> bool:
+        """True (and logged + counted) if this event is older than bridge.max_event_age_s: never queue an old session's event."""
+        limit = self.cfg.bridge.max_event_age_s
+        if limit <= 0:
+            return False
+        age = (self.wall_fn() - mapper.parse_ts(raw["timestamp"])).total_seconds()
+        if age <= limit:
+            return False
+        self._skip("stale", f"{raw.get('type')} {raw.get('event_id')} is {age:.0f}s old (limit {limit:.0f}s): discarded, "
+                   "not uploaded")
+        return True
 
     def _skip(self, key: str, msg: str) -> None:
         self.skipped[key] = self.skipped.get(key, 0) + 1
@@ -226,6 +244,9 @@ class Bridge:
                 clip_fut.set_result(None)
                 return
             clip_fut.set_result(clip)
+            if self._stale(raw):  # the clip wait can outlast the limit
+                self._done(eid)
+                return
             t0 = mapper.parse_ts(raw["timestamp"])
             m = mapper.map_hat_event(raw, serial=self._serial(), side_map=self.cfg.bridge.side_sensor,
                                      air=latest_air(self.air_log, t0, self.cfg.bridge.air_max_age_s), hat_on=hat_on,

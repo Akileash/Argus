@@ -374,3 +374,94 @@ def test_line_of_fire_hat_on_follows_the_last_tof_line(cfg, hat):
     hat.mp4(ev["event_id"])
     settle(b)
     assert queued(cfg)[ev["event_id"]]["metrics"]["hat_on"] is False
+
+
+# ---- max_event_age_s: an old session's events are never uploaded
+def test_stale_events_are_discarded_not_queued(tmp_path):
+    cfg = make_cfg(tmp_path, max_event_age_s=180)
+    from .conftest import Hat
+    hat = Hat(cfg)
+    clock = Clock(T0 + timedelta(seconds=1000))
+    old_fall = hat.fall(T0)
+    old_lof = hat.lof(T0 + timedelta(seconds=5))
+    fresh = hat.fall(clock.wall - timedelta(seconds=60))
+    for e in (old_fall, old_lof, fresh):
+        hat.mp4(e["event_id"])
+    b = make_bridge(cfg, clock, from_start=True)
+    settle(b)
+    assert set(queued(cfg)) == {fresh["event_id"]}
+    assert b.skipped["stale"] == 2
+    st = json.loads((Path(cfg.bridge.state_dir) / "bridge_state.json").read_text())
+    assert st["pending"] == {} and old_fall["event_id"] in st["seen"]
+
+
+def test_stale_discard_does_not_feed_the_lof_throttle_or_near_miss_link(tmp_path):
+    cfg = make_cfg(tmp_path, max_event_age_s=180)
+    from .conftest import Hat
+    hat = Hat(cfg)
+    clock = Clock(T0 + timedelta(seconds=1000))
+    old = hat.lof(T0)
+    now_lof = hat.lof(clock.wall - timedelta(seconds=1))  # within 30 s of `old`'s clock? no: but must not be throttled by it
+    hat.mp4(now_lof["event_id"])
+    b = make_bridge(cfg, clock, from_start=True)
+    settle(b)
+    assert set(queued(cfg)) == {now_lof["event_id"]}
+    assert "lof_throttled" not in b.skipped
+
+
+def test_pending_events_restored_from_state_are_checked_too(tmp_path):
+    cfg = make_cfg(tmp_path, max_event_age_s=180)
+    from .conftest import Hat
+    hat = Hat(cfg)
+    clock = Clock(T0)
+    b = make_bridge(cfg, clock, from_start=True)
+    b.policy = ClipPolicy(wait_s=30, poll_s=0.02, stable_s=0.1)
+    ev = hat.fall(T0)  # fresh now, no clip yet: stays pending when we stop
+    b.step()
+    b.stop()
+    assert queued(cfg) == {}
+    hat.mp4(ev["event_id"])
+    clock.advance(600)  # the hat was restarted ten minutes later
+    b2 = make_bridge(cfg, clock)
+    b2.start()
+    settle(b2)
+    assert queued(cfg) == {} and b2.skipped["stale"] == 1
+    assert json.loads((Path(cfg.bridge.state_dir) / "bridge_state.json").read_text())["pending"] == {}
+
+
+def test_event_that_goes_stale_during_the_clip_wait_is_dropped_at_queue_time(tmp_path):
+    cfg = make_cfg(tmp_path, max_event_age_s=30)
+    from .conftest import Hat
+    hat = Hat(cfg)
+    clock = Clock(T0 + timedelta(seconds=20))
+    ev = hat.fall(T0)  # 20 s old: accepted
+    b = make_bridge(cfg, clock, from_start=True)
+    b.policy = ClipPolicy(wait_s=30, poll_s=0.02, stable_s=0.1)
+    b.step()
+    clock.advance(20)  # 40 s old by the time the clip shows up
+    hat.mp4(ev["event_id"])
+    for f in list(b.futures):
+        f.result(timeout=10)
+    assert queued(cfg) == {} and b.skipped["stale"] == 1
+
+
+def test_age_limit_zero_disables_and_future_timestamps_are_not_stale(tmp_path):
+    cfg = make_cfg(tmp_path, max_event_age_s=0)
+    from .conftest import Hat
+    hat = Hat(cfg)
+    ev = hat.fall(T0 - timedelta(days=3))
+    hat.mp4(ev["event_id"])
+    settle(make_bridge(cfg, from_start=True))
+    assert ev["event_id"] in queued(cfg)
+    cfg2 = make_cfg(tmp_path / "b", max_event_age_s=180)
+    hat2 = Hat(cfg2)
+    clock = Clock(T0)
+    ev2 = hat2.fall(T0 + timedelta(seconds=90))  # clock skew: event is "from the future"
+    hat2.mp4(ev2["event_id"])
+    settle(make_bridge(cfg2, clock, from_start=True))
+    assert ev2["event_id"] in queued(cfg2)
+
+
+def test_default_age_limit_is_180():
+    from argus.config import BridgeCfg
+    assert BridgeCfg().max_event_age_s == 180

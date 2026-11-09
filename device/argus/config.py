@@ -207,6 +207,9 @@ class BridgeCfg(_Strict):
     # line_of_fire fires often (473 in ~30 h on their log) and their camera skips a capture while one runs:
     # a line_of_fire this soon after the last queued one is logged, not uploaded.
     lof_min_interval_s: float = 30.0
+    # A fall / line_of_fire older than this when the bridge is about to queue it (including one restored from the saved
+    # state on start) is logged and discarded: after a restart it is an old session's event, not a live alert. 0 = no limit.
+    max_event_age_s: float = Field(default=180.0, ge=0)
     # metrics.hat_on is a required boolean. When the hat state is unknown (no `[tof] HELMET` line seen yet):
     # skip = do not upload the event (logged), on / off = use that value.
     hat_on_unknown: str = "skip"
