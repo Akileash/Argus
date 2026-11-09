@@ -105,3 +105,17 @@ backend:                # blank on purpose; set by `argus-cli pair`
 device:
   serial: ""            # set by `argus-cli pair`
   status_led_pin: null  # 17 on the real hat: solid = calibrating, blinking = put the hat on, off = ready
+
+bridge:                 # `argus-cli bridge run`: cloud bridge for the teammates' hat code (docs: argus/bridge/__init__.py)
+  argus_dir: ~/argus    # THEIR tree. The bridge launches `python -m hat.main` there and only reads their files.
+  python: ~/argus/.venv/bin/python
+  launch: true          # false = only tail files (their hat.main is started by someone else)
+  events_path: ""       # blank -> <argus_dir>/events.jsonl
+  clips_dir: ""         # blank -> <argus_dir>/clips
+  air_log: ~/argus/pi_sensors/logs/air_events.jsonl
+  clip_wait_s: 45       # fall / line_of_fire wait this long for the clip, then go up without video
+  air_max_age_s: 300    # newest air sample older than this is not attached
+  knock_window_s: 2.0   # HELMET OFF within this after a fall = hat_knocked_off, otherwise hat_removed
+  tof_off_dwell_s: 3.0  # their ToF prints OFF this long after the hat left the head
+  side_sensor: { left: R2, right: R3 }   # NEEDS CONFIRMATION on the hat: their left/right -> our sensor_id
+  state_dir: var/bridge # saved tail offset + staging for remuxed clips (relative paths resolve against device/)

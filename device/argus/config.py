@@ -187,6 +187,25 @@ class DeviceCfg(_Strict):
     status_led_pin: int | None = None  # BCM pin of the optional boot-status LED (17 on the real hat); None = no LED
 
 
+class BridgeCfg(_Strict):
+    """Cloud bridge for the teammates' hat code (argus/bridge/). Paths accept ``~``; blank ones derive from argus_dir."""
+
+    argus_dir: str = "~/argus"  # THEIR tree (hat.main, events.jsonl, clips/). The bridge never writes there.
+    python: str = "~/argus/.venv/bin/python"  # their venv python, used to launch `python -m hat.main`
+    launch: bool = True  # False = only tail the files (same as `bridge run --no-launch`)
+    hat_args: list[str] = Field(default_factory=list)  # extra args for hat.main
+    events_path: str = ""  # blank -> <argus_dir>/events.jsonl
+    clips_dir: str = ""  # blank -> <argus_dir>/clips
+    air_log: str = "~/argus/pi_sensors/logs/air_events.jsonl"
+    clip_wait_s: float = 45.0  # how long a fall / line_of_fire waits for its clip before going up without video
+    air_max_age_s: float = 300.0  # newest air sample older than this is not attached
+    knock_window_s: float = 2.0  # HELMET OFF this soon after a fall = hat_knocked_off (spec D6)
+    tof_off_dwell_s: float = 3.0  # their ToF prints OFF this long after the hat left (hat/config.py TOF_OFF_DWELL_MS)
+    # NEEDS CONFIRMATION on the real hat: which rear sensor of ours is their left / right ultrasonic.
+    side_sensor: dict[str, str] = Field(default_factory=lambda: {"left": "R2", "right": "R3"})
+    state_dir: str = "var/bridge"  # saved tail offset + staging for remuxed clips; relative -> under device/
+
+
 class ArgusConfig(_Strict):
     modules: ModulesCfg
     detectors: DetectorsCfg = DetectorsCfg()
@@ -195,6 +214,7 @@ class ArgusConfig(_Strict):
     bus: BusCfg = BusCfg()
     backend: BackendCfg = BackendCfg()
     device: DeviceCfg = DeviceCfg()
+    bridge: BridgeCfg = BridgeCfg()
 
     def detector_cfg(self, name: str) -> dict[str, Any]:
         """``thresholds.<detector>`` as a plain dict, the ``cfg`` a Detector is constructed with."""
