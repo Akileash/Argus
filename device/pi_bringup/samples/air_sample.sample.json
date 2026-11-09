@@ -1,0 +1,11 @@
+{
+  "type": "air_sample",
+  "co2_ppm": 555,
+  "temp_c": 25.29,
+  "rh_pct": 22.71,
+  "sensor_ok": true,
+  "reads": 9,
+  "recoveries": 0,
+  "t_ms": 43954,
+  "received_at": "2026-11-08T22:39:10.536814+00:00"
+}

@@ -2,7 +2,7 @@
 
 Paste this whole file into an LLM before asking anything about the project.
 
-**Updated Sun Nov 8, 2026.** This replaces the Fri Nov 6 pre-hackathon version. The technical plan below is now what was actually built and tested. Items from the earlier plan that were not built are listed in §12. The detailed spec is `.plans/argus-mvp-spec.md`, and the repo README explains how to run everything.
+**Updated Sun Nov 8, 2026 (hardware branch).** §4 hardware table below is the **physical truth** from the Pi bring-up (DRV2605L + VL6180X + dual I2C). Older L293D/VL53L0X notes are superseded — see `docs/HARDWARE-DIFF.md`. Software cloud/dashboard status remains in §5–§11. Spec: `.plans/argus-mvp-spec.md`. Pi runbook: `docs/PI-BRINGUP.md`.
 
 ---
 
@@ -39,9 +39,9 @@ Paste this whole file into an LLM before asking anything about the project.
 | Hazard | How | Class |
 |---|---|---|
 | Struck-by from behind | 2 rear ultrasonic sensors plus the IMU (the wearer's own motion is subtracted, so walking backward into a wall doesn't trigger) | near miss; incident if contact follows |
-| Fall / head impact | MPU-6050: free fall then impact, or an impact ≥ 6 g | incident |
-| Hat knocked off | hat-on sensor shows the hat off within 2 s after an impact | incident |
-| Hat removed | hat-on sensor shows the hat off with no impact | PPE log (no clip, no report) |
+| Fall / head impact | MPU-6050 wear-gated **fall-only** (freefall and/or hard hit); ToF must show helmet ON beforehand | incident |
+| Line-of-fire / struck-by from behind | Dual HC-SR04 closing approach → haptic on matching side | near miss (Pi emits `line_of_fire` today; contract names `struck_by_*`) |
+| Hat on / off (PPE context) | **VL6180X** wear band + dwell (gates falls; not a separate live `hat_removed` emit from IMU) | PPE / gate |
 
 ---
 
@@ -59,22 +59,28 @@ Paste this whole file into an LLM before asking anything about the project.
 
 ---
 
-## 4. Hardware (as wired)
+## 4. Hardware (as wired) — **Pi truth**
+
+Verified on the Argus Pi. Code: `device/pi_bringup/`. Team plug-ins: `device/hardware/team/*/`.
 
 | Part | Role | Connection |
 |---|---|---|
-| Raspberry Pi 4 (1 GB) | runs everything on the hat | Raspberry Pi OS Bookworm 64-bit Lite |
-| MPU-6050 | falls, impacts, head motion | I2C 0x68, ±16 g, 1 kHz FIFO, I2C at 400 kHz |
-| 2× HC-SR04 | struck-by from behind | R2 GPIO19/26, R3 GPIO23/24 (trig/echo); a 1 kΩ/2 kΩ echo divider per sensor, both on one small soldered board at the Pi |
-| VL53L0X | hat on / off | I2C 0x29 |
-| SCD41 | CO₂ / temperature / humidity (context only) | I2C 0x62 |
-| L293D + 2 vibration motors | haptic warning (back motor for struck-by; both for fall/impact) | GPIO12 (top), GPIO13 (back) |
-| Pi Camera V2 | front video | CSI |
-| Status LED (optional) | boot cues | GPIO17 |
+| Raspberry Pi 4 | runs the hat stack | Raspberry Pi OS 64-bit; enable `dtoverlay=i2c3,pins_4_5` |
+| MPU-6050 | wear-gated fall detection + motion | **I2C3** 0x68 (±16 g); sample ~**200 Hz** in bring-up |
+| 2× HC-SR04 | line-of-fire / struck-by from behind | LEFT Trig **GPIO23** / Echo **GPIO24**; RIGHT Trig **GPIO20** / Echo **GPIO21** (1k/2k echo dividers) |
+| **VL6180X** | hat on / off (wear gate) | **I2C3** 0x29; near **50–254 mm**; ON dwell 5 s / OFF 3 s |
+| SCD41 | CO₂ / temperature / humidity | **I2C1** 0x62 |
+| **2× DRV2605L** + ERM discs | haptic warning (matching US side; fall patterns) | LEFT **I2C1** 0x5A; RIGHT **I2C3** 0x5A — **not** L293D |
+| Pi Camera | front rolling clip on fall | CSI / picamera2; **20 s pre + 10 s post** |
 
-- **Power:** Anker 5,000 mAh (5 V, 3 A). The worst case is about 1.5–1.8 A.
-- **Boot:** rest the hat on a table while it calibrates; when the LED blinks, put it on.
-- **Wiring safety:** no loose jumpers on the Pi header, because a 5 V wire touching a GPIO pin can kill the Pi.
+```bash
+i2cdetect -y 1   # 5a LEFT DRV, 62 SCD41
+i2cdetect -y 3   # 5a RIGHT DRV, 68 MPU, 29 VL6180X
+```
+
+- **Power:** USB battery bank 5 V / ≥3 A recommended for load tests.
+- **Wiring safety:** never put 5 V on DRV2605L logic or a GPIO.
+- **Supersedes:** earlier L293D + VL53L0X assumptions (see `docs/HARDWARE-DIFF.md`).
 
 ---
 
@@ -204,20 +210,18 @@ On 2 real clips (a fall from a ledge, and a first-person e-scooter crash):
 
 ## 11. Status (Nov 8)
 
-- **Done and verified on a laptop with simulated sensors:**
+- **Done on the real Pi (`hardware` branch / `device/pi_bringup/`):**
+  - MPU + dual US + dual **DRV2605L** + **VL6180X** wear gate + SCD41 + Pi Camera path;
+  - wear-gated fall-only + all-sensors load test; sample JSON for teammates;
+  - team vendor stubs under `device/hardware/team/{imu,range,hat_on,env,haptics,camera}/`.
+- **Done and verified on a laptop with simulated sensors (software stack):**
   - the full chain hat → upload → AI report → dashboard → sign-off → PDF;
-  - fallbacks and hot-swapping;
-  - teammate script integration;
-  - 5 rounds of review and testing, and all automated checks pass;
+  - fallbacks and hot-swapping; teammate script integration framework;
   - real Gemini and Claude reports on real clips.
-- **In progress, hosting:**
-  - the cloud database is set up with real data (org Argus, site natHacks, worker Okitha Biyanwila on hat ARG-0001);
-  - the Vercel project is created;
-  - next: deploy, the once-a-minute safety-net timer, manager and judge logins, then pairing the hat with the website URL.
-- **Not yet proven:**
-  - the real drivers on the real Pi; the bench checks are beam width, the demo object's echo, the "no echo" pulse, motor noise and head-down posture;
-  - detection thresholds tuned on real recordings (`argus-cli record` / `sweep` / `eval`);
-  - the hosted deployment end to end.
+- **In progress:**
+  - hosting/deploy/pairing; map Pi event JSON → `contracts/event.schema.json` (`docs/CONTRACT-BRIDGE.md`);
+  - finish camera `save_command` wiring to ClipRecorder; threshold tune on recordings.
+- **Still open:** hosted end-to-end with the physical hat on venue Wi-Fi.
 
 ---
 
@@ -225,7 +229,7 @@ On 2 real clips (a fall from a ledge, and a first-person e-scooter crash):
 
 - Weekly / end-of-shift report and the "mission" for the next toolbox talk. Each report has corrective actions, but there's no weekly roll-up yet.
 - Zones (AprilTag/QR markers) and zone heat maps.
-- DRV2605L haptic driver. The build uses an L293D with 2 motors instead.
+- ~~DRV2605L haptic driver~~ → **built on the Pi (this branch); L293D path is obsolete for our hat.**
 - Front-facing ultrasonic. The build uses 2 rear sensors.
 - FastAPI + SQLite backend. The build uses Next.js + Supabase.
 - Radio alerts, rear/360 camera, better computer vision, fatigue detection, EEG.

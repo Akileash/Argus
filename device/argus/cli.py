@@ -57,6 +57,11 @@ def _wire_pipeline(sup: Supervisor, bus: SampleBus, cfg: ArgusConfig) -> list[Ca
     return [stop for h in hooks if (stop := h(sup, bus, cfg)) is not None]
 
 
+from argus.bridge.cli import bridge_app
+
+app.add_typer(bridge_app, name="bridge")
+
+
 @app.callback()
 def _main(verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False) -> None:
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO,

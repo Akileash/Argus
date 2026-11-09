@@ -1,0 +1,4 @@
+# Pi Camera CSI via picamera2. Full impl: device/pi_bringup/hat/camera.py (20s pre / 10s post).
+command: [python, vendor/capture.py]
+save_command: [python, vendor/save_clip.py, --seconds, "{seconds}", --out, "{path}"]
+save_timeout_s: 45

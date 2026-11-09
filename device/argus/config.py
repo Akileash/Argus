@@ -187,6 +187,55 @@ class DeviceCfg(_Strict):
     status_led_pin: int | None = None  # BCM pin of the optional boot-status LED (17 on the real hat); None = no LED
 
 
+class BridgeCfg(_Strict):
+    """Cloud bridge for the teammates' hat code (argus/bridge/). Paths accept ``~``; blank ones derive from argus_dir."""
+
+    argus_dir: str = "~/argus"  # THEIR tree (hat.main, events.jsonl, clips/). The bridge never writes there.
+    python: str = "~/argus/.venv/bin/python"  # their venv python, used to launch `python -m hat.main`
+    launch: bool = True  # False = only tail the files (same as `bridge run --no-launch`)
+    hat_args: list[str] = Field(default_factory=list)  # extra args for hat.main
+    events_path: str = ""  # blank -> <argus_dir>/events.jsonl
+    clips_dir: str = ""  # blank -> <argus_dir>/clips
+    air_log: str = "~/argus/pi_sensors/logs/air_events.jsonl"
+    clip_wait_s: float = 45.0  # how long a fall / line_of_fire waits for its clip before going up without video
+    lof_clip_wait_s: float = 0.0  # line_of_fire: 0 = do not wait, the hat records no clip for it (CAM_CLIP_TYPES)
+    air_max_age_s: float = 300.0  # newest air sample older than this is not attached
+    knock_window_s: float = 2.0  # HELMET OFF this soon after a fall = hat_knocked_off (spec D6)
+    tof_off_dwell_s: float = 3.0  # their ToF prints OFF this long after the hat left (hat/config.py TOF_OFF_DWELL_MS)
+    # NEEDS CONFIRMATION on the real hat: which rear sensor of ours is their left / right ultrasonic.
+    # PM decision: their left -> R3 (same pins 23/24), right -> R2; never TOP. needs-teammate: confirm physical sides.
+    side_sensor: dict[str, str] = Field(default_factory=lambda: {"left": "R3", "right": "R2"})
+    # line_of_fire fires often (473 in ~30 h on their log) and their camera skips a capture while one runs:
+    # a line_of_fire this soon after the last queued one is logged, not uploaded.
+    lof_min_interval_s: float = 30.0
+    # A fall / line_of_fire older than this when the bridge is about to queue it (including one restored from the saved
+    # state on start) is logged and discarded: after a restart it is an old session's event, not a live alert. 0 = no limit.
+    max_event_age_s: float = Field(default=180.0, ge=0)
+    # metrics.hat_on is a required boolean. When the hat state is unknown (no `[tof] HELMET` line seen yet):
+    # skip = do not upload the event (logged), on / off = use that value.
+    hat_on_unknown: str = "skip"
+    # Second child: their pi_sensors, SCD41 only (hat.main owns the VL6180X: `--tof-bus` is refused here).
+    air_launch: bool = True
+    air_python: str = ""  # blank -> <argus_dir>/pi_sensors/.venv/bin/python
+    air_args: list[str] = Field(default_factory=lambda: ["--sensors", "scd41", "--scd-bus", "1", "--log-dir", "logs"])
+    state_dir: str = "var/bridge"  # saved tail offset + staging for remuxed clips; relative -> under device/
+
+
+    @field_validator("air_args")
+    @classmethod
+    def _no_tof(cls, v: list[str]) -> list[str]:
+        if any(a.startswith(("--tof-bus", "--bus")) for a in v) or any("tof" in a for a in v if not a.startswith("--")):
+            raise ValueError("bridge.air_args must not touch the ToF / I2C bus 3 (hat.main owns the VL6180X)")
+        return v
+
+    @field_validator("hat_on_unknown")
+    @classmethod
+    def _unknown_policy(cls, v: str) -> str:
+        if v not in ("skip", "on", "off"):
+            raise ValueError("hat_on_unknown must be skip, on or off")
+        return v
+
+
 class ArgusConfig(_Strict):
     modules: ModulesCfg
     detectors: DetectorsCfg = DetectorsCfg()
@@ -195,6 +244,7 @@ class ArgusConfig(_Strict):
     bus: BusCfg = BusCfg()
     backend: BackendCfg = BackendCfg()
     device: DeviceCfg = DeviceCfg()
+    bridge: BridgeCfg = BridgeCfg()
 
     def detector_cfg(self, name: str) -> dict[str, Any]:
         """``thresholds.<detector>`` as a plain dict, the ``cfg`` a Detector is constructed with."""

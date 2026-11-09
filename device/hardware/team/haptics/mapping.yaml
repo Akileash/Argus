@@ -1,0 +1,3 @@
+# Dual DRV2605L (NOT L293D). LEFT=I2C1, RIGHT=I2C3. Map top→left, back→right.
+command: [python, vendor/buzz_drv.py]
+line: "H,{motor},{pwm}\n"

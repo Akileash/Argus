@@ -1,0 +1,14 @@
+[Unit]
+Description=Argus helmet sensors (VL6180X + SCD41)
+After=network.target
+
+[Service]
+Type=simple
+User=dhirptl
+WorkingDirectory=/home/dhirptl/argus/pi_sensors
+ExecStart=/home/dhirptl/argus/pi_sensors/.venv/bin/python -m argus_sensors --tof-bus 3 --scd-bus 1 --log-dir /home/dhirptl/argus/pi_sensors/logs
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

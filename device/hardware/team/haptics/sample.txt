@@ -1,0 +1,5 @@
+H,top,1.0
+H,back,1.0
+H,both,0.8
+H,left,1.0
+H,right,1.0

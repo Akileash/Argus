@@ -1,0 +1,7 @@
+command: [python, vendor/stream_scd.py]
+format: json
+fields: { co2_ppm: co2_ppm, temp_c: temp_c, rh_pct: rh_pct }
+temp_unit: c
+rh_unit: percent
+restart: { initial_s: 1, max_s: 15 }
+warmup_s: 2

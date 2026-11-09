@@ -105,3 +105,23 @@ backend:                # blank on purpose; set by `argus-cli pair`
 device:
   serial: ""            # set by `argus-cli pair`
   status_led_pin: null  # 17 on the real hat: solid = calibrating, blinking = put the hat on, off = ready
+
+bridge:                 # `argus-cli bridge run`: cloud bridge for the teammates' hat code (docs: argus/bridge/__init__.py)
+  argus_dir: ~/argus    # THEIR tree. The bridge launches `python -m hat.main` there and only reads their files.
+  python: ~/argus/.venv/bin/python
+  launch: true          # false = only tail files (their hat.main is started by someone else)
+  events_path: ""       # blank -> <argus_dir>/events.jsonl
+  clips_dir: ""         # blank -> <argus_dir>/clips
+  air_log: ~/argus/pi_sensors/logs/air_events.jsonl
+  clip_wait_s: 45       # fall / line_of_fire wait this long for the clip, then go up without video
+  lof_clip_wait_s: 0    # near misses have no clip on this hat; set to clip_wait_s if CAM_CLIP_TYPES adds line_of_fire
+  air_max_age_s: 300    # newest air sample older than this is not attached
+  knock_window_s: 2.0   # HELMET OFF within this after a fall = hat_knocked_off, otherwise hat_removed
+  tof_off_dwell_s: 3.0  # their ToF prints OFF this long after the hat left the head
+  side_sensor: { left: R3, right: R2 }   # needs-teammate: confirm physical sides (never TOP)
+  lof_min_interval_s: 30  # a line_of_fire this soon after the last queued one is logged, not uploaded
+  max_event_age_s: 180    # fall / line_of_fire older than this when about to be queued (also those restored from saved state at start) is logged and dropped, not uploaded; 0 = no limit
+  hat_on_unknown: skip    # skip | on | off: what to do with an event when no `[tof] HELMET` state is known yet
+  air_launch: true        # also start their pi_sensors (SCD41 only, never --tof-bus) so air_log gets samples
+  air_python: ""          # blank -> <argus_dir>/pi_sensors/.venv/bin/python
+  state_dir: var/bridge # saved tail offset + staging for remuxed clips (relative paths resolve against device/)

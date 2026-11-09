@@ -1,0 +1,6 @@
+# VL6180X (NOT VL53L0X). Distance already mm. status ok|out_of_range|error.
+command: [python, vendor/stream_tof.py]
+format: json
+fields: { range: distance_mm, status: status }
+unit: mm
+restart: { initial_s: 0.5, max_s: 10 }

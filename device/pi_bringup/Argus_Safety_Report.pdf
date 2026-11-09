@@ -1,0 +1,908 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Length 3480 >>
+stream
+BT
+/F2 18 Tf
+1 0 0 1 54 742 Tm
+(ARGUS ? Incident Readout) Tj
+/F1 10 Tf
+1 0 0 1 54 720 Tm
+(Human-readable report ? NOT the backend transfer payload) Tj
+/F1 10 Tf
+1 0 0 1 54 706 Tm
+(Generated: 2026-11-07T11:14:55-06:00) Tj
+/F1 10 Tf
+1 0 0 1 54 692 Tm
+(Source: /home/dhirptl/argus/events.jsonl) Tj
+/F1 10 Tf
+1 0 0 1 54 678 Tm
+(Events: 15) Tj
+/F2 14 Tf
+1 0 0 1 54 654 Tm
+(SAFETY ROLLUP) Tj
+/F1 11 Tf
+1 0 0 1 54 636 Tm
+(FALL: 4) Tj
+/F1 11 Tf
+1 0 0 1 54 621 Tm
+(HAT REMOVED: 2) Tj
+/F1 11 Tf
+1 0 0 1 54 606 Tm
+(IMPACT \(likely set down\): 2) Tj
+/F1 11 Tf
+1 0 0 1 54 591 Tm
+(NEAR FALL: 7) Tj
+/F1 11 Tf
+1 0 0 1 54 576 Tm
+(CRITICAL count: 4) Tj
+/F2 14 Tf
+1 0 0 1 54 551 Tm
+(Event 1: IMPACT \(likely set down\)) Tj
+/F1 11 Tf
+1 0 0 1 54 533 Tm
+(Severity: INFO   Priority: low   Confidence: low) Tj
+/F1 10 Tf
+1 0 0 1 54 518 Tm
+(Time: 2026-11-07T10:53:56.195-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 504 Tm
+(ID: 3ee6adbc-c224-45e2-a42b-b1d86d35d4ba) Tj
+/F1 10 Tf
+1 0 0 1 54 491 Tm
+(Peak 3.0 g | Gyro 164 dps | Freefall 5 ms | Tilt 1 deg | Still=True | Score=0.30) Tj
+/F1 10 Tf
+1 0 0 1 54 477 Tm
+(Worn before=True after=False | Set-down flag=True) Tj
+/F1 11 Tf
+1 0 0 1 54 463 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 448 Tm
+(- accel peak 3.0 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 434 Tm
+(- brief low-g dip \(5 ms\) ? not enough alone for free-fall) Tj
+/F1 10 Tf
+1 0 0 1 54 420 Tm
+(- motion settled afterward \(still\)) Tj
+/F1 10 Tf
+1 0 0 1 54 406 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 10 Tf
+1 0 0 1 54 392 Tm
+(- pattern matches hat set down on a surface \(flagged, not discarded\)) Tj
+/F1 11 Tf
+1 0 0 1 54 378 Tm
+(Verdict: Looks like the hat was placed down, not a body fall.) Tj
+/F1 10 Tf
+1 0 0 1 54 363 Tm
+(Action: Log as low priority; do not page as an emergency.) Tj
+/F1 10 Tf
+1 0 0 1 54 349 Tm
+(Story: At 2026-11-07T10:53:56.195-06:00, hat hat-01 recorded a IMPACT \(likely set down\)) Tj
+/F1 10 Tf
+1 0 0 1 54 335 Tm
+(\(priority=low, confidence=low, score=0.30\). Peak accel 3.0 g, peak gyro 164 dps, free-fall 5 ms,) Tj
+/F1 10 Tf
+1 0 0 1 54 321 Tm
+(tilt change 1°, still_after=True. Looks like the hat was placed down, not a body fall.) Tj
+/F2 14 Tf
+1 0 0 1 54 297 Tm
+(Event 2: NEAR FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 279 Tm
+(Severity: INFO   Priority: low   Confidence: medium) Tj
+/F1 10 Tf
+1 0 0 1 54 264 Tm
+(Time: 2026-11-07T10:54:08.556-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 250 Tm
+(ID: 7f82dc92-05fd-45c6-bc1a-e47aa79c1759) Tj
+/F1 10 Tf
+1 0 0 1 54 237 Tm
+(Peak 7.8 g | Gyro 752 dps | Freefall 0 ms | Tilt 6 deg | Still=False | Score=0.46) Tj
+/F1 10 Tf
+1 0 0 1 54 223 Tm
+(Worn before=True after=True | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 209 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 194 Tm
+(- accel peak 7.8 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 180 Tm
+(- high rotation \(752 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 166 Tm
+(- motion continued afterward \(not still\)) Tj
+/F1 11 Tf
+1 0 0 1 54 152 Tm
+(Verdict: Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F1 10 Tf
+1 0 0 1 54 137 Tm
+(Action: Note as a near-miss / handling event; no emergency page.) Tj
+/F1 10 Tf
+1 0 0 1 54 123 Tm
+(Story: At 2026-11-07T10:54:08.556-06:00, hat hat-01 recorded a NEAR FALL \(priority=low,) Tj
+/F1 10 Tf
+1 0 0 1 54 109 Tm
+(confidence=medium, score=0.46\). Peak accel 7.8 g, peak gyro 752 dps, free-fall 0 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 95 Tm
+(6°, still_after=False. Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Length 3803 >>
+stream
+BT
+/F2 14 Tf
+1 0 0 1 54 732 Tm
+(Event 3: NEAR FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 714 Tm
+(Severity: INFO   Priority: low   Confidence: medium) Tj
+/F1 10 Tf
+1 0 0 1 54 699 Tm
+(Time: 2026-11-07T10:54:17.041-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 685 Tm
+(ID: 9204ca3c-7394-4e4d-be50-15e31c3f921c) Tj
+/F1 10 Tf
+1 0 0 1 54 672 Tm
+(Peak 4.6 g | Gyro 468 dps | Freefall 0 ms | Tilt 75 deg | Still=False | Score=0.42) Tj
+/F1 10 Tf
+1 0 0 1 54 658 Tm
+(Worn before=True after=True | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 644 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 629 Tm
+(- accel peak 4.6 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 615 Tm
+(- high rotation \(468 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 601 Tm
+(- gravity direction shifted 75° \(hat orientation changed a lot\)) Tj
+/F1 10 Tf
+1 0 0 1 54 587 Tm
+(- motion continued afterward \(not still\)) Tj
+/F1 11 Tf
+1 0 0 1 54 573 Tm
+(Verdict: Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F1 10 Tf
+1 0 0 1 54 558 Tm
+(Action: Note as a near-miss / handling event; no emergency page.) Tj
+/F1 10 Tf
+1 0 0 1 54 544 Tm
+(Story: At 2026-11-07T10:54:17.041-06:00, hat hat-01 recorded a NEAR FALL \(priority=low,) Tj
+/F1 10 Tf
+1 0 0 1 54 530 Tm
+(confidence=medium, score=0.42\). Peak accel 4.6 g, peak gyro 468 dps, free-fall 0 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 516 Tm
+(75°, still_after=False. Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F2 14 Tf
+1 0 0 1 54 492 Tm
+(Event 4: FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 474 Tm
+(Severity: CRITICAL   Priority: high   Confidence: high) Tj
+/F1 10 Tf
+1 0 0 1 54 459 Tm
+(Time: 2026-11-07T10:54:27.290-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 445 Tm
+(ID: b49cdd90-1830-4d3f-835a-a43db2f24bb4) Tj
+/F1 10 Tf
+1 0 0 1 54 432 Tm
+(Peak 22.8 g | Gyro 717 dps | Freefall 10 ms | Tilt 58 deg | Still=True | Score=0.80) Tj
+/F1 10 Tf
+1 0 0 1 54 418 Tm
+(Worn before=True after=False | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 404 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 389 Tm
+(- accel peak 22.8 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 375 Tm
+(- high rotation \(717 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 361 Tm
+(- brief low-g dip \(10 ms\) ? not enough alone for free-fall) Tj
+/F1 10 Tf
+1 0 0 1 54 347 Tm
+(- moderate orientation change \(58°\)) Tj
+/F1 10 Tf
+1 0 0 1 54 333 Tm
+(- motion settled afterward \(still\)) Tj
+/F1 10 Tf
+1 0 0 1 54 319 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 11 Tf
+1 0 0 1 54 305 Tm
+(Verdict: Treat as a fall / hard impact requiring attention.) Tj
+/F1 10 Tf
+1 0 0 1 54 290 Tm
+(Action: Check on the wearer; include in the safety report as a high-priority incident.) Tj
+/F1 10 Tf
+1 0 0 1 54 276 Tm
+(Note: Accel saturated near ±16 g ? true peak was at least this hard.) Tj
+/F1 10 Tf
+1 0 0 1 54 262 Tm
+(Note: Little/no free-fall; classified from impact size + rotation + stillness \(tumbling-style\).) Tj
+/F1 10 Tf
+1 0 0 1 54 248 Tm
+(Story: At 2026-11-07T10:54:27.290-06:00, hat hat-01 recorded a FALL \(priority=high,) Tj
+/F1 10 Tf
+1 0 0 1 54 234 Tm
+(confidence=high, score=0.80\). Peak accel 22.8 g, peak gyro 717 dps, free-fall 10 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 220 Tm
+(58°, still_after=True. Treat as a fall / hard impact requiring attention.) Tj
+/F2 14 Tf
+1 0 0 1 54 196 Tm
+(Event 5: NEAR FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 178 Tm
+(Severity: INFO   Priority: low   Confidence: low) Tj
+/F1 10 Tf
+1 0 0 1 54 163 Tm
+(Time: 2026-11-07T10:54:39.092-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 149 Tm
+(ID: eab64ddf-e17d-411e-b5f9-6cf76cbe28f0) Tj
+/F1 10 Tf
+1 0 0 1 54 136 Tm
+(Peak 6.2 g | Gyro 336 dps | Freefall 0 ms | Tilt 21 deg | Still=False | Score=0.38) Tj
+/F1 10 Tf
+1 0 0 1 54 122 Tm
+(Worn before=True after=True | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 108 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 93 Tm
+(- accel peak 6.2 g crossed the 3.0 g impact gate) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Length 3976 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 742 Tm
+(- high rotation \(336 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 728 Tm
+(- moderate orientation change \(21°\)) Tj
+/F1 10 Tf
+1 0 0 1 54 714 Tm
+(- motion continued afterward \(not still\)) Tj
+/F1 11 Tf
+1 0 0 1 54 700 Tm
+(Verdict: Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F1 10 Tf
+1 0 0 1 54 685 Tm
+(Action: Note as a near-miss / handling event; no emergency page.) Tj
+/F1 10 Tf
+1 0 0 1 54 671 Tm
+(Story: At 2026-11-07T10:54:39.092-06:00, hat hat-01 recorded a NEAR FALL \(priority=low,) Tj
+/F1 10 Tf
+1 0 0 1 54 657 Tm
+(confidence=low, score=0.38\). Peak accel 6.2 g, peak gyro 336 dps, free-fall 0 ms, tilt change 21°,) Tj
+/F1 10 Tf
+1 0 0 1 54 643 Tm
+(still_after=False. Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F2 14 Tf
+1 0 0 1 54 619 Tm
+(Event 6: NEAR FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 601 Tm
+(Severity: INFO   Priority: low   Confidence: medium) Tj
+/F1 10 Tf
+1 0 0 1 54 586 Tm
+(Time: 2026-11-07T11:06:15.216-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 572 Tm
+(ID: bf120ea9-bb24-422b-95fb-32ddb7b5f9c5) Tj
+/F1 10 Tf
+1 0 0 1 54 559 Tm
+(Peak 10.0 g | Gyro 765 dps | Freefall 10 ms | Tilt 19 deg | Still=False | Score=0.50) Tj
+/F1 10 Tf
+1 0 0 1 54 545 Tm
+(Worn before=True after=True | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 531 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 516 Tm
+(- accel peak 10.0 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 502 Tm
+(- high rotation \(765 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 488 Tm
+(- brief low-g dip \(10 ms\) ? not enough alone for free-fall) Tj
+/F1 10 Tf
+1 0 0 1 54 474 Tm
+(- motion continued afterward \(not still\)) Tj
+/F1 11 Tf
+1 0 0 1 54 460 Tm
+(Verdict: Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F1 10 Tf
+1 0 0 1 54 445 Tm
+(Action: Note as a near-miss / handling event; no emergency page.) Tj
+/F1 10 Tf
+1 0 0 1 54 431 Tm
+(Story: At 2026-11-07T11:06:15.216-06:00, hat hat-01 recorded a NEAR FALL \(priority=low,) Tj
+/F1 10 Tf
+1 0 0 1 54 417 Tm
+(confidence=medium, score=0.50\). Peak accel 10.0 g, peak gyro 765 dps, free-fall 10 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 403 Tm
+(19°, still_after=False. Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F2 14 Tf
+1 0 0 1 54 379 Tm
+(Event 7: NEAR FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 361 Tm
+(Severity: INFO   Priority: low   Confidence: medium) Tj
+/F1 10 Tf
+1 0 0 1 54 346 Tm
+(Time: 2026-11-07T11:06:25.536-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 332 Tm
+(ID: 5a205da8-a855-4e4b-b429-259e3e22a0fb) Tj
+/F1 10 Tf
+1 0 0 1 54 319 Tm
+(Peak 11.7 g | Gyro 618 dps | Freefall 0 ms | Tilt 14 deg | Still=False | Score=0.49) Tj
+/F1 10 Tf
+1 0 0 1 54 305 Tm
+(Worn before=True after=True | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 291 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 276 Tm
+(- accel peak 11.7 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 262 Tm
+(- high rotation \(618 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 248 Tm
+(- motion continued afterward \(not still\)) Tj
+/F1 11 Tf
+1 0 0 1 54 234 Tm
+(Verdict: Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F1 10 Tf
+1 0 0 1 54 219 Tm
+(Action: Note as a near-miss / handling event; no emergency page.) Tj
+/F1 10 Tf
+1 0 0 1 54 205 Tm
+(Story: At 2026-11-07T11:06:25.536-06:00, hat hat-01 recorded a NEAR FALL \(priority=low,) Tj
+/F1 10 Tf
+1 0 0 1 54 191 Tm
+(confidence=medium, score=0.49\). Peak accel 11.7 g, peak gyro 618 dps, free-fall 0 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 177 Tm
+(14°, still_after=False. Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F2 14 Tf
+1 0 0 1 54 153 Tm
+(Event 8: NEAR FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 135 Tm
+(Severity: INFO   Priority: low   Confidence: medium) Tj
+/F1 10 Tf
+1 0 0 1 54 120 Tm
+(Time: 2026-11-07T11:06:34.164-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 106 Tm
+(ID: cbb6e185-f052-4405-90fe-7487062b73ca) Tj
+/F1 10 Tf
+1 0 0 1 54 93 Tm
+(Peak 7.7 g | Gyro 661 dps | Freefall 0 ms | Tilt 59 deg | Still=False | Score=0.56) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Length 3985 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 742 Tm
+(Worn before=True after=True | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 728 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 713 Tm
+(- accel peak 7.7 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 699 Tm
+(- high rotation \(661 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 685 Tm
+(- moderate orientation change \(59°\)) Tj
+/F1 10 Tf
+1 0 0 1 54 671 Tm
+(- motion continued afterward \(not still\)) Tj
+/F1 11 Tf
+1 0 0 1 54 657 Tm
+(Verdict: Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F1 10 Tf
+1 0 0 1 54 642 Tm
+(Action: Note as a near-miss / handling event; no emergency page.) Tj
+/F1 10 Tf
+1 0 0 1 54 628 Tm
+(Story: At 2026-11-07T11:06:34.164-06:00, hat hat-01 recorded a NEAR FALL \(priority=low,) Tj
+/F1 10 Tf
+1 0 0 1 54 614 Tm
+(confidence=medium, score=0.56\). Peak accel 7.7 g, peak gyro 661 dps, free-fall 0 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 600 Tm
+(59°, still_after=False. Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F2 14 Tf
+1 0 0 1 54 576 Tm
+(Event 9: FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 558 Tm
+(Severity: CRITICAL   Priority: high   Confidence: high) Tj
+/F1 10 Tf
+1 0 0 1 54 543 Tm
+(Time: 2026-11-07T11:06:45.789-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 529 Tm
+(ID: a3b4d2e5-75ec-4912-a5ba-c2673f4ad48f) Tj
+/F1 10 Tf
+1 0 0 1 54 516 Tm
+(Peak 16.4 g | Gyro 850 dps | Freefall 0 ms | Tilt 37 deg | Still=True | Score=0.75) Tj
+/F1 10 Tf
+1 0 0 1 54 502 Tm
+(Worn before=True after=False | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 488 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 473 Tm
+(- accel peak 16.4 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 459 Tm
+(- high rotation \(850 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 445 Tm
+(- moderate orientation change \(37°\)) Tj
+/F1 10 Tf
+1 0 0 1 54 431 Tm
+(- motion settled afterward \(still\)) Tj
+/F1 10 Tf
+1 0 0 1 54 417 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 11 Tf
+1 0 0 1 54 403 Tm
+(Verdict: Treat as a fall / hard impact requiring attention.) Tj
+/F1 10 Tf
+1 0 0 1 54 388 Tm
+(Action: Check on the wearer; include in the safety report as a high-priority incident.) Tj
+/F1 10 Tf
+1 0 0 1 54 374 Tm
+(Note: Accel saturated near ±16 g ? true peak was at least this hard.) Tj
+/F1 10 Tf
+1 0 0 1 54 360 Tm
+(Note: Little/no free-fall; classified from impact size + rotation + stillness \(tumbling-style\).) Tj
+/F1 10 Tf
+1 0 0 1 54 346 Tm
+(Story: At 2026-11-07T11:06:45.789-06:00, hat hat-01 recorded a FALL \(priority=high,) Tj
+/F1 10 Tf
+1 0 0 1 54 332 Tm
+(confidence=high, score=0.75\). Peak accel 16.4 g, peak gyro 850 dps, free-fall 0 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 318 Tm
+(37°, still_after=True. Treat as a fall / hard impact requiring attention.) Tj
+/F2 14 Tf
+1 0 0 1 54 294 Tm
+(Event 10: FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 276 Tm
+(Severity: CRITICAL   Priority: high   Confidence: medium) Tj
+/F1 10 Tf
+1 0 0 1 54 261 Tm
+(Time: 2026-11-07T11:06:58.094-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 247 Tm
+(ID: 9f29dc89-8cdc-49c9-972a-cd38e4166729) Tj
+/F1 10 Tf
+1 0 0 1 54 234 Tm
+(Peak 4.8 g | Gyro 274 dps | Freefall 5 ms | Tilt 0 deg | Still=True | Score=0.45) Tj
+/F1 10 Tf
+1 0 0 1 54 220 Tm
+(Worn before=True after=False | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 206 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 191 Tm
+(- accel peak 4.8 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 177 Tm
+(- brief low-g dip \(5 ms\) ? not enough alone for free-fall) Tj
+/F1 10 Tf
+1 0 0 1 54 163 Tm
+(- motion settled afterward \(still\)) Tj
+/F1 10 Tf
+1 0 0 1 54 149 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 11 Tf
+1 0 0 1 54 135 Tm
+(Verdict: Treat as a fall / hard impact requiring attention.) Tj
+/F1 10 Tf
+1 0 0 1 54 120 Tm
+(Action: Check on the wearer; include in the safety report as a high-priority incident.) Tj
+/F1 10 Tf
+1 0 0 1 54 106 Tm
+(Note: Little/no free-fall; classified from impact size + rotation + stillness \(tumbling-style\).) Tj
+/F1 10 Tf
+1 0 0 1 54 92 Tm
+(Story: At 2026-11-07T11:06:58.094-06:00, hat hat-01 recorded a FALL \(priority=high,) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Length 3883 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 742 Tm
+(confidence=medium, score=0.45\). Peak accel 4.8 g, peak gyro 274 dps, free-fall 5 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 728 Tm
+(0°, still_after=True. Treat as a fall / hard impact requiring attention.) Tj
+/F2 14 Tf
+1 0 0 1 54 704 Tm
+(Event 11: HAT REMOVED) Tj
+/F1 11 Tf
+1 0 0 1 54 686 Tm
+(Severity: WARNING   Priority: medium   Confidence: high) Tj
+/F1 10 Tf
+1 0 0 1 54 671 Tm
+(Time: 2026-11-07T11:13:51.474-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 657 Tm
+(ID: 6d2becb0-4f63-48ac-83b0-8b533a0b2b1a) Tj
+/F1 10 Tf
+1 0 0 1 54 644 Tm
+(Peak 19.9 g | Gyro 742 dps | Freefall 0 ms | Tilt 90 deg | Still=True | Score=0.86) Tj
+/F1 10 Tf
+1 0 0 1 54 630 Tm
+(Worn before=True after=False | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 616 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 601 Tm
+(- accel peak 19.9 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 587 Tm
+(- high rotation \(742 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 573 Tm
+(- gravity direction shifted 90° \(hat orientation changed a lot\)) Tj
+/F1 10 Tf
+1 0 0 1 54 559 Tm
+(- motion settled afterward \(still\)) Tj
+/F1 10 Tf
+1 0 0 1 54 545 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 11 Tf
+1 0 0 1 54 531 Tm
+(Verdict: Hat was likely knocked off or removed \(big tilt + then still\).) Tj
+/F1 10 Tf
+1 0 0 1 54 516 Tm
+(Action: Confirm whether the worker is OK and whether PPE is back on.) Tj
+/F1 10 Tf
+1 0 0 1 54 502 Tm
+(Note: Accel saturated near ±16 g ? true peak was at least this hard.) Tj
+/F1 10 Tf
+1 0 0 1 54 488 Tm
+(Story: At 2026-11-07T11:13:51.474-06:00, hat hat-01 recorded a HAT REMOVED \(priority=medium,) Tj
+/F1 10 Tf
+1 0 0 1 54 474 Tm
+(confidence=high, score=0.86\). Peak accel 19.9 g, peak gyro 742 dps, free-fall 0 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 460 Tm
+(90°, still_after=True. Hat was likely knocked off or removed \(big tilt + then still\).) Tj
+/F2 14 Tf
+1 0 0 1 54 436 Tm
+(Event 12: NEAR FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 418 Tm
+(Severity: INFO   Priority: low   Confidence: low) Tj
+/F1 10 Tf
+1 0 0 1 54 403 Tm
+(Time: 2026-11-07T11:14:08.052-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 389 Tm
+(ID: 046ffaab-62a4-4d1d-95c0-923b53272675) Tj
+/F1 10 Tf
+1 0 0 1 54 376 Tm
+(Peak 4.3 g | Gyro 211 dps | Freefall 0 ms | Tilt 18 deg | Still=False | Score=0.21) Tj
+/F1 10 Tf
+1 0 0 1 54 362 Tm
+(Worn before=True after=True | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 348 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 333 Tm
+(- accel peak 4.3 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 319 Tm
+(- motion continued afterward \(not still\)) Tj
+/F1 11 Tf
+1 0 0 1 54 305 Tm
+(Verdict: Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F1 10 Tf
+1 0 0 1 54 290 Tm
+(Action: Note as a near-miss / handling event; no emergency page.) Tj
+/F1 10 Tf
+1 0 0 1 54 276 Tm
+(Story: At 2026-11-07T11:14:08.052-06:00, hat hat-01 recorded a NEAR FALL \(priority=low,) Tj
+/F1 10 Tf
+1 0 0 1 54 262 Tm
+(confidence=low, score=0.21\). Peak accel 4.3 g, peak gyro 211 dps, free-fall 0 ms, tilt change 18°,) Tj
+/F1 10 Tf
+1 0 0 1 54 248 Tm
+(still_after=False. Impact-like spike but the wearer/board kept moving ? recovery or handling.) Tj
+/F2 14 Tf
+1 0 0 1 54 224 Tm
+(Event 13: IMPACT \(likely set down\)) Tj
+/F1 11 Tf
+1 0 0 1 54 206 Tm
+(Severity: INFO   Priority: low   Confidence: low) Tj
+/F1 10 Tf
+1 0 0 1 54 191 Tm
+(Time: 2026-11-07T11:14:19.794-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 177 Tm
+(ID: d1998463-d169-42b5-9336-4c2e4cebb671) Tj
+/F1 10 Tf
+1 0 0 1 54 164 Tm
+(Peak 3.4 g | Gyro 232 dps | Freefall 5 ms | Tilt 1 deg | Still=True | Score=0.35) Tj
+/F1 10 Tf
+1 0 0 1 54 150 Tm
+(Worn before=True after=False | Set-down flag=True) Tj
+/F1 11 Tf
+1 0 0 1 54 136 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 121 Tm
+(- accel peak 3.4 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 107 Tm
+(- brief low-g dip \(5 ms\) ? not enough alone for free-fall) Tj
+/F1 10 Tf
+1 0 0 1 54 93 Tm
+(- motion settled afterward \(still\)) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Length 3952 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 742 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 10 Tf
+1 0 0 1 54 728 Tm
+(- pattern matches hat set down on a surface \(flagged, not discarded\)) Tj
+/F1 11 Tf
+1 0 0 1 54 714 Tm
+(Verdict: Looks like the hat was placed down, not a body fall.) Tj
+/F1 10 Tf
+1 0 0 1 54 699 Tm
+(Action: Log as low priority; do not page as an emergency.) Tj
+/F1 10 Tf
+1 0 0 1 54 685 Tm
+(Story: At 2026-11-07T11:14:19.794-06:00, hat hat-01 recorded a IMPACT \(likely set down\)) Tj
+/F1 10 Tf
+1 0 0 1 54 671 Tm
+(\(priority=low, confidence=low, score=0.35\). Peak accel 3.4 g, peak gyro 232 dps, free-fall 5 ms,) Tj
+/F1 10 Tf
+1 0 0 1 54 657 Tm
+(tilt change 1°, still_after=True. Looks like the hat was placed down, not a body fall.) Tj
+/F2 14 Tf
+1 0 0 1 54 633 Tm
+(Event 14: FALL) Tj
+/F1 11 Tf
+1 0 0 1 54 615 Tm
+(Severity: CRITICAL   Priority: high   Confidence: high) Tj
+/F1 10 Tf
+1 0 0 1 54 600 Tm
+(Time: 2026-11-07T11:14:29.232-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 586 Tm
+(ID: ba068c7d-cca7-411a-bed7-cca335acb534) Tj
+/F1 10 Tf
+1 0 0 1 54 573 Tm
+(Peak 9.0 g | Gyro 500 dps | Freefall 0 ms | Tilt 44 deg | Still=True | Score=0.77) Tj
+/F1 10 Tf
+1 0 0 1 54 559 Tm
+(Worn before=True after=False | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 545 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 530 Tm
+(- accel peak 9.0 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 516 Tm
+(- high rotation \(500 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 502 Tm
+(- moderate orientation change \(44°\)) Tj
+/F1 10 Tf
+1 0 0 1 54 488 Tm
+(- motion settled afterward \(still\)) Tj
+/F1 10 Tf
+1 0 0 1 54 474 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 11 Tf
+1 0 0 1 54 460 Tm
+(Verdict: Treat as a fall / hard impact requiring attention.) Tj
+/F1 10 Tf
+1 0 0 1 54 445 Tm
+(Action: Check on the wearer; include in the safety report as a high-priority incident.) Tj
+/F1 10 Tf
+1 0 0 1 54 431 Tm
+(Note: Little/no free-fall; classified from impact size + rotation + stillness \(tumbling-style\).) Tj
+/F1 10 Tf
+1 0 0 1 54 417 Tm
+(Story: At 2026-11-07T11:14:29.232-06:00, hat hat-01 recorded a FALL \(priority=high,) Tj
+/F1 10 Tf
+1 0 0 1 54 403 Tm
+(confidence=high, score=0.77\). Peak accel 9.0 g, peak gyro 500 dps, free-fall 0 ms, tilt change 44°,) Tj
+/F1 10 Tf
+1 0 0 1 54 389 Tm
+(still_after=True. Treat as a fall / hard impact requiring attention.) Tj
+/F2 14 Tf
+1 0 0 1 54 365 Tm
+(Event 15: HAT REMOVED) Tj
+/F1 11 Tf
+1 0 0 1 54 347 Tm
+(Severity: WARNING   Priority: medium   Confidence: high) Tj
+/F1 10 Tf
+1 0 0 1 54 332 Tm
+(Time: 2026-11-07T11:14:52.534-06:00) Tj
+/F1 9 Tf
+1 0 0 1 54 318 Tm
+(ID: a02f0d4b-7f4f-421f-9181-8a18b56c4a01) Tj
+/F1 10 Tf
+1 0 0 1 54 305 Tm
+(Peak 10.6 g | Gyro 599 dps | Freefall 15 ms | Tilt 72 deg | Still=True | Score=0.83) Tj
+/F1 10 Tf
+1 0 0 1 54 291 Tm
+(Worn before=True after=False | Set-down flag=False) Tj
+/F1 11 Tf
+1 0 0 1 54 277 Tm
+(Why:) Tj
+/F1 10 Tf
+1 0 0 1 54 262 Tm
+(- accel peak 10.6 g crossed the 3.0 g impact gate) Tj
+/F1 10 Tf
+1 0 0 1 54 248 Tm
+(- high rotation \(599 dps\)) Tj
+/F1 10 Tf
+1 0 0 1 54 234 Tm
+(- brief low-g dip \(15 ms\) ? not enough alone for free-fall) Tj
+/F1 10 Tf
+1 0 0 1 54 220 Tm
+(- gravity direction shifted 72° \(hat orientation changed a lot\)) Tj
+/F1 10 Tf
+1 0 0 1 54 206 Tm
+(- motion settled afterward \(still\)) Tj
+/F1 10 Tf
+1 0 0 1 54 192 Tm
+(- worn signal went from worn ? not worn) Tj
+/F1 11 Tf
+1 0 0 1 54 178 Tm
+(Verdict: Hat was likely knocked off or removed \(big tilt + then still\).) Tj
+/F1 10 Tf
+1 0 0 1 54 163 Tm
+(Action: Confirm whether the worker is OK and whether PPE is back on.) Tj
+/F1 10 Tf
+1 0 0 1 54 149 Tm
+(Story: At 2026-11-07T11:14:52.534-06:00, hat hat-01 recorded a HAT REMOVED \(priority=medium,) Tj
+/F1 10 Tf
+1 0 0 1 54 135 Tm
+(confidence=high, score=0.83\). Peak accel 10.6 g, peak gyro 599 dps, free-fall 15 ms, tilt change) Tj
+/F1 10 Tf
+1 0 0 1 54 121 Tm
+(72°, still_after=True. Hat was likely knocked off or removed \(big tilt + then still\).) Tj
+/F1 12 Tf
+1 0 0 1 54 97 Tm
+(END OF REPORT) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Length 109 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 54 742 Tm
+(Backend JSON for upload lives in ~/argus/outbox/ \(export_backend.py\).) Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 17 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 3 0 R >>
+endobj
+11 0 obj
+<< /Type /Page /Parent 17 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 4 0 R >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 17 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 5 0 R >>
+endobj
+13 0 obj
+<< /Type /Page /Parent 17 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 6 0 R >>
+endobj
+14 0 obj
+<< /Type /Page /Parent 17 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 7 0 R >>
+endobj
+15 0 obj
+<< /Type /Page /Parent 17 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 8 0 R >>
+endobj
+16 0 obj
+<< /Type /Page /Parent 17 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 9 0 R >>
+endobj
+17 0 obj
+<< /Type /Pages /Kids [10 0 R 11 0 R 12 0 R 13 0 R 14 0 R 15 0 R 16 0 R] /Count 7 >>
+endobj
+18 0 obj
+<< /Type /Catalog /Pages 17 0 R >>
+endobj
+19 0 obj
+<< /Title (Argus Safety Report \(human readable\)) /Producer (Argus make_report_pdf) /CreationDate (D:20261107111455) >>
+endobj
+xref
+0 20
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000154 00000 n 
+0000003686 00000 n 
+0000007541 00000 n 
+0000011569 00000 n 
+0000015606 00000 n 
+0000019541 00000 n 
+0000023545 00000 n 
+0000023705 00000 n 
+0000023843 00000 n 
+0000023981 00000 n 
+0000024119 00000 n 
+0000024257 00000 n 
+0000024395 00000 n 
+0000024533 00000 n 
+0000024671 00000 n 
+0000024772 00000 n 
+0000024823 00000 n 
+trailer
+<< /Size 20 /Root 18 0 R /Info 19 0 R >>
+startxref
+24960
+%%EOF

@@ -1,0 +1,4 @@
+smbus2>=0.4.3
+gpiozero>=2.0
+# picamera2 is typically apt-installed on Raspberry Pi OS (not pip)
+# sudo apt install python3-picamera2
