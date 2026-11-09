@@ -51,7 +51,7 @@ simulated hat does today.
 | D8 | Air data (SCD41) | The bridge attaches the latest air reading (CO₂, °C, RH), if ≤ 5 min old, to each event as environment context. No live streaming. |
 | D9 | Branch / PR | Branch `integration/cloud-bridge` from `origin/hardware`, then a PR into `hardware` with integration issues labelled. Decision matrix score 50 vs 36 (from software) vs 39 (local only). |
 | D10 | Agent models | Tiered: Haiku for inventory and diffs, Sonnet to build and test, Opus (PM) for review and decisions. |
-| D11 | Pi access | SSH as `dhirptl@100.69.180.7` over Dhir's Tailscale network, with key login from this Mac. |
+| D11 | Pi access | SSH as the Pi user over Dhir's Tailscale network, with key login from this Mac. |
 | D12 | Docs | Update our README, `argus_llm_context.md`, `docs/CONNECT-THE-HAT.md` and the spec/build plan to the real hardware and the bridge. |
 | D13 | Updates to Dip | After each sensor is integrated and tested, a short update with any decisions made. |
 
@@ -129,7 +129,7 @@ schema rejects it, raise it as an integration issue for the PM.
 **Phase 0 — access (Dip/Dhir):**
 1. Install Tailscale on this Mac and join Dhir's network, or have the Pi shared with Dip's account.
 2. Generate an SSH key on this Mac and add the public key to the Pi.
-3. Check with `ssh dhirptl@100.69.180.7 true`.
+3. Check with `ssh <user>@<pi-tailscale-ip> true`.
 
 **Phase 1 — inventory (Haiku):**
 - Pull `origin/hardware` into a fresh worktree on branch `integration/cloud-bridge`.

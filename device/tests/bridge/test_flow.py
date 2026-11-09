@@ -10,7 +10,7 @@ from pathlib import Path
 from argus.bridge.clips import ClipPolicy
 from argus.events.queue import validate_event, validate_trace
 
-from .conftest import FAST, T0, Clock, make_bridge, make_cfg, queued, settle
+from .conftest import T0, Clock, make_bridge, make_cfg, queued, settle
 
 
 def qdir(cfg, eid) -> Path:
@@ -302,7 +302,7 @@ def test_one_fall_is_knocked_off_at_most_once(cfg, hat):
     b, _, _ = run_off(cfg, hat, 3.5)
     from argus.bridge.launcher import TofLine
     b.on_tof(TofLine(False, None, "False"))
-    b.mono_fn = b.mono_fn  # noqa: PLW0127
+    b.mono_fn = b.mono_fn
     b.wall_fn = lambda: T0 + timedelta(seconds=4.0)
     b.on_tof(TofLine(False, None, "False"))
     types = sorted(d["type"] for d in queued(cfg).values())

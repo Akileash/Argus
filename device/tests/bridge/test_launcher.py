@@ -16,7 +16,7 @@ import yaml
 
 from argus.bridge.launcher import HatLauncher, TofLine, parse_tof, parse_tof_all
 
-from .conftest import Hat, T0, make_bridge, make_cfg, queued
+from .conftest import T0, Hat, make_bridge, make_cfg, queued
 
 
 def wait(cond, timeout=15.0, what="condition"):

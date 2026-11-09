@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
 import shutil
@@ -18,8 +19,6 @@ from typing import Any
 
 from argus.bridge import mapper
 from argus.bridge.air import latest_air
-import dataclasses
-
 from argus.bridge.clips import ClipPolicy, probe_duration_s, wait_for_clip
 from argus.bridge.launcher import HatLauncher, TofLine, parse_tof_all
 from argus.bridge.tail import EventsTailer, StateFile
