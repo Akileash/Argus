@@ -19,7 +19,7 @@ LEGACY_TYPES = ("impact", "near_fall", "hat_removed")
 OUR_TYPE = {"fall": "fall", "line_of_fire": "struck_by_near_miss"}
 OUR_CLASS = {"fall": "incident", "struck_by_near_miss": "near_miss", "hat_knocked_off": "incident",
              "hat_removed": "ppe_log"}
-NEAR_MISS_LINK_S = 2.0  # D4: a fall within this after a near miss links back to it
+NEAR_MISS_LINK_S = 6.0  # D4: a fall within this after a near miss links back to it (the IMU is blanked ~0.8 s by the buzz)
 SATURATION_G = 15.9
 G = 9.81
 FIRMWARE_VERSION = "bridge-0.1"
@@ -198,9 +198,10 @@ def map_hat_event(raw: dict[str, Any], *, serial: str, side_map: dict[str, str],
     notes: list[str] = []
     if raw["type"] == "fall":
         ev["metrics"] = fall_metrics(raw, hat_on)
-        for _eid, nm_t in recent_near_misses or []:
-            if 0 <= (t0 - nm_t).total_seconds() <= NEAR_MISS_LINK_S:  # D4
-                ev["merged_triggers"].append({"type": "struck_by_near_miss", "offset_s": round((nm_t - t0).total_seconds(), 3)})
+        linked = [nm_t for _eid, nm_t in recent_near_misses or [] if 0 <= (t0 - nm_t).total_seconds() <= NEAR_MISS_LINK_S]
+        if linked:  # one link only, to the near miss closest before the fall
+            nm_t = max(linked)
+            ev["merged_triggers"].append({"type": "struck_by_near_miss", "offset_s": round((nm_t - t0).total_seconds(), 3)})
         rows, bad = _clean_imu((raw.get("sensor") or {}).get("imu_trace"))
         if not rows:
             notes.append("fall has no usable imu_trace; the trace has no IMU series")

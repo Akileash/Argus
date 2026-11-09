@@ -163,6 +163,7 @@ class Bridge:
                 if last is not None and 0 <= (t0 - last).total_seconds() < self.cfg.bridge.lof_min_interval_s:
                     self._skip("lof_throttled", f"line_of_fire {eid} within {self.cfg.bridge.lof_min_interval_s:.0f}s "
                                "of the last one: not uploaded (their camera skips a capture while one runs)")
+                    self._near_misses.append((eid, t0))  # not uploaded, but a fall right after still links to it
                     self._mark_seen(eid)
                     return
                 self._last_lof = t0

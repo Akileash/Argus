@@ -465,3 +465,37 @@ def test_age_limit_zero_disables_and_future_timestamps_are_not_stale(tmp_path):
 def test_default_age_limit_is_180():
     from argus.config import BridgeCfg
     assert BridgeCfg().max_event_age_s == 180
+
+
+def test_fall_four_seconds_after_near_miss_links_back(cfg, hat):
+    b = make_bridge(cfg, from_start=True)
+    nm = hat.lof(T0)
+    fall = hat.fall(T0 + timedelta(seconds=4))
+    hat.mp4(nm["event_id"])
+    hat.mp4(fall["event_id"])
+    settle(b)
+    assert queued(cfg)[fall["event_id"]]["merged_triggers"] == [{"type": "struck_by_near_miss", "offset_s": -4.0}]
+
+
+def test_fall_seven_seconds_after_near_miss_is_not_linked(cfg, hat):
+    b = make_bridge(cfg, from_start=True)
+    nm = hat.lof(T0)
+    fall = hat.fall(T0 + timedelta(seconds=7))
+    hat.mp4(nm["event_id"])
+    hat.mp4(fall["event_id"])
+    settle(b)
+    assert queued(cfg)[fall["event_id"]]["merged_triggers"] == []
+
+
+def test_fall_links_to_a_throttled_near_miss_and_only_the_closest(cfg, hat):
+    b = make_bridge(cfg, from_start=True)
+    first = hat.lof(T0)
+    hat.lof(T0 + timedelta(seconds=10))  # inside the 30 s throttle: not uploaded
+    hat.lof(T0 + timedelta(seconds=12))  # likewise, and the closest to the fall
+    fall = hat.fall(T0 + timedelta(seconds=14))
+    hat.mp4(first["event_id"])
+    hat.mp4(fall["event_id"])
+    settle(b)
+    q = queued(cfg)
+    assert q[fall["event_id"]]["merged_triggers"] == [{"type": "struck_by_near_miss", "offset_s": -2.0}]
+    assert len([e for e in q.values() if e["type"] == "struck_by_near_miss"]) == 1
