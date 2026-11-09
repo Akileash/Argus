@@ -182,6 +182,7 @@ HAPTIC_REQUIRE_RIGHT = False
 CAM_ENABLE = True
 CAM_SIZE = (1280, 720)          # (width, height)
 CAM_FPS = 30
+CAM_ROTATE_180 = True           # camera is mounted upside down on the hat
 CAM_BITRATE = 2_000_000         # bits/s
 CAM_PRE_S = 20.0                # rolling buffer kept continuously
 CAM_POST_S = 10.0               # keep recording this long after a fall

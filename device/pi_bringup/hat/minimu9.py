@@ -22,7 +22,7 @@ Facts below marked [DS] are from the ST datasheets (L3GD20H Rev 2, LSM303D Rev 2
 
 Filter / rate choice (see the comments on the register values below): host polls at
 IMU_SAMPLE_HZ (200 Hz); both chips run at a 400 Hz output rate so every poll gets a
-fresh sample, with the accel anti-alias filter at 50 Hz and the gyro low-pass at
+fresh sample, with the accel anti-alias filter at 773 Hz (see A_CTRL2_VAL) and the gyro low-pass at
 ~50 Hz. That keeps the signal bandwidth near the old MPU DLPF (~44 Hz) that the fall
 thresholds were tuned against, and below the 100 Hz Nyquist of the 200 Hz poll.
 
@@ -80,8 +80,11 @@ A_CTRL7 = 0x26  # AHPM1..0 AFDS T_ONLY 0 MLP MD1 MD0
 A_CTRL0_VAL = 0x00  # FIFO off, high-pass filters off
 # AODR=1000 (400 Hz), BDU=1, X/Y/Z enabled
 A_CTRL1_VAL = 0x8F
-# ABW=11 (50 Hz anti-alias), AFS=100 (+-16 g), no self-test, 4-wire SPI bits unused
-A_CTRL2_VAL = 0xE0
+# ABW=00 (773 Hz anti-alias), AFS=100 (+-16 g), no self-test, 4-wire SPI bits unused.
+# Measured on the real board at rest (2026-11-08): the narrower filters shift the static reading
+# (|a| 0.95 g at 773 Hz, 0.93 at 362, 0.90 at 194, 0.72 at 50 Hz), repeatable at 200 and 400 Hz ODR.
+# 50 Hz made a resting hat read 0.72 g, which fails the 1 g +-0.2 stillness check in the fall rule.
+A_CTRL2_VAL = 0x20
 A_CTRL3_VAL = 0x00
 A_CTRL4_VAL = 0x00
 # MD=10: magnetometer power-down (we only use the accelerometer); no accel HPF

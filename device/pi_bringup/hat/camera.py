@@ -49,9 +49,15 @@ class ClipRecorder:
 
         try:
             picam = Picamera2()
+            kwargs = {}
+            if getattr(cfg, "CAM_ROTATE_180", False):
+                from libcamera import Transform
+
+                kwargs["transform"] = Transform(hflip=True, vflip=True)  # 180 degree rotation
             video_cfg = picam.create_video_configuration(
                 main={"size": tuple(cfg.CAM_SIZE)},
                 controls={"FrameRate": float(cfg.CAM_FPS)},
+                **kwargs,
             )
             picam.configure(video_cfg)
             encoder = H264Encoder(bitrate=int(cfg.CAM_BITRATE))
