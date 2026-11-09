@@ -151,6 +151,13 @@ export function sensorTimeline(ctx: EventContext, trace: SensorTrace | null): Ti
   }
 
   for (const mt of ctx.event.merged_triggers ?? []) {
+    if (ctx.event.type === "fall" && mt.type === "struck_by_near_miss") {
+      items.push({
+        offset_s: mt.offset_s,
+        text: `A struck-by near miss was detected: an object closed on the back of the worker's head ${Math.abs(mt.offset_s).toFixed(1)} s before this fall began. Given the timing, being struck by or reacting to that object is the most likely cause of the fall. This is an inference: the hat has no contact sensor, so contact and any injury are not confirmed.`,
+      });
+      continue;
+    }
     items.push({ offset_s: mt.offset_s, text: `A further trigger (${mt.type.replaceAll("_", " ")}) was merged into this event.` });
   }
   {
